@@ -26,11 +26,11 @@ class BackupStatusCard extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('yyyy/MM/dd - hh:mm a', 'ar').format(date);
+    return DateFormat('yyyy/MM/dd - hh:mm a', 'ar').format(date.toLocal());
   }
 
   String _timeAgo(DateTime date) {
-    final diff = DateTime.now().difference(date);
+    final diff = DateTime.now().difference(date.toLocal());
     if (diff.inDays > 30) {
       final months = (diff.inDays / 30).floor();
       return 'منذ $months شهر';

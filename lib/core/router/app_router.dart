@@ -21,11 +21,13 @@ import '../widgets/main_shell_screen.dart';
 import '../widgets/placeholder_screen.dart';
 import 'routes.dart';
 
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _defaultRootNavigatorKey = GlobalKey<NavigatorState>();
 
-final GoRouter appRouter = GoRouter(
-  navigatorKey: _rootNavigatorKey,
-  initialLocation: AppRoutes.dashboard,
+GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
+  final navKey = rootNavigatorKey ?? GlobalKey<NavigatorState>();
+  return GoRouter(
+    navigatorKey: navKey,
+    initialLocation: AppRoutes.dashboard,
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
@@ -83,7 +85,7 @@ final GoRouter appRouter = GoRouter(
       ],
     ),
     GoRoute(
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: navKey,
       path: AppRoutes.addMember,
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
@@ -94,7 +96,7 @@ final GoRouter appRouter = GoRouter(
       ),
     ),
     GoRoute(
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: navKey,
       path: AppRoutes.memberDetails,
       pageBuilder: (context, state) {
         final idStr = state.pathParameters['id'] ?? '0';
@@ -112,7 +114,7 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: navKey,
       path: AppRoutes.editMember,
       pageBuilder: (context, state) {
         final idStr = state.pathParameters['id'] ?? '0';
@@ -127,7 +129,7 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: navKey,
       path: AppRoutes.addPackage,
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
@@ -138,7 +140,7 @@ final GoRouter appRouter = GoRouter(
       ),
     ),
     GoRoute(
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: navKey,
       path: AppRoutes.editPackage,
       pageBuilder: (context, state) {
         final idStr = state.pathParameters['id'] ?? '0';
@@ -153,7 +155,7 @@ final GoRouter appRouter = GoRouter(
       },
     ),
     GoRoute(
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: navKey,
       path: AppRoutes.settings,
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
@@ -161,7 +163,7 @@ final GoRouter appRouter = GoRouter(
       ),
     ),
     GoRoute(
-      parentNavigatorKey: _rootNavigatorKey,
+      parentNavigatorKey: navKey,
       path: AppRoutes.backup,
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
@@ -170,3 +172,6 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
 );
+}
+
+GoRouter appRouter = createAppRouter(rootNavigatorKey: _defaultRootNavigatorKey);
