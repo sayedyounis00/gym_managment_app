@@ -89,6 +89,26 @@ class StatusChip extends StatelessWidget {
     }
   }
 
+  factory StatusChip.paymentMethod(String method) {
+    switch (method) {
+      case 'wallet':
+        return const StatusChip(
+          label: 'محفظة إلكترونية',
+          icon: Icons.account_balance_wallet_rounded,
+          color: AppColors.info,
+          backgroundColor: AppColors.infoTint,
+        );
+      case 'cash':
+      default:
+        return const StatusChip(
+          label: 'نقدي',
+          icon: Icons.payments_rounded,
+          color: AppColors.primaryDark,
+          backgroundColor: AppColors.primaryLight,
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
