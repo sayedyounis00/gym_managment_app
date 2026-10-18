@@ -40,6 +40,7 @@ class PackageCard extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 // Header row: Name + Badge + Edit Button
                 Row(
@@ -79,11 +80,15 @@ class PackageCard extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: AppSpacing.xs + 2),
-                              Text(
-                                package.formattedDuration,
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: isInactive ? AppColors.textDisabled : AppColors.textSecondary,
-                                  fontWeight: FontWeight.w500,
+                              Flexible(
+                                child: Text(
+                                  package.formattedDuration,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: isInactive ? AppColors.textDisabled : AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -91,6 +96,7 @@ class PackageCard extends StatelessWidget {
                         ],
                       ),
                     ),
+                    const SizedBox(width: AppSpacing.xs),
                     if (isInactive) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -115,6 +121,8 @@ class PackageCard extends StatelessWidget {
                       child: IconButton(
                         icon: const Icon(Icons.edit_outlined),
                         iconSize: 20,
+                        visualDensity: VisualDensity.compact,
+                        constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
                         color: AppColors.textSecondary,
                         tooltip: 'تعديل الباقة',
                         onPressed: onEdit,
@@ -131,25 +139,33 @@ class PackageCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'السعر',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.textSecondary,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'السعر',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
                           ),
-                        ),
-                        Text(
-                          CurrencyFormatter.format(package.price),
-                          style: AppTextStyles.headlineMedium.copyWith(
-                            color: isInactive ? AppColors.textDisabled : AppColors.primary,
-                            fontFeatures: const [FontFeature.tabularFigures()],
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Text(
+                              CurrencyFormatter.format(package.price),
+                              style: AppTextStyles.headlineMedium.copyWith(
+                                color: isInactive ? AppColors.textDisabled : AppColors.primary,
+                                fontFeatures: const [FontFeature.tabularFigures()],
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    if (onToggleActive != null)
+                    if (onToggleActive != null) ...[
+                      const SizedBox(width: AppSpacing.sm),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -170,6 +186,7 @@ class PackageCard extends StatelessWidget {
                           ),
                         ],
                       ),
+                    ],
                   ],
                 ),
               ],
