@@ -6,17 +6,21 @@ import '../../../domain/rules/membership_rules.dart';
 import '../../../domain/usecases/get_member_subscriptions.dart';
 import '../../../domain/usecases/get_packages.dart';
 import '../../../domain/usecases/renew_subscription.dart';
+import '../../../domain/usecases/schedule_expiry_notifications.dart';
+import '../../../domain/entities/subscription.dart';
 import 'renew_state.dart';
 
 class RenewCubit extends Cubit<RenewState> {
   final RenewSubscription renewSubscription;
   final GetPackages getPackages;
   final GetMemberSubscriptions getMemberSubscriptions;
+  final ScheduleExpiryNotifications? scheduleExpiryNotifications;
 
   RenewCubit({
     required this.renewSubscription,
     required this.getPackages,
     required this.getMemberSubscriptions,
+    this.scheduleExpiryNotifications,
   }) : super(RenewState(
           startDate: AppDateUtils.startOfDay(DateTime.now()),
           endDate: AppDateUtils.startOfDay(DateTime.now().add(const Duration(days: 30))),
@@ -161,6 +165,23 @@ class RenewCubit extends Cubit<RenewState> {
         return false;
       },
       (newSubId) {
+        if (scheduleExpiryNotifications != null && state.selectedPackage != null) {
+          scheduleExpiryNotifications!.scheduleForSubscription(
+            subscription: Subscription(
+              id: newSubId,
+              memberId: state.memberId,
+              packageId: state.selectedPackage!.id,
+              packageNameSnapshot: state.selectedPackage!.name,
+              priceSnapshot: state.selectedPackage!.price,
+              startDate: state.startDate,
+              endDate: state.endDate,
+              status: 'active',
+              amountPaid: state.amountPaid,
+              createdAt: DateTime.now(),
+            ),
+            memberName: state.memberName,
+          );
+        }
         emit(state.copyWith(
           isSubmitting: false,
           isSuccess: true,

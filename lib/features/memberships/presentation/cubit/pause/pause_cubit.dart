@@ -1,16 +1,22 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/repositories/memberships_repository.dart';
+import '../../../domain/usecases/get_member_subscriptions.dart';
 import '../../../domain/usecases/pause_subscription.dart';
 import '../../../domain/usecases/resume_subscription.dart';
+import '../../../domain/usecases/schedule_expiry_notifications.dart';
 import 'pause_state.dart';
 
 class PauseCubit extends Cubit<PauseState> {
   final PauseSubscription pauseSubscription;
   final ResumeSubscription resumeSubscription;
+  final ScheduleExpiryNotifications? scheduleExpiryNotifications;
+  final GetMemberSubscriptions? getMemberSubscriptions;
 
   PauseCubit({
     required this.pauseSubscription,
     required this.resumeSubscription,
+    this.scheduleExpiryNotifications,
+    this.getMemberSubscriptions,
   }) : super(PauseState(pauseDate: DateTime.now()));
 
   void init(int memberId) {
@@ -59,7 +65,17 @@ class PauseCubit extends Cubit<PauseState> {
         ));
         return false;
       },
-      (_) {
+      (_) async {
+        if (scheduleExpiryNotifications != null &&
+            getMemberSubscriptions != null) {
+          final current = await getMemberSubscriptions!.getCurrent(memberId);
+          current.fold((_) => null, (sub) {
+            if (sub != null) {
+              scheduleExpiryNotifications!.cancelForSubscription(sub.id);
+            }
+          });
+        }
+
         emit(state.copyWith(
           isSubmitting: false,
           isSuccess: true,
@@ -92,7 +108,20 @@ class PauseCubit extends Cubit<PauseState> {
         ));
         return false;
       },
-      (_) {
+      (_) async {
+        if (scheduleExpiryNotifications != null &&
+            getMemberSubscriptions != null) {
+          final current = await getMemberSubscriptions!.getCurrent(memberId);
+          current.fold((_) => null, (sub) {
+            if (sub != null) {
+              scheduleExpiryNotifications!.scheduleForSubscription(
+                subscription: sub,
+                memberName: 'المشترك',
+              );
+            }
+          });
+        }
+
         emit(state.copyWith(
           isSubmitting: false,
           isSuccess: true,
