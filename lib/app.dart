@@ -69,9 +69,6 @@ class _GymAppState extends State<GymApp> {
   void restart({String? snackBarMessage}) {
     setState(() {
       _key = UniqueKey();
-      try {
-        _currentRouter.dispose();
-      } catch (_) {}
       appRouter = createAppRouter();
       _currentRouter = appRouter;
       _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
@@ -100,16 +97,6 @@ class _GymAppState extends State<GymApp> {
         );
       });
     }
-  }
-
-  @override
-  void dispose() {
-    if (widget.router == null) {
-      try {
-        _currentRouter.dispose();
-      } catch (_) {}
-    }
-    super.dispose();
   }
 
   @override
