@@ -81,6 +81,7 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
     int memberId,
     List<SubscriptionHistoryItem> subscriptions,
   ) async {
+    final cubit = context.read<MemberDetailsCubit>();
     final unpaidSubscriptions =
         subscriptions.where((s) => s.remainingAmount > 0).toList();
 
@@ -101,8 +102,10 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
       context: context,
       barrierDismissible: false,
       builder: (dialogCtx) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
+        return BlocProvider.value(
+          value: cubit,
+          child: StatefulBuilder(
+            builder: (dialogContext, setDialogState) {
             final now = DateTime.now();
             final months = List.generate(12, (i) {
               return DateTime(now.year, now.month - 6 + i, 1);
@@ -349,7 +352,7 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                     final amount =
                         double.tryParse(amountController.text.trim()) ?? 0.0;
                     if (amount <= 0) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
                         const SnackBar(
                           content: Text('يرجى إدخال مبلغ صحيح أكبر من صفر'),
                           backgroundColor: AppColors.error,
@@ -365,15 +368,13 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                     final fullNotes =
                         'عن شهر $monthLabel${extraNotes.isNotEmpty ? ' - $extraNotes' : ''}';
 
-                    final success = await context
-                        .read<MemberDetailsCubit>()
-                        .recordPayment(
-                          amount: amount,
-                          paymentMethod: paymentMethod,
-                          paidAt: DateTime.now(),
-                          subscriptionId: selectedSubscriptionId,
-                          notes: fullNotes,
-                        );
+                    final success = await cubit.recordPayment(
+                      amount: amount,
+                      paymentMethod: paymentMethod,
+                      paidAt: DateTime.now(),
+                      subscriptionId: selectedSubscriptionId,
+                      notes: fullNotes,
+                    );
 
                     if (dialogCtx.mounted) {
                       Navigator.of(dialogCtx).pop(success);
@@ -391,9 +392,10 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
               ],
             );
           },
-        );
-      },
-    );
+        ),
+      );
+    },
+  );
 
     amountController.dispose();
     notesController.dispose();
@@ -464,57 +466,43 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
     }
   }
 
-  Future<void> _confirmDelete(String name, bool hasPayments) async {
-    if (hasPayments) {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            side: const BorderSide(color: AppColors.border),
-          ),
-          title: Text(
-            'تعذر حذف المشترك',
-            style: AppTextStyles.titleMedium.copyWith(color: AppColors.error),
-          ),
-          content: Text(
-            'لا يمكن حذف المشترك $name لوجود سجلات مالية مسجلة له لحماية الحسابات. يمكنك إيقاف العضوية مؤقتاً بدلاً من ذلك.',
-            style: AppTextStyles.bodyMedium,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('إلغاء'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-                context.read<MemberDetailsCubit>().toggleSuspension();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.paused,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('إيقاف المشترك مؤقتاً'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-
+  Future<void> _confirmDelete(String name) async {
+    final cubit = context.read<MemberDetailsCubit>();
     final confirm = await ConfirmDialog.show(
       context,
       title: 'حذف المشترك $name؟',
-      message: 'سيتم حذف المشترك وجميع سجلات الحضور والملاحظات الخاصة به نهائياً. لا يمكن التراجع عن هذا الإجراء.',
+      message: 'سيتم حذف المشترك وجميع بياناته واشتراكاته ومدفوعاته وملاحظاته نهائياً. لا يمكن التراجع عن هذا الإجراء.',
       confirmLabel: 'حذف نهائي',
       isDestructive: true,
     );
 
     if (confirm == true && mounted) {
       HapticFeedback.mediumImpact();
-      context.read<MemberDetailsCubit>().delete();
+      cubit.delete();
+    }
+  }
+
+  Future<void> _confirmDeleteSubscription(SubscriptionHistoryItem sub) async {
+    final confirm = await ConfirmDialog.show(
+      context,
+      title: 'حذف اشتراك ${sub.packageName}؟',
+      message: 'هل تريد حذف هذا الاشتراك؟ سيتم حذف بيانات الاشتراك والمدفوعات المرتبطة به في حال تمت إضافته بالخطأ. لا يمكن التراجع عن هذا الإجراء.',
+      confirmLabel: 'حذف الاشتراك',
+      isDestructive: true,
+    );
+
+    if (confirm == true && mounted) {
+      HapticFeedback.mediumImpact();
+      final success = await context.read<MemberDetailsCubit>().deleteSubscription(sub.id);
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم حذف الاشتراك بنجاح'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -572,10 +560,7 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                         tooltip: 'خيارات إضافية',
                         onSelected: (val) {
                           if (val == 'delete') {
-                            _confirmDelete(
-                              state.data.member.name,
-                              state.data.hasPayments,
-                            );
+                            _confirmDelete(state.data.member.name);
                           } else if (val == 'suspend') {
                             _handlePauseOrResume(state.data.member);
                           }
@@ -898,6 +883,9 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                           status: status,
                           onRenew: () =>
                               _showRenewSheet(member.name, currentSub?.id),
+                          onDelete: currentSub != null
+                              ? () => _confirmDeleteSubscription(currentSub)
+                              : null,
                         ),
                         const SizedBox(height: AppSpacing.lg),
 
@@ -1054,7 +1042,25 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
-              StatusChip.memberStatus(sub.status),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  StatusChip.memberStatus(sub.status),
+                  const SizedBox(height: AppSpacing.xs),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      size: 20,
+                      color: AppColors.error,
+                    ),
+                    tooltip: 'حذف الاشتراك',
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => _confirmDeleteSubscription(sub),
+                  ),
+                ],
+              ),
             ],
           ),
         );

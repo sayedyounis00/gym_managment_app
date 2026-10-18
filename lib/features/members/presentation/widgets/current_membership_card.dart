@@ -11,12 +11,14 @@ class CurrentMembershipCard extends StatelessWidget {
   final SubscriptionHistoryItem? subscription;
   final MemberStatusType status;
   final VoidCallback onRenew;
+  final VoidCallback? onDelete;
 
   const CurrentMembershipCard({
     super.key,
     required this.subscription,
     required this.status,
     required this.onRenew,
+    this.onDelete,
   });
 
   @override
@@ -148,6 +150,19 @@ class CurrentMembershipCard extends StatelessWidget {
                 ),
               ),
               StatusChip.memberStatus(status),
+              if (onDelete != null) ...[
+                const SizedBox(width: AppSpacing.xs),
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    size: 20,
+                    color: AppColors.error,
+                  ),
+                  tooltip: 'حذف الاشتراك',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onDelete,
+                ),
+              ],
             ],
           ),
           const SizedBox(height: AppSpacing.md),
