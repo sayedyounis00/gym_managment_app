@@ -93,8 +93,8 @@ abstract final class MembershipRules {
     return subscription.copyWith(
       status: 'active',
       endDate: newEndDate,
-      pausedAt: null,
-      pauseReason: null,
+      clearPausedAt: true,
+      clearPauseReason: true,
       totalPausedDays: newTotalPausedDays,
     );
   }
