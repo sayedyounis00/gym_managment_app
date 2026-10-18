@@ -8,6 +8,7 @@ class Members extends Table {
   TextColumn get name => text().withLength(min: 1, max: 100)();
   TextColumn get phone => text().withLength(min: 1, max: 20)();
   TextColumn get photoPath => text().nullable()();
+  TextColumn get gender => text().nullable()(); // 'male' or 'female'
   IntColumn get age => integer().nullable()();
   RealColumn get weightKg => real().nullable()();
   RealColumn get heightCm => real().nullable()();

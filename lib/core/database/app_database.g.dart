@@ -58,6 +58,15 @@ class $MembersTable extends Members with TableInfo<$MembersTable, Member> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _genderMeta = const VerificationMeta('gender');
+  @override
+  late final GeneratedColumn<String> gender = GeneratedColumn<String>(
+    'gender',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _ageMeta = const VerificationMeta('age');
   @override
   late final GeneratedColumn<int> age = GeneratedColumn<int>(
@@ -155,6 +164,7 @@ class $MembersTable extends Members with TableInfo<$MembersTable, Member> {
     name,
     phone,
     photoPath,
+    gender,
     age,
     weightKg,
     heightCm,
@@ -199,6 +209,12 @@ class $MembersTable extends Members with TableInfo<$MembersTable, Member> {
       context.handle(
         _photoPathMeta,
         photoPath.isAcceptableOrUnknown(data['photo_path']!, _photoPathMeta),
+      );
+    }
+    if (data.containsKey('gender')) {
+      context.handle(
+        _genderMeta,
+        gender.isAcceptableOrUnknown(data['gender']!, _genderMeta),
       );
     }
     if (data.containsKey('age')) {
@@ -277,6 +293,10 @@ class $MembersTable extends Members with TableInfo<$MembersTable, Member> {
         DriftSqlType.string,
         data['${effectivePrefix}photo_path'],
       ),
+      gender: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}gender'],
+      ),
       age: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}age'],
@@ -323,6 +343,7 @@ class Member extends DataClass implements Insertable<Member> {
   final String name;
   final String phone;
   final String? photoPath;
+  final String? gender;
   final int? age;
   final double? weightKg;
   final double? heightCm;
@@ -336,6 +357,7 @@ class Member extends DataClass implements Insertable<Member> {
     required this.name,
     required this.phone,
     this.photoPath,
+    this.gender,
     this.age,
     this.weightKg,
     this.heightCm,
@@ -353,6 +375,9 @@ class Member extends DataClass implements Insertable<Member> {
     map['phone'] = Variable<String>(phone);
     if (!nullToAbsent || photoPath != null) {
       map['photo_path'] = Variable<String>(photoPath);
+    }
+    if (!nullToAbsent || gender != null) {
+      map['gender'] = Variable<String>(gender);
     }
     if (!nullToAbsent || age != null) {
       map['age'] = Variable<int>(age);
@@ -381,6 +406,9 @@ class Member extends DataClass implements Insertable<Member> {
       photoPath: photoPath == null && nullToAbsent
           ? const Value.absent()
           : Value(photoPath),
+      gender: gender == null && nullToAbsent
+          ? const Value.absent()
+          : Value(gender),
       age: age == null && nullToAbsent ? const Value.absent() : Value(age),
       weightKg: weightKg == null && nullToAbsent
           ? const Value.absent()
@@ -408,6 +436,7 @@ class Member extends DataClass implements Insertable<Member> {
       name: serializer.fromJson<String>(json['name']),
       phone: serializer.fromJson<String>(json['phone']),
       photoPath: serializer.fromJson<String?>(json['photoPath']),
+      gender: serializer.fromJson<String?>(json['gender']),
       age: serializer.fromJson<int?>(json['age']),
       weightKg: serializer.fromJson<double?>(json['weightKg']),
       heightCm: serializer.fromJson<double?>(json['heightCm']),
@@ -426,6 +455,7 @@ class Member extends DataClass implements Insertable<Member> {
       'name': serializer.toJson<String>(name),
       'phone': serializer.toJson<String>(phone),
       'photoPath': serializer.toJson<String?>(photoPath),
+      'gender': serializer.toJson<String?>(gender),
       'age': serializer.toJson<int?>(age),
       'weightKg': serializer.toJson<double?>(weightKg),
       'heightCm': serializer.toJson<double?>(heightCm),
@@ -442,6 +472,7 @@ class Member extends DataClass implements Insertable<Member> {
     String? name,
     String? phone,
     Value<String?> photoPath = const Value.absent(),
+    Value<String?> gender = const Value.absent(),
     Value<int?> age = const Value.absent(),
     Value<double?> weightKg = const Value.absent(),
     Value<double?> heightCm = const Value.absent(),
@@ -455,6 +486,7 @@ class Member extends DataClass implements Insertable<Member> {
     name: name ?? this.name,
     phone: phone ?? this.phone,
     photoPath: photoPath.present ? photoPath.value : this.photoPath,
+    gender: gender.present ? gender.value : this.gender,
     age: age.present ? age.value : this.age,
     weightKg: weightKg.present ? weightKg.value : this.weightKg,
     heightCm: heightCm.present ? heightCm.value : this.heightCm,
@@ -470,6 +502,7 @@ class Member extends DataClass implements Insertable<Member> {
       name: data.name.present ? data.name.value : this.name,
       phone: data.phone.present ? data.phone.value : this.phone,
       photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
+      gender: data.gender.present ? data.gender.value : this.gender,
       age: data.age.present ? data.age.value : this.age,
       weightKg: data.weightKg.present ? data.weightKg.value : this.weightKg,
       heightCm: data.heightCm.present ? data.heightCm.value : this.heightCm,
@@ -492,6 +525,7 @@ class Member extends DataClass implements Insertable<Member> {
           ..write('name: $name, ')
           ..write('phone: $phone, ')
           ..write('photoPath: $photoPath, ')
+          ..write('gender: $gender, ')
           ..write('age: $age, ')
           ..write('weightKg: $weightKg, ')
           ..write('heightCm: $heightCm, ')
@@ -510,6 +544,7 @@ class Member extends DataClass implements Insertable<Member> {
     name,
     phone,
     photoPath,
+    gender,
     age,
     weightKg,
     heightCm,
@@ -527,6 +562,7 @@ class Member extends DataClass implements Insertable<Member> {
           other.name == this.name &&
           other.phone == this.phone &&
           other.photoPath == this.photoPath &&
+          other.gender == this.gender &&
           other.age == this.age &&
           other.weightKg == this.weightKg &&
           other.heightCm == this.heightCm &&
@@ -542,6 +578,7 @@ class MembersCompanion extends UpdateCompanion<Member> {
   final Value<String> name;
   final Value<String> phone;
   final Value<String?> photoPath;
+  final Value<String?> gender;
   final Value<int?> age;
   final Value<double?> weightKg;
   final Value<double?> heightCm;
@@ -555,6 +592,7 @@ class MembersCompanion extends UpdateCompanion<Member> {
     this.name = const Value.absent(),
     this.phone = const Value.absent(),
     this.photoPath = const Value.absent(),
+    this.gender = const Value.absent(),
     this.age = const Value.absent(),
     this.weightKg = const Value.absent(),
     this.heightCm = const Value.absent(),
@@ -569,6 +607,7 @@ class MembersCompanion extends UpdateCompanion<Member> {
     required String name,
     required String phone,
     this.photoPath = const Value.absent(),
+    this.gender = const Value.absent(),
     this.age = const Value.absent(),
     this.weightKg = const Value.absent(),
     this.heightCm = const Value.absent(),
@@ -584,6 +623,7 @@ class MembersCompanion extends UpdateCompanion<Member> {
     Expression<String>? name,
     Expression<String>? phone,
     Expression<String>? photoPath,
+    Expression<String>? gender,
     Expression<int>? age,
     Expression<double>? weightKg,
     Expression<double>? heightCm,
@@ -598,6 +638,7 @@ class MembersCompanion extends UpdateCompanion<Member> {
       if (name != null) 'name': name,
       if (phone != null) 'phone': phone,
       if (photoPath != null) 'photo_path': photoPath,
+      if (gender != null) 'gender': gender,
       if (age != null) 'age': age,
       if (weightKg != null) 'weight_kg': weightKg,
       if (heightCm != null) 'height_cm': heightCm,
@@ -614,6 +655,7 @@ class MembersCompanion extends UpdateCompanion<Member> {
     Value<String>? name,
     Value<String>? phone,
     Value<String?>? photoPath,
+    Value<String?>? gender,
     Value<int?>? age,
     Value<double?>? weightKg,
     Value<double?>? heightCm,
@@ -628,6 +670,7 @@ class MembersCompanion extends UpdateCompanion<Member> {
       name: name ?? this.name,
       phone: phone ?? this.phone,
       photoPath: photoPath ?? this.photoPath,
+      gender: gender ?? this.gender,
       age: age ?? this.age,
       weightKg: weightKg ?? this.weightKg,
       heightCm: heightCm ?? this.heightCm,
@@ -653,6 +696,9 @@ class MembersCompanion extends UpdateCompanion<Member> {
     }
     if (photoPath.present) {
       map['photo_path'] = Variable<String>(photoPath.value);
+    }
+    if (gender.present) {
+      map['gender'] = Variable<String>(gender.value);
     }
     if (age.present) {
       map['age'] = Variable<int>(age.value);
@@ -688,6 +734,7 @@ class MembersCompanion extends UpdateCompanion<Member> {
           ..write('name: $name, ')
           ..write('phone: $phone, ')
           ..write('photoPath: $photoPath, ')
+          ..write('gender: $gender, ')
           ..write('age: $age, ')
           ..write('weightKg: $weightKg, ')
           ..write('heightCm: $heightCm, ')
@@ -4802,6 +4849,7 @@ typedef $$MembersTableCreateCompanionBuilder = MembersCompanion Function({
   required String name,
   required String phone,
   Value<String?> photoPath,
+  Value<String?> gender,
   Value<int?> age,
   Value<double?> weightKg,
   Value<double?> heightCm,
@@ -4816,6 +4864,7 @@ typedef $$MembersTableUpdateCompanionBuilder = MembersCompanion Function({
   Value<String> name,
   Value<String> phone,
   Value<String?> photoPath,
+  Value<String?> gender,
   Value<int?> age,
   Value<double?> weightKg,
   Value<double?> heightCm,
@@ -4912,6 +4961,11 @@ class $$MembersTableFilterComposer
 
   ColumnFilters<String> get photoPath => $composableBuilder(
     column: $table.photoPath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get gender => $composableBuilder(
+    column: $table.gender,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5060,6 +5114,11 @@ class $$MembersTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get gender => $composableBuilder(
+    column: $table.gender,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get age => $composableBuilder(
     column: $table.age,
     builder: (column) => ColumnOrderings(column),
@@ -5121,6 +5180,9 @@ class $$MembersTableAnnotationComposer
 
   GeneratedColumn<String> get photoPath =>
       $composableBuilder(column: $table.photoPath, builder: (column) => column);
+
+  GeneratedColumn<String> get gender =>
+      $composableBuilder(column: $table.gender, builder: (column) => column);
 
   GeneratedColumn<int> get age =>
       $composableBuilder(column: $table.age, builder: (column) => column);
@@ -5262,6 +5324,7 @@ class $$MembersTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String> phone = const Value.absent(),
                 Value<String?> photoPath = const Value.absent(),
+                Value<String?> gender = const Value.absent(),
                 Value<int?> age = const Value.absent(),
                 Value<double?> weightKg = const Value.absent(),
                 Value<double?> heightCm = const Value.absent(),
@@ -5275,6 +5338,7 @@ class $$MembersTableTableManager
                 name: name,
                 phone: phone,
                 photoPath: photoPath,
+                gender: gender,
                 age: age,
                 weightKg: weightKg,
                 heightCm: heightCm,
@@ -5290,6 +5354,7 @@ class $$MembersTableTableManager
                 required String name,
                 required String phone,
                 Value<String?> photoPath = const Value.absent(),
+                Value<String?> gender = const Value.absent(),
                 Value<int?> age = const Value.absent(),
                 Value<double?> weightKg = const Value.absent(),
                 Value<double?> heightCm = const Value.absent(),
@@ -5303,6 +5368,7 @@ class $$MembersTableTableManager
                 name: name,
                 phone: phone,
                 photoPath: photoPath,
+                gender: gender,
                 age: age,
                 weightKg: weightKg,
                 heightCm: heightCm,

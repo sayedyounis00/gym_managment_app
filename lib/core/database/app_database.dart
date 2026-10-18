@@ -38,7 +38,7 @@ class AppDatabase extends _$AppDatabase {
       : super(e ?? driftDatabase(name: 'gym_management_app'));
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -135,6 +135,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 5) {
             await customStatement('DROP TABLE IF EXISTS attendance;');
+          }
+          if (from < 6) {
+            await m.addColumn(members, members.gender);
           }
         },
         beforeOpen: (details) async {
