@@ -18,6 +18,8 @@ import '../widgets/finance_summary.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/backup_reminder_banner.dart';
 import 'package:gym_managment_app/features/memberships/presentation/widgets/renew_bottom_sheet.dart';
+import 'package:gym_managment_app/features/finance/presentation/widgets/add_payment_sheet.dart';
+import 'package:gym_managment_app/features/finance/presentation/pages/add_expense_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -476,7 +478,21 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () => context.go(item.route),
+                onTap: () async {
+                  if (item.label == 'تسجيل دفعة') {
+                    final success = await AddPaymentSheet.show(context);
+                    if (success == true && context.mounted) {
+                      context.read<DashboardCubit>().refresh();
+                    }
+                  } else if (item.label == 'مصروف جديد') {
+                    final success = await AddExpensePage.show(context);
+                    if (success == true && context.mounted) {
+                      context.read<DashboardCubit>().refresh();
+                    }
+                  } else {
+                    context.go(item.route);
+                  }
+                },
                 borderRadius: BorderRadius.circular(AppRadius.md),
                 child: Ink(
                   height: 72,

@@ -12,7 +12,6 @@ import 'package:gym_managment_app/core/utils/date_utils.dart';
 import 'package:gym_managment_app/core/utils/responsive_utils.dart';
 import 'package:gym_managment_app/core/widgets/app_button.dart';
 import 'package:gym_managment_app/core/widgets/confirm_dialog.dart';
-import 'package:gym_managment_app/core/widgets/payment_method_chips.dart';
 import 'package:gym_managment_app/core/widgets/skeletons/skeletons.dart';
 import 'package:gym_managment_app/core/widgets/status_chip.dart';
 import 'package:gym_managment_app/features/members/domain/entities/subscription_history_item.dart';
@@ -32,6 +31,11 @@ import 'package:gym_managment_app/core/di/injection_container.dart';
 import 'package:gym_managment_app/features/memberships/presentation/cubit/pause/pause_cubit.dart';
 import 'package:gym_managment_app/features/memberships/presentation/widgets/renew_bottom_sheet.dart';
 import 'package:gym_managment_app/features/memberships/presentation/widgets/pause_bottom_sheet.dart';
+import 'package:gym_managment_app/features/finance/presentation/widgets/add_payment_sheet.dart';
+import 'package:gym_managment_app/features/finance/presentation/widgets/void_dialog.dart';
+import 'package:gym_managment_app/features/finance/domain/entities/ledger_entry.dart';
+import 'package:gym_managment_app/features/finance/domain/entities/finance_enums.dart';
+import 'package:gym_managment_app/features/finance/domain/usecases/void_payment.dart';
 
 class MemberDetailsPage extends StatefulWidget {
   final int memberId;
@@ -83,326 +87,12 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
     int memberId,
     List<SubscriptionHistoryItem> subscriptions,
   ) async {
-    final cubit = context.read<MemberDetailsCubit>();
-    final unpaidSubscriptions =
-        subscriptions.where((s) => s.remainingAmount > 0).toList();
-
-    int? selectedSubscriptionId =
-        unpaidSubscriptions.isNotEmpty ? unpaidSubscriptions.first.id : null;
-
-    final amountController = TextEditingController(
-      text: selectedSubscriptionId != null
-          ? unpaidSubscriptions.first.remainingAmount.toStringAsFixed(0)
-          : '',
+    final success = await AddPaymentSheet.show(
+      context,
+      preselectedMemberId: memberId,
     );
-    final notesController = TextEditingController();
-
-    DateTime selectedMonthDate = DateTime.now();
-    String paymentMethod = 'cash';
-
-    final result = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogCtx) {
-        return BlocProvider.value(
-          value: cubit,
-          child: StatefulBuilder(
-            builder: (dialogContext, setDialogState) {
-            final now = DateTime.now();
-            final months = List.generate(12, (i) {
-              return DateTime(now.year, now.month - 6 + i, 1);
-            });
-
-            final selectedSub = subscriptions
-                .where((s) => s.id == selectedSubscriptionId)
-                .firstOrNull;
-
-            return AlertDialog(
-              backgroundColor: AppColors.surface,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.xl),
-              ),
-              title: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: AppColors.primaryLight,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.payment_rounded,
-                      color: AppColors.primary,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text('إضافة دفعة جديدة', style: AppTextStyles.titleMedium),
-                ],
-              ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // 1. Unpaid subscription connection
-                    Text(
-                      'ربط باشتراك غير مسدد',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<int?>(
-                          isExpanded: true,
-                          value: selectedSubscriptionId,
-                          dropdownColor: AppColors.surface,
-                          items: [
-                            const DropdownMenuItem<int?>(
-                              value: null,
-                              child: Text('دفعة عامة (بدون ربط باشتراك)'),
-                            ),
-                            ...unpaidSubscriptions.map((sub) {
-                              return DropdownMenuItem<int?>(
-                                value: sub.id,
-                                child: Text(
-                                  '${sub.packageName} - متبقي دين: ${CurrencyFormatter.format(sub.remainingAmount)}',
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontWeight: FontWeight.w600),
-                                ),
-                              );
-                            }),
-                          ],
-                          onChanged: (val) {
-                            setDialogState(() {
-                              selectedSubscriptionId = val;
-                              final sub = subscriptions
-                                  .where((s) => s.id == val)
-                                  .firstOrNull;
-                              if (sub != null && sub.remainingAmount > 0) {
-                                amountController.text =
-                                    sub.remainingAmount.toStringAsFixed(0);
-                                selectedMonthDate = sub.startDate;
-                              }
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    if (selectedSub != null && selectedSub.remainingAmount > 0) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        'إجمالي سعر الباقة: ${CurrencyFormatter.format(selectedSub.price)} · المدفوع: ${CurrencyFormatter.format(selectedSub.paidAmount)}',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: AppColors.error,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.md),
-
-                    // 2. Month selection
-                    Text(
-                      'عن شهر',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<DateTime>(
-                          isExpanded: true,
-                          value: months.firstWhere(
-                            (m) =>
-                                m.year == selectedMonthDate.year &&
-                                m.month == selectedMonthDate.month,
-                            orElse: () => months[6],
-                          ),
-                          dropdownColor: AppColors.surface,
-                          items: months.map((m) {
-                            final label =
-                                DateFormat('MMMM yyyy', 'ar').format(m);
-                            return DropdownMenuItem<DateTime>(
-                              value: m,
-                              child: Text(label),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              setDialogState(() {
-                                selectedMonthDate = val;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-
-                    // 3. Amount of money
-                    Text(
-                      'المبلغ المدفوع (ج.م)',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    TextField(
-                      controller: amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(
-                        hintText: '0.00',
-                        prefixIcon: const Icon(Icons.payments_rounded, size: 20),
-                        filled: true,
-                        fillColor: AppColors.surfaceVariant,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm + 4,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          borderSide: const BorderSide(color: AppColors.border),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          borderSide: const BorderSide(color: AppColors.border),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-
-                    // 4. Payment method chips
-                    Text(
-                      'طريقة الدفع',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    PaymentMethodChips(
-                      selectedMethod: paymentMethod,
-                      onSelected: (method) {
-                        setDialogState(() {
-                          paymentMethod = method;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-
-                    // 5. Notes (optional)
-                    Text(
-                      'ملاحظات إضافية (اختياري)',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    TextField(
-                      controller: notesController,
-                      decoration: InputDecoration(
-                        hintText: 'مثال: سداد باقي اشتراك...',
-                        filled: true,
-                        fillColor: AppColors.surfaceVariant,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.md,
-                          vertical: AppSpacing.sm + 4,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          borderSide: const BorderSide(color: AppColors.border),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          borderSide: const BorderSide(color: AppColors.border),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogCtx).pop(false),
-                  child: const Text('إلغاء'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    final amount =
-                        double.tryParse(amountController.text.trim()) ?? 0.0;
-                    if (amount <= 0) {
-                      ScaffoldMessenger.of(dialogContext).showSnackBar(
-                        const SnackBar(
-                          content: Text('يرجى إدخال مبلغ صحيح أكبر من صفر'),
-                          backgroundColor: AppColors.error,
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                      return;
-                    }
-
-                    final monthLabel =
-                        DateFormat('MMMM yyyy', 'ar').format(selectedMonthDate);
-                    final extraNotes = notesController.text.trim();
-                    final fullNotes =
-                        'عن شهر $monthLabel${extraNotes.isNotEmpty ? ' - $extraNotes' : ''}';
-
-                    final success = await cubit.recordPayment(
-                      amount: amount,
-                      paymentMethod: paymentMethod,
-                      paidAt: DateTime.now(),
-                      subscriptionId: selectedSubscriptionId,
-                      notes: fullNotes,
-                    );
-
-                    if (dialogCtx.mounted) {
-                      Navigator.of(dialogCtx).pop(success);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.md),
-                    ),
-                  ),
-                  child: const Text('تأكيد الدفعة'),
-                ),
-              ],
-            );
-          },
-        ),
-      );
-    },
-  );
-
-    amountController.dispose();
-    notesController.dispose();
-
-    if (result == true && mounted) {
+    if (success == true && mounted) {
+      context.read<MemberDetailsCubit>().refresh();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('تم تسجيل الدفعة بنجاح وتحديث الرصيد'),
@@ -1207,8 +897,13 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                           Text(
                             CurrencyFormatter.format(payment.amount),
                             style: AppTextStyles.titleMedium.copyWith(
-                              color: AppColors.success,
+                              color: payment.isVoided
+                                  ? AppColors.textDisabled
+                                  : AppColors.success,
                               fontWeight: FontWeight.w700,
+                              decoration: payment.isVoided
+                                  ? TextDecoration.lineThrough
+                                  : null,
                             ),
                           ),
                           Text(
@@ -1228,7 +923,58 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                         ],
                       ),
                     ),
-                    StatusChip.paymentMethod(payment.paymentMethod),
+                    if (payment.isVoided)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.errorTint,
+                          borderRadius: BorderRadius.circular(AppRadius.full),
+                        ),
+                        child: Text(
+                          'ملغاة',
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: AppColors.error,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      )
+                    else ...[
+                      StatusChip.paymentMethod(payment.paymentMethod),
+                      IconButton(
+                        icon: const Icon(Icons.undo_rounded, size: 18, color: AppColors.textSecondary),
+                        tooltip: 'إلغاء الدفعة',
+                        onPressed: () async {
+                          final reason = await VoidConfirmationDialog.show(
+                            context,
+                            entry: LedgerEntry(
+                              id: 'payment_${payment.id}',
+                              originalId: payment.id,
+                              type: LedgerType.income,
+                              amount: payment.amount,
+                              date: payment.paidAt,
+                              title: 'دفعة بقيمة ${CurrencyFormatter.format(payment.amount)}',
+                              isVoided: false,
+                            ),
+                          );
+                          if (reason != null && context.mounted) {
+                            final voidResult = await sl<VoidPayment>()(payment.id, reason: reason.isNotEmpty ? reason : null);
+                            if (context.mounted) {
+                              voidResult.fold(
+                                (fail) => ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(fail.message), backgroundColor: AppColors.error),
+                                ),
+                                (_) {
+                                  context.read<MemberDetailsCubit>().refresh();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('تم إلغاء الدفعة بنجاح'), backgroundColor: AppColors.success),
+                                  );
+                                },
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ],
                   ],
                 ),
               );

@@ -3515,6 +3515,51 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _memberNameSnapshotMeta =
+      const VerificationMeta('memberNameSnapshot');
+  @override
+  late final GeneratedColumn<String> memberNameSnapshot =
+      GeneratedColumn<String>(
+        'member_name_snapshot',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _voidedAtMeta = const VerificationMeta(
+    'voidedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> voidedAt = GeneratedColumn<DateTime>(
+    'voided_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _voidReasonMeta = const VerificationMeta(
+    'voidReason',
+  );
+  @override
+  late final GeneratedColumn<String> voidReason = GeneratedColumn<String>(
+    'void_reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -3526,6 +3571,10 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
     paidAt,
     paymentMethod,
     notes,
+    memberNameSnapshot,
+    createdAt,
+    voidedAt,
+    voidReason,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3603,6 +3652,33 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
       );
     }
+    if (data.containsKey('member_name_snapshot')) {
+      context.handle(
+        _memberNameSnapshotMeta,
+        memberNameSnapshot.isAcceptableOrUnknown(
+          data['member_name_snapshot']!,
+          _memberNameSnapshotMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('voided_at')) {
+      context.handle(
+        _voidedAtMeta,
+        voidedAt.isAcceptableOrUnknown(data['voided_at']!, _voidedAtMeta),
+      );
+    }
+    if (data.containsKey('void_reason')) {
+      context.handle(
+        _voidReasonMeta,
+        voidReason.isAcceptableOrUnknown(data['void_reason']!, _voidReasonMeta),
+      );
+    }
     return context;
   }
 
@@ -3648,6 +3724,22 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
       ),
+      memberNameSnapshot: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}member_name_snapshot'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      voidedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}voided_at'],
+      ),
+      voidReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}void_reason'],
+      ),
     );
   }
 
@@ -3667,6 +3759,10 @@ class Payment extends DataClass implements Insertable<Payment> {
   final DateTime paidAt;
   final String paymentMethod;
   final String? notes;
+  final String? memberNameSnapshot;
+  final DateTime createdAt;
+  final DateTime? voidedAt;
+  final String? voidReason;
   const Payment({
     required this.id,
     required this.memberId,
@@ -3677,6 +3773,10 @@ class Payment extends DataClass implements Insertable<Payment> {
     required this.paidAt,
     required this.paymentMethod,
     this.notes,
+    this.memberNameSnapshot,
+    required this.createdAt,
+    this.voidedAt,
+    this.voidReason,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -3697,6 +3797,16 @@ class Payment extends DataClass implements Insertable<Payment> {
     map['payment_method'] = Variable<String>(paymentMethod);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || memberNameSnapshot != null) {
+      map['member_name_snapshot'] = Variable<String>(memberNameSnapshot);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || voidedAt != null) {
+      map['voided_at'] = Variable<DateTime>(voidedAt);
+    }
+    if (!nullToAbsent || voidReason != null) {
+      map['void_reason'] = Variable<String>(voidReason);
     }
     return map;
   }
@@ -3720,6 +3830,16 @@ class Payment extends DataClass implements Insertable<Payment> {
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      memberNameSnapshot: memberNameSnapshot == null && nullToAbsent
+          ? const Value.absent()
+          : Value(memberNameSnapshot),
+      createdAt: Value(createdAt),
+      voidedAt: voidedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voidedAt),
+      voidReason: voidReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voidReason),
     );
   }
 
@@ -3738,6 +3858,12 @@ class Payment extends DataClass implements Insertable<Payment> {
       paidAt: serializer.fromJson<DateTime>(json['paidAt']),
       paymentMethod: serializer.fromJson<String>(json['paymentMethod']),
       notes: serializer.fromJson<String?>(json['notes']),
+      memberNameSnapshot: serializer.fromJson<String?>(
+        json['memberNameSnapshot'],
+      ),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      voidedAt: serializer.fromJson<DateTime?>(json['voidedAt']),
+      voidReason: serializer.fromJson<String?>(json['voidReason']),
     );
   }
   @override
@@ -3753,6 +3879,10 @@ class Payment extends DataClass implements Insertable<Payment> {
       'paidAt': serializer.toJson<DateTime>(paidAt),
       'paymentMethod': serializer.toJson<String>(paymentMethod),
       'notes': serializer.toJson<String?>(notes),
+      'memberNameSnapshot': serializer.toJson<String?>(memberNameSnapshot),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'voidedAt': serializer.toJson<DateTime?>(voidedAt),
+      'voidReason': serializer.toJson<String?>(voidReason),
     };
   }
 
@@ -3766,6 +3896,10 @@ class Payment extends DataClass implements Insertable<Payment> {
     DateTime? paidAt,
     String? paymentMethod,
     Value<String?> notes = const Value.absent(),
+    Value<String?> memberNameSnapshot = const Value.absent(),
+    DateTime? createdAt,
+    Value<DateTime?> voidedAt = const Value.absent(),
+    Value<String?> voidReason = const Value.absent(),
   }) => Payment(
     id: id ?? this.id,
     memberId: memberId ?? this.memberId,
@@ -3780,6 +3914,12 @@ class Payment extends DataClass implements Insertable<Payment> {
     paidAt: paidAt ?? this.paidAt,
     paymentMethod: paymentMethod ?? this.paymentMethod,
     notes: notes.present ? notes.value : this.notes,
+    memberNameSnapshot: memberNameSnapshot.present
+        ? memberNameSnapshot.value
+        : this.memberNameSnapshot,
+    createdAt: createdAt ?? this.createdAt,
+    voidedAt: voidedAt.present ? voidedAt.value : this.voidedAt,
+    voidReason: voidReason.present ? voidReason.value : this.voidReason,
   );
   Payment copyWithCompanion(PaymentsCompanion data) {
     return Payment(
@@ -3798,6 +3938,14 @@ class Payment extends DataClass implements Insertable<Payment> {
           ? data.paymentMethod.value
           : this.paymentMethod,
       notes: data.notes.present ? data.notes.value : this.notes,
+      memberNameSnapshot: data.memberNameSnapshot.present
+          ? data.memberNameSnapshot.value
+          : this.memberNameSnapshot,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      voidedAt: data.voidedAt.present ? data.voidedAt.value : this.voidedAt,
+      voidReason: data.voidReason.present
+          ? data.voidReason.value
+          : this.voidReason,
     );
   }
 
@@ -3812,7 +3960,11 @@ class Payment extends DataClass implements Insertable<Payment> {
           ..write('amount: $amount, ')
           ..write('paidAt: $paidAt, ')
           ..write('paymentMethod: $paymentMethod, ')
-          ..write('notes: $notes')
+          ..write('notes: $notes, ')
+          ..write('memberNameSnapshot: $memberNameSnapshot, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('voidedAt: $voidedAt, ')
+          ..write('voidReason: $voidReason')
           ..write(')'))
         .toString();
   }
@@ -3828,6 +3980,10 @@ class Payment extends DataClass implements Insertable<Payment> {
     paidAt,
     paymentMethod,
     notes,
+    memberNameSnapshot,
+    createdAt,
+    voidedAt,
+    voidReason,
   );
   @override
   bool operator ==(Object other) =>
@@ -3841,7 +3997,11 @@ class Payment extends DataClass implements Insertable<Payment> {
           other.amount == this.amount &&
           other.paidAt == this.paidAt &&
           other.paymentMethod == this.paymentMethod &&
-          other.notes == this.notes);
+          other.notes == this.notes &&
+          other.memberNameSnapshot == this.memberNameSnapshot &&
+          other.createdAt == this.createdAt &&
+          other.voidedAt == this.voidedAt &&
+          other.voidReason == this.voidReason);
 }
 
 class PaymentsCompanion extends UpdateCompanion<Payment> {
@@ -3854,6 +4014,10 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
   final Value<DateTime> paidAt;
   final Value<String> paymentMethod;
   final Value<String?> notes;
+  final Value<String?> memberNameSnapshot;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> voidedAt;
+  final Value<String?> voidReason;
   const PaymentsCompanion({
     this.id = const Value.absent(),
     this.memberId = const Value.absent(),
@@ -3864,6 +4028,10 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     this.paidAt = const Value.absent(),
     this.paymentMethod = const Value.absent(),
     this.notes = const Value.absent(),
+    this.memberNameSnapshot = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.voidedAt = const Value.absent(),
+    this.voidReason = const Value.absent(),
   });
   PaymentsCompanion.insert({
     this.id = const Value.absent(),
@@ -3875,6 +4043,10 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     this.paidAt = const Value.absent(),
     this.paymentMethod = const Value.absent(),
     this.notes = const Value.absent(),
+    this.memberNameSnapshot = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.voidedAt = const Value.absent(),
+    this.voidReason = const Value.absent(),
   }) : memberId = Value(memberId),
        amount = Value(amount);
   static Insertable<Payment> custom({
@@ -3887,6 +4059,10 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     Expression<DateTime>? paidAt,
     Expression<String>? paymentMethod,
     Expression<String>? notes,
+    Expression<String>? memberNameSnapshot,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? voidedAt,
+    Expression<String>? voidReason,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3898,6 +4074,11 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
       if (paidAt != null) 'paid_at': paidAt,
       if (paymentMethod != null) 'payment_method': paymentMethod,
       if (notes != null) 'notes': notes,
+      if (memberNameSnapshot != null)
+        'member_name_snapshot': memberNameSnapshot,
+      if (createdAt != null) 'created_at': createdAt,
+      if (voidedAt != null) 'voided_at': voidedAt,
+      if (voidReason != null) 'void_reason': voidReason,
     });
   }
 
@@ -3911,6 +4092,10 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     Value<DateTime>? paidAt,
     Value<String>? paymentMethod,
     Value<String?>? notes,
+    Value<String?>? memberNameSnapshot,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? voidedAt,
+    Value<String?>? voidReason,
   }) {
     return PaymentsCompanion(
       id: id ?? this.id,
@@ -3922,6 +4107,10 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
       paidAt: paidAt ?? this.paidAt,
       paymentMethod: paymentMethod ?? this.paymentMethod,
       notes: notes ?? this.notes,
+      memberNameSnapshot: memberNameSnapshot ?? this.memberNameSnapshot,
+      createdAt: createdAt ?? this.createdAt,
+      voidedAt: voidedAt ?? this.voidedAt,
+      voidReason: voidReason ?? this.voidReason,
     );
   }
 
@@ -3955,6 +4144,18 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
     }
+    if (memberNameSnapshot.present) {
+      map['member_name_snapshot'] = Variable<String>(memberNameSnapshot.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (voidedAt.present) {
+      map['voided_at'] = Variable<DateTime>(voidedAt.value);
+    }
+    if (voidReason.present) {
+      map['void_reason'] = Variable<String>(voidReason.value);
+    }
     return map;
   }
 
@@ -3969,7 +4170,11 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
           ..write('amount: $amount, ')
           ..write('paidAt: $paidAt, ')
           ..write('paymentMethod: $paymentMethod, ')
-          ..write('notes: $notes')
+          ..write('notes: $notes, ')
+          ..write('memberNameSnapshot: $memberNameSnapshot, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('voidedAt: $voidedAt, ')
+          ..write('voidReason: $voidReason')
           ..write(')'))
         .toString();
   }
@@ -4018,6 +4223,17 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     requiredDuringInsert: false,
     defaultValue: const Constant('general'),
   );
+  static const VerificationMeta _customLabelMeta = const VerificationMeta(
+    'customLabel',
+  );
+  @override
+  late final GeneratedColumn<String> customLabel = GeneratedColumn<String>(
+    'custom_label',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
   late final GeneratedColumn<double> amount = GeneratedColumn<double>(
@@ -4026,6 +4242,17 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     false,
     type: DriftSqlType.double,
     requiredDuringInsert: true,
+  );
+  static const VerificationMeta _paymentMethodMeta = const VerificationMeta(
+    'paymentMethod',
+  );
+  @override
+  late final GeneratedColumn<String> paymentMethod = GeneratedColumn<String>(
+    'payment_method',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _dateMeta = const VerificationMeta('date');
   @override
@@ -4046,14 +4273,41 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  static const VerificationMeta _voidedAtMeta = const VerificationMeta(
+    'voidedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> voidedAt = GeneratedColumn<DateTime>(
+    'voided_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
     title,
     category,
+    customLabel,
     amount,
+    paymentMethod,
     date,
     notes,
+    createdAt,
+    voidedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4084,6 +4338,15 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
       );
     }
+    if (data.containsKey('custom_label')) {
+      context.handle(
+        _customLabelMeta,
+        customLabel.isAcceptableOrUnknown(
+          data['custom_label']!,
+          _customLabelMeta,
+        ),
+      );
+    }
     if (data.containsKey('amount')) {
       context.handle(
         _amountMeta,
@@ -4091,6 +4354,15 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       );
     } else if (isInserting) {
       context.missing(_amountMeta);
+    }
+    if (data.containsKey('payment_method')) {
+      context.handle(
+        _paymentMethodMeta,
+        paymentMethod.isAcceptableOrUnknown(
+          data['payment_method']!,
+          _paymentMethodMeta,
+        ),
+      );
     }
     if (data.containsKey('date')) {
       context.handle(
@@ -4102,6 +4374,18 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       context.handle(
         _notesMeta,
         notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    if (data.containsKey('voided_at')) {
+      context.handle(
+        _voidedAtMeta,
+        voidedAt.isAcceptableOrUnknown(data['voided_at']!, _voidedAtMeta),
       );
     }
     return context;
@@ -4125,10 +4409,18 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.string,
         data['${effectivePrefix}category'],
       )!,
+      customLabel: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}custom_label'],
+      ),
       amount: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}amount'],
       )!,
+      paymentMethod: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payment_method'],
+      ),
       date: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}date'],
@@ -4136,6 +4428,14 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       notes: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}notes'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      voidedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}voided_at'],
       ),
     );
   }
@@ -4150,16 +4450,24 @@ class Expense extends DataClass implements Insertable<Expense> {
   final int id;
   final String title;
   final String category;
+  final String? customLabel;
   final double amount;
+  final String? paymentMethod;
   final DateTime date;
   final String? notes;
+  final DateTime createdAt;
+  final DateTime? voidedAt;
   const Expense({
     required this.id,
     required this.title,
     required this.category,
+    this.customLabel,
     required this.amount,
+    this.paymentMethod,
     required this.date,
     this.notes,
+    required this.createdAt,
+    this.voidedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4167,10 +4475,20 @@ class Expense extends DataClass implements Insertable<Expense> {
     map['id'] = Variable<int>(id);
     map['title'] = Variable<String>(title);
     map['category'] = Variable<String>(category);
+    if (!nullToAbsent || customLabel != null) {
+      map['custom_label'] = Variable<String>(customLabel);
+    }
     map['amount'] = Variable<double>(amount);
+    if (!nullToAbsent || paymentMethod != null) {
+      map['payment_method'] = Variable<String>(paymentMethod);
+    }
     map['date'] = Variable<DateTime>(date);
     if (!nullToAbsent || notes != null) {
       map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    if (!nullToAbsent || voidedAt != null) {
+      map['voided_at'] = Variable<DateTime>(voidedAt);
     }
     return map;
   }
@@ -4180,11 +4498,21 @@ class Expense extends DataClass implements Insertable<Expense> {
       id: Value(id),
       title: Value(title),
       category: Value(category),
+      customLabel: customLabel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(customLabel),
       amount: Value(amount),
+      paymentMethod: paymentMethod == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paymentMethod),
       date: Value(date),
       notes: notes == null && nullToAbsent
           ? const Value.absent()
           : Value(notes),
+      createdAt: Value(createdAt),
+      voidedAt: voidedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voidedAt),
     );
   }
 
@@ -4197,9 +4525,13 @@ class Expense extends DataClass implements Insertable<Expense> {
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       category: serializer.fromJson<String>(json['category']),
+      customLabel: serializer.fromJson<String?>(json['customLabel']),
       amount: serializer.fromJson<double>(json['amount']),
+      paymentMethod: serializer.fromJson<String?>(json['paymentMethod']),
       date: serializer.fromJson<DateTime>(json['date']),
       notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      voidedAt: serializer.fromJson<DateTime?>(json['voidedAt']),
     );
   }
   @override
@@ -4209,9 +4541,13 @@ class Expense extends DataClass implements Insertable<Expense> {
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
       'category': serializer.toJson<String>(category),
+      'customLabel': serializer.toJson<String?>(customLabel),
       'amount': serializer.toJson<double>(amount),
+      'paymentMethod': serializer.toJson<String?>(paymentMethod),
       'date': serializer.toJson<DateTime>(date),
       'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'voidedAt': serializer.toJson<DateTime?>(voidedAt),
     };
   }
 
@@ -4219,25 +4555,43 @@ class Expense extends DataClass implements Insertable<Expense> {
     int? id,
     String? title,
     String? category,
+    Value<String?> customLabel = const Value.absent(),
     double? amount,
+    Value<String?> paymentMethod = const Value.absent(),
     DateTime? date,
     Value<String?> notes = const Value.absent(),
+    DateTime? createdAt,
+    Value<DateTime?> voidedAt = const Value.absent(),
   }) => Expense(
     id: id ?? this.id,
     title: title ?? this.title,
     category: category ?? this.category,
+    customLabel: customLabel.present ? customLabel.value : this.customLabel,
     amount: amount ?? this.amount,
+    paymentMethod: paymentMethod.present
+        ? paymentMethod.value
+        : this.paymentMethod,
     date: date ?? this.date,
     notes: notes.present ? notes.value : this.notes,
+    createdAt: createdAt ?? this.createdAt,
+    voidedAt: voidedAt.present ? voidedAt.value : this.voidedAt,
   );
   Expense copyWithCompanion(ExpensesCompanion data) {
     return Expense(
       id: data.id.present ? data.id.value : this.id,
       title: data.title.present ? data.title.value : this.title,
       category: data.category.present ? data.category.value : this.category,
+      customLabel: data.customLabel.present
+          ? data.customLabel.value
+          : this.customLabel,
       amount: data.amount.present ? data.amount.value : this.amount,
+      paymentMethod: data.paymentMethod.present
+          ? data.paymentMethod.value
+          : this.paymentMethod,
       date: data.date.present ? data.date.value : this.date,
       notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      voidedAt: data.voidedAt.present ? data.voidedAt.value : this.voidedAt,
     );
   }
 
@@ -4247,15 +4601,30 @@ class Expense extends DataClass implements Insertable<Expense> {
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('category: $category, ')
+          ..write('customLabel: $customLabel, ')
           ..write('amount: $amount, ')
+          ..write('paymentMethod: $paymentMethod, ')
           ..write('date: $date, ')
-          ..write('notes: $notes')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('voidedAt: $voidedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, category, amount, date, notes);
+  int get hashCode => Object.hash(
+    id,
+    title,
+    category,
+    customLabel,
+    amount,
+    paymentMethod,
+    date,
+    notes,
+    createdAt,
+    voidedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4263,50 +4632,74 @@ class Expense extends DataClass implements Insertable<Expense> {
           other.id == this.id &&
           other.title == this.title &&
           other.category == this.category &&
+          other.customLabel == this.customLabel &&
           other.amount == this.amount &&
+          other.paymentMethod == this.paymentMethod &&
           other.date == this.date &&
-          other.notes == this.notes);
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt &&
+          other.voidedAt == this.voidedAt);
 }
 
 class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<int> id;
   final Value<String> title;
   final Value<String> category;
+  final Value<String?> customLabel;
   final Value<double> amount;
+  final Value<String?> paymentMethod;
   final Value<DateTime> date;
   final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  final Value<DateTime?> voidedAt;
   const ExpensesCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.category = const Value.absent(),
+    this.customLabel = const Value.absent(),
     this.amount = const Value.absent(),
+    this.paymentMethod = const Value.absent(),
     this.date = const Value.absent(),
     this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.voidedAt = const Value.absent(),
   });
   ExpensesCompanion.insert({
     this.id = const Value.absent(),
     required String title,
     this.category = const Value.absent(),
+    this.customLabel = const Value.absent(),
     required double amount,
+    this.paymentMethod = const Value.absent(),
     this.date = const Value.absent(),
     this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.voidedAt = const Value.absent(),
   }) : title = Value(title),
        amount = Value(amount);
   static Insertable<Expense> custom({
     Expression<int>? id,
     Expression<String>? title,
     Expression<String>? category,
+    Expression<String>? customLabel,
     Expression<double>? amount,
+    Expression<String>? paymentMethod,
     Expression<DateTime>? date,
     Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? voidedAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (title != null) 'title': title,
       if (category != null) 'category': category,
+      if (customLabel != null) 'custom_label': customLabel,
       if (amount != null) 'amount': amount,
+      if (paymentMethod != null) 'payment_method': paymentMethod,
       if (date != null) 'date': date,
       if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (voidedAt != null) 'voided_at': voidedAt,
     });
   }
 
@@ -4314,17 +4707,25 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Value<int>? id,
     Value<String>? title,
     Value<String>? category,
+    Value<String?>? customLabel,
     Value<double>? amount,
+    Value<String?>? paymentMethod,
     Value<DateTime>? date,
     Value<String?>? notes,
+    Value<DateTime>? createdAt,
+    Value<DateTime?>? voidedAt,
   }) {
     return ExpensesCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
       category: category ?? this.category,
+      customLabel: customLabel ?? this.customLabel,
       amount: amount ?? this.amount,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
       date: date ?? this.date,
       notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+      voidedAt: voidedAt ?? this.voidedAt,
     );
   }
 
@@ -4340,14 +4741,26 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     if (category.present) {
       map['category'] = Variable<String>(category.value);
     }
+    if (customLabel.present) {
+      map['custom_label'] = Variable<String>(customLabel.value);
+    }
     if (amount.present) {
       map['amount'] = Variable<double>(amount.value);
+    }
+    if (paymentMethod.present) {
+      map['payment_method'] = Variable<String>(paymentMethod.value);
     }
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
     }
     if (notes.present) {
       map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (voidedAt.present) {
+      map['voided_at'] = Variable<DateTime>(voidedAt.value);
     }
     return map;
   }
@@ -4358,9 +4771,13 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('category: $category, ')
+          ..write('customLabel: $customLabel, ')
           ..write('amount: $amount, ')
+          ..write('paymentMethod: $paymentMethod, ')
           ..write('date: $date, ')
-          ..write('notes: $notes')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('voidedAt: $voidedAt')
           ..write(')'))
         .toString();
   }
@@ -4783,13 +5200,29 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_payments_paid_at',
     'CREATE INDEX idx_payments_paid_at ON payments (paid_at)',
   );
+  late final Index idxPaymentsMemberId = Index(
+    'idx_payments_member_id',
+    'CREATE INDEX idx_payments_member_id ON payments (member_id)',
+  );
   late final Index idxPaymentsInstallmentId = Index(
     'idx_payments_installment_id',
     'CREATE INDEX idx_payments_installment_id ON payments (installment_id)',
   );
+  late final Index idxPaymentsVoidedAt = Index(
+    'idx_payments_voided_at',
+    'CREATE INDEX idx_payments_voided_at ON payments (voided_at)',
+  );
   late final Index idxExpensesDate = Index(
     'idx_expenses_date',
     'CREATE INDEX idx_expenses_date ON expenses (date)',
+  );
+  late final Index idxExpensesCategory = Index(
+    'idx_expenses_category',
+    'CREATE INDEX idx_expenses_category ON expenses (category)',
+  );
+  late final Index idxExpensesVoidedAt = Index(
+    'idx_expenses_voided_at',
+    'CREATE INDEX idx_expenses_voided_at ON expenses (voided_at)',
   );
   late final Index idxMemberNotesMemberId = Index(
     'idx_member_notes_member_id',
@@ -4801,6 +5234,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final MembershipsDao membershipsDao = MembershipsDao(
     this as AppDatabase,
   );
+  late final PaymentsDao paymentsDao = PaymentsDao(this as AppDatabase);
+  late final ExpensesDao expensesDao = ExpensesDao(this as AppDatabase);
+  late final FinanceDao financeDao = FinanceDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -4828,8 +5264,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxInstallmentsDueDate,
     idxInstallmentsStatus,
     idxPaymentsPaidAt,
+    idxPaymentsMemberId,
     idxPaymentsInstallmentId,
+    idxPaymentsVoidedAt,
     idxExpensesDate,
+    idxExpensesCategory,
+    idxExpensesVoidedAt,
     idxMemberNotesMemberId,
   ];
   @override
@@ -7814,6 +8254,10 @@ typedef $$PaymentsTableCreateCompanionBuilder = PaymentsCompanion Function({
   Value<DateTime> paidAt,
   Value<String> paymentMethod,
   Value<String?> notes,
+  Value<String?> memberNameSnapshot,
+  Value<DateTime> createdAt,
+  Value<DateTime?> voidedAt,
+  Value<String?> voidReason,
 });
 typedef $$PaymentsTableUpdateCompanionBuilder = PaymentsCompanion Function({
   Value<int> id,
@@ -7825,6 +8269,10 @@ typedef $$PaymentsTableUpdateCompanionBuilder = PaymentsCompanion Function({
   Value<DateTime> paidAt,
   Value<String> paymentMethod,
   Value<String?> notes,
+  Value<String?> memberNameSnapshot,
+  Value<DateTime> createdAt,
+  Value<DateTime?> voidedAt,
+  Value<String?> voidReason,
 });
 
 final class $$PaymentsTableReferences
@@ -7933,6 +8381,26 @@ class $$PaymentsTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get memberNameSnapshot => $composableBuilder(
+    column: $table.memberNameSnapshot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get voidedAt => $composableBuilder(
+    column: $table.voidedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get voidReason => $composableBuilder(
+    column: $table.voidReason,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8063,6 +8531,26 @@ class $$PaymentsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get memberNameSnapshot => $composableBuilder(
+    column: $table.memberNameSnapshot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get voidedAt => $composableBuilder(
+    column: $table.voidedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get voidReason => $composableBuilder(
+    column: $table.voidReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$MembersTableOrderingComposer get memberId {
     final $$MembersTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -8182,6 +8670,22 @@ class $$PaymentsTableAnnotationComposer
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get memberNameSnapshot => $composableBuilder(
+    column: $table.memberNameSnapshot,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get voidedAt =>
+      $composableBuilder(column: $table.voidedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get voidReason => $composableBuilder(
+    column: $table.voidReason,
+    builder: (column) => column,
+  );
 
   $$MembersTableAnnotationComposer get memberId {
     final $$MembersTableAnnotationComposer composer = $composerBuilder(
@@ -8319,6 +8823,10 @@ class $$PaymentsTableTableManager
                 Value<DateTime> paidAt = const Value.absent(),
                 Value<String> paymentMethod = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<String?> memberNameSnapshot = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> voidedAt = const Value.absent(),
+                Value<String?> voidReason = const Value.absent(),
               }) => PaymentsCompanion(
                 id: id,
                 memberId: memberId,
@@ -8329,6 +8837,10 @@ class $$PaymentsTableTableManager
                 paidAt: paidAt,
                 paymentMethod: paymentMethod,
                 notes: notes,
+                memberNameSnapshot: memberNameSnapshot,
+                createdAt: createdAt,
+                voidedAt: voidedAt,
+                voidReason: voidReason,
               ),
           createCompanionCallback:
               ({
@@ -8341,6 +8853,10 @@ class $$PaymentsTableTableManager
                 Value<DateTime> paidAt = const Value.absent(),
                 Value<String> paymentMethod = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<String?> memberNameSnapshot = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> voidedAt = const Value.absent(),
+                Value<String?> voidReason = const Value.absent(),
               }) => PaymentsCompanion.insert(
                 id: id,
                 memberId: memberId,
@@ -8351,6 +8867,10 @@ class $$PaymentsTableTableManager
                 paidAt: paidAt,
                 paymentMethod: paymentMethod,
                 notes: notes,
+                memberNameSnapshot: memberNameSnapshot,
+                createdAt: createdAt,
+                voidedAt: voidedAt,
+                voidReason: voidReason,
               ),
           withReferenceMapper: (p0) => p0
               .map(
@@ -8465,17 +8985,25 @@ typedef $$ExpensesTableCreateCompanionBuilder = ExpensesCompanion Function({
   Value<int> id,
   required String title,
   Value<String> category,
+  Value<String?> customLabel,
   required double amount,
+  Value<String?> paymentMethod,
   Value<DateTime> date,
   Value<String?> notes,
+  Value<DateTime> createdAt,
+  Value<DateTime?> voidedAt,
 });
 typedef $$ExpensesTableUpdateCompanionBuilder = ExpensesCompanion Function({
   Value<int> id,
   Value<String> title,
   Value<String> category,
+  Value<String?> customLabel,
   Value<double> amount,
+  Value<String?> paymentMethod,
   Value<DateTime> date,
   Value<String?> notes,
+  Value<DateTime> createdAt,
+  Value<DateTime?> voidedAt,
 });
 
 class $$ExpensesTableFilterComposer
@@ -8502,8 +9030,18 @@ class $$ExpensesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get customLabel => $composableBuilder(
+    column: $table.customLabel,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<double> get amount => $composableBuilder(
     column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paymentMethod => $composableBuilder(
+    column: $table.paymentMethod,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -8514,6 +9052,16 @@ class $$ExpensesTableFilterComposer
 
   ColumnFilters<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get voidedAt => $composableBuilder(
+    column: $table.voidedAt,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -8542,8 +9090,18 @@ class $$ExpensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get customLabel => $composableBuilder(
+    column: $table.customLabel,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get amount => $composableBuilder(
     column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get paymentMethod => $composableBuilder(
+    column: $table.paymentMethod,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -8554,6 +9112,16 @@ class $$ExpensesTableOrderingComposer
 
   ColumnOrderings<String> get notes => $composableBuilder(
     column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get voidedAt => $composableBuilder(
+    column: $table.voidedAt,
     builder: (column) => ColumnOrderings(column),
   );
 }
@@ -8576,14 +9144,30 @@ class $$ExpensesTableAnnotationComposer
   GeneratedColumn<String> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
 
+  GeneratedColumn<String> get customLabel => $composableBuilder(
+    column: $table.customLabel,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<String> get paymentMethod => $composableBuilder(
+    column: $table.paymentMethod,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
 
   GeneratedColumn<String> get notes =>
       $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get voidedAt =>
+      $composableBuilder(column: $table.voidedAt, builder: (column) => column);
 }
 
 class $$ExpensesTableTableManager
@@ -8617,32 +9201,48 @@ class $$ExpensesTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String> category = const Value.absent(),
+                Value<String?> customLabel = const Value.absent(),
                 Value<double> amount = const Value.absent(),
+                Value<String?> paymentMethod = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> voidedAt = const Value.absent(),
               }) => ExpensesCompanion(
                 id: id,
                 title: title,
                 category: category,
+                customLabel: customLabel,
                 amount: amount,
+                paymentMethod: paymentMethod,
                 date: date,
                 notes: notes,
+                createdAt: createdAt,
+                voidedAt: voidedAt,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String title,
                 Value<String> category = const Value.absent(),
+                Value<String?> customLabel = const Value.absent(),
                 required double amount,
+                Value<String?> paymentMethod = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
                 Value<String?> notes = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime?> voidedAt = const Value.absent(),
               }) => ExpensesCompanion.insert(
                 id: id,
                 title: title,
                 category: category,
+                customLabel: customLabel,
                 amount: amount,
+                paymentMethod: paymentMethod,
                 date: date,
                 notes: notes,
+                createdAt: createdAt,
+                voidedAt: voidedAt,
               ),
           withReferenceMapper: (p0) => p0
               .map(

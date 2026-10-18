@@ -190,11 +190,24 @@ class CurrentMembershipCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Text(
-                'المدفوع: ${CurrencyFormatter.format(sub.paidAmount)} / ${CurrencyFormatter.format(sub.price)}',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    'المدفوع: ${CurrencyFormatter.format(sub.paidAmount)} / ${CurrencyFormatter.format(sub.price)}',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  if (sub.remainingAmount > 0)
+                    Text(
+                      'متبقي: ${CurrencyFormatter.format(sub.remainingAmount)}',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: AppColors.error,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                ],
               ),
             ],
           ),

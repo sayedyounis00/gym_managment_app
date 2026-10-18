@@ -16,9 +16,12 @@ import '../../features/memberships/presentation/pages/packages_page.dart';
 import '../../features/memberships/presentation/pages/add_edit_package_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/settings/presentation/pages/backup_page.dart';
+import '../../features/finance/presentation/pages/finance_page.dart';
+import '../../features/finance/presentation/pages/add_expense_page.dart';
+import '../../features/finance/presentation/pages/add_payment_page.dart';
+import '../../features/finance/presentation/pages/reports_page.dart';
 import '../di/injection_container.dart';
 import '../widgets/main_shell_screen.dart';
-import '../widgets/placeholder_screen.dart';
 import 'routes.dart';
 
 final GlobalKey<NavigatorState> _defaultRootNavigatorKey = GlobalKey<NavigatorState>();
@@ -74,11 +77,7 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
           routes: [
             GoRoute(
               path: AppRoutes.finance,
-              builder: (context, state) => const PlaceholderScreen(
-                title: 'الحسابات',
-                icon: Icons.account_balance_wallet_rounded,
-                subtitle: 'الإيرادات، المصروفات والأرباح',
-              ),
+              builder: (context, state) => const FinancePage(),
             ),
           ],
         ),
@@ -168,6 +167,34 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
         child: const BackupPage(),
+      ),
+    ),
+    GoRoute(
+      parentNavigatorKey: navKey,
+      path: AppRoutes.addExpense,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const AddExpensePage(),
+      ),
+    ),
+    GoRoute(
+      parentNavigatorKey: navKey,
+      path: AppRoutes.addPayment,
+      pageBuilder: (context, state) {
+        final memberIdStr = state.uri.queryParameters['memberId'];
+        final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
+        return MaterialPage(
+          key: state.pageKey,
+          child: AddPaymentPage(preselectedMemberId: memberId),
+        );
+      },
+    ),
+    GoRoute(
+      parentNavigatorKey: navKey,
+      path: AppRoutes.financeReports,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const ReportsPage(),
       ),
     ),
   ],

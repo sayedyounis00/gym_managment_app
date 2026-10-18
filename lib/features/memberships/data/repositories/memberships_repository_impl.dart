@@ -150,6 +150,7 @@ class MembershipsRepositoryImpl implements MembershipsRepository {
           paidAt: Value(DateTime.now()),
           paymentMethod: Value(params.paymentMethod),
           notes: Value('تجديد باقة: ${params.packageName}'),
+          createdAt: Value(DateTime.now()),
         );
       }
 

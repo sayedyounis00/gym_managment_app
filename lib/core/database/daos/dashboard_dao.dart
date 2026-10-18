@@ -110,7 +110,8 @@ class DashboardDao extends DatabaseAccessor<AppDatabase> with _$DashboardDaoMixi
       ..addColumns([sum])
       ..where(
         payments.paidAt.isBiggerOrEqualValue(since) &
-        payments.paidAt.isSmallerOrEqualValue(until),
+        payments.paidAt.isSmallerOrEqualValue(until) &
+        payments.voidedAt.isNull(),
       );
     final result = await query.map((row) => row.read(sum)).getSingle();
     return result ?? 0.0;
@@ -131,7 +132,8 @@ class DashboardDao extends DatabaseAccessor<AppDatabase> with _$DashboardDaoMixi
       ..addColumns([sum])
       ..where(
         expenses.date.isBiggerOrEqualValue(since) &
-        expenses.date.isSmallerOrEqualValue(until),
+        expenses.date.isSmallerOrEqualValue(until) &
+        expenses.voidedAt.isNull(),
       );
     final result = await query.map((row) => row.read(sum)).getSingle();
     return result ?? 0.0;
