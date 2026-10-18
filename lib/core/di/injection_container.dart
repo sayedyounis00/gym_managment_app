@@ -449,54 +449,33 @@ Future<void> initDependencies({
 }
 
 Future<void> reinitializeDatabase() async {
+  NotificationService? existingNotificationService;
+  ImageStorageService? existingImageStorageService;
+  if (sl.isRegistered<NotificationService>()) {
+    existingNotificationService = sl<NotificationService>();
+  }
+  if (sl.isRegistered<ImageStorageService>()) {
+    existingImageStorageService = sl<ImageStorageService>();
+  }
+
   if (sl.isRegistered<AppDatabase>()) {
     try {
       await sl<AppDatabase>().close();
     } catch (_) {}
-    await sl.unregister<AppDatabase>();
   }
-  if (sl.isRegistered<DashboardDao>()) await sl.unregister<DashboardDao>();
-  if (sl.isRegistered<MembersDao>()) await sl.unregister<MembersDao>();
-  if (sl.isRegistered<NotesDao>()) await sl.unregister<NotesDao>();
-  if (sl.isRegistered<MembershipsDao>()) await sl.unregister<MembershipsDao>();
-  if (sl.isRegistered<DashboardLocalDataSource>()) await sl.unregister<DashboardLocalDataSource>();
-  if (sl.isRegistered<DashboardRepository>()) await sl.unregister<DashboardRepository>();
-  if (sl.isRegistered<MembersRepository>()) await sl.unregister<MembersRepository>();
-  if (sl.isRegistered<NotesRepository>()) await sl.unregister<NotesRepository>();
-  if (sl.isRegistered<MembershipsLocalDataSource>()) await sl.unregister<MembershipsLocalDataSource>();
-  if (sl.isRegistered<MembershipsRepository>()) await sl.unregister<MembershipsRepository>();
 
-  final newDb = AppDatabase();
-  sl.registerSingleton<AppDatabase>(newDb);
-  sl.registerSingleton<DashboardDao>(DashboardDao(newDb));
-  sl.registerSingleton<MembersDao>(MembersDao(newDb));
-  sl.registerSingleton<NotesDao>(NotesDao(newDb));
-  sl.registerSingleton<MembershipsDao>(MembershipsDao(newDb));
+  await sl.reset();
 
-  sl.registerLazySingleton<DashboardLocalDataSource>(
-    () => DashboardLocalDataSourceImpl(dashboardDao: sl<DashboardDao>()),
-  );
-  sl.registerLazySingleton<DashboardRepository>(
-    () => DashboardRepositoryImpl(localDataSource: sl<DashboardLocalDataSource>()),
-  );
-  sl.registerLazySingleton<MembersRepository>(
-    () => MembersRepositoryImpl(
-      membersDao: sl<MembersDao>(),
-      notesDao: sl<NotesDao>(),
-      imageStorageService: sl<ImageStorageService>(),
-    ),
-  );
-  sl.registerLazySingleton<NotesRepository>(
-    () => NotesRepositoryImpl(notesDao: sl<NotesDao>()),
-  );
-  sl.registerLazySingleton<MembershipsLocalDataSource>(
-    () => MembershipsLocalDataSourceImpl(dao: sl<MembershipsDao>()),
-  );
-  sl.registerLazySingleton<MembershipsRepository>(
-    () => MembershipsRepositoryImpl(localDataSource: sl<MembershipsLocalDataSource>()),
-  );
+  if (existingNotificationService != null) {
+    sl.registerSingleton<NotificationService>(existingNotificationService);
+  }
+  if (existingImageStorageService != null) {
+    sl.registerSingleton<ImageStorageService>(existingImageStorageService);
+  }
+
+  await initDependencies();
 
   // Trigger migration / opening by pinging database
-  await newDb.customSelect('SELECT 1').get();
+  await sl<AppDatabase>().customSelect('SELECT 1').get();
 }
 

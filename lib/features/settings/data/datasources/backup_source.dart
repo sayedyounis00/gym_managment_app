@@ -93,6 +93,8 @@ class BackupSourceImpl implements BackupSource {
 
   static const String keyLastBackupAt = 'last_backup_at';
 
+  AppDatabase get _activeDb => sl.isRegistered<AppDatabase>() ? sl<AppDatabase>() : db;
+
   BackupSourceImpl({
     required this.db,
     required this.secureStorage,
@@ -130,7 +132,7 @@ class BackupSourceImpl implements BackupSource {
   @override
   Future<BackupInfo> createBackup({bool share = true}) async {
     // 1. Force WAL checkpoint to flush all data into the main sqlite file
-    await db.customStatement('PRAGMA wal_checkpoint(TRUNCATE);');
+    await _activeDb.customStatement('PRAGMA wal_checkpoint(TRUNCATE);');
 
     final dbFile = await _getDatabaseFile();
     if (!await dbFile.exists()) {
@@ -141,15 +143,15 @@ class BackupSourceImpl implements BackupSource {
     final dbChecksum = sha256.convert(dbBytes).toString();
 
     // 2. Query member count
-    final memberCountQuery = await (db.selectOnly(db.members)
-          ..addColumns([db.members.id.count()]))
-        .map((row) => row.read(db.members.id.count()) ?? 0)
+    final memberCountQuery = await (_activeDb.selectOnly(_activeDb.members)
+          ..addColumns([_activeDb.members.id.count()]))
+        .map((row) => row.read(_activeDb.members.id.count()) ?? 0)
         .getSingle();
 
     final now = DateTime.now();
     final manifestMap = {
       'app_version': '1.0.0+1',
-      'schema_version': db.schemaVersion,
+      'schema_version': _activeDb.schemaVersion,
       'created_at': now.toUtc().toIso8601String(),
       'member_count': memberCountQuery,
       'checksum': dbChecksum,
@@ -200,7 +202,7 @@ class BackupSourceImpl implements BackupSource {
       createdAt: now,
       memberCount: memberCountQuery,
       appVersion: '1.0.0+1',
-      schemaVersion: db.schemaVersion,
+      schemaVersion: _activeDb.schemaVersion,
       databaseChecksum: dbChecksum,
       fileSizeBytes: zipBytes.length,
     );
@@ -292,7 +294,7 @@ class BackupSourceImpl implements BackupSource {
       if (await manifestFile.exists()) {
         manifestJson = await manifestFile.readAsString();
       } else {
-        int schemaVer = db.schemaVersion;
+        int schemaVer = _activeDb.schemaVersion;
         if (bytes.length >= 64) {
           schemaVer = (bytes[60] << 24) | (bytes[61] << 16) | (bytes[62] << 8) | bytes[63];
         }
@@ -301,7 +303,7 @@ class BackupSourceImpl implements BackupSource {
 
         manifestJson = jsonEncode({
           'app_version': '1.0.0+1',
-          'schema_version': schemaVer > 0 ? schemaVer : db.schemaVersion,
+          'schema_version': schemaVer > 0 ? schemaVer : _activeDb.schemaVersion,
           'created_at': now.toUtc().toIso8601String(),
           'member_count': 0,
           'checksum': dbChecksum,
@@ -350,9 +352,9 @@ class BackupSourceImpl implements BackupSource {
     }
 
     final backupSchema = (manifest['schema_version'] as num?)?.toInt() ?? 0;
-    if (backupSchema > db.schemaVersion) {
+    if (backupSchema > _activeDb.schemaVersion) {
       throw FormatException(
-        'نسخة قاعدة البيانات أحدث من إصدار التطبيق الحالي ($backupSchema > ${db.schemaVersion}). يرجى تحديث التطبيق أولاً.',
+        'نسخة قاعدة البيانات أحدث من إصدار التطبيق الحالي ($backupSchema > ${_activeDb.schemaVersion}). يرجى تحديث التطبيق أولاً.',
       );
     }
 
@@ -383,9 +385,9 @@ class BackupSourceImpl implements BackupSource {
     }
 
     final backupSchema = (manifest['schema_version'] as num?)?.toInt() ?? 0;
-    if (backupSchema > db.schemaVersion) {
+    if (backupSchema > _activeDb.schemaVersion) {
       throw FormatException(
-        'نسخة قاعدة البيانات أحدث من إصدار التطبيق الحالي ($backupSchema > ${db.schemaVersion}). يرجى تحديث التطبيق أولاً.',
+        'نسخة قاعدة البيانات أحدث من إصدار التطبيق الحالي ($backupSchema > ${_activeDb.schemaVersion}). يرجى تحديث التطبيق أولاً.',
       );
     }
 
@@ -398,12 +400,12 @@ class BackupSourceImpl implements BackupSource {
     List<int>? safetyBackupBytes;
     if (await dbFile.exists()) {
       try {
-        await db.customStatement('PRAGMA wal_checkpoint(TRUNCATE);');
+        await _activeDb.customStatement('PRAGMA wal_checkpoint(TRUNCATE);');
         final currentDbBytes = await dbFile.readAsBytes();
         final currentChecksum = sha256.convert(currentDbBytes).toString();
         final safetyManifest = utf8.encode(jsonEncode({
           'app_version': '1.0.0+1',
-          'schema_version': db.schemaVersion,
+          'schema_version': _activeDb.schemaVersion,
           'created_at': DateTime.now().toUtc().toIso8601String(),
           'member_count': 0,
           'checksum': currentChecksum,
@@ -429,7 +431,14 @@ class BackupSourceImpl implements BackupSource {
     }
 
     // 3. Close the database
-    await db.close();
+    try {
+      await db.close();
+    } catch (_) {}
+    if (sl.isRegistered<AppDatabase>() && !identical(sl<AppDatabase>(), db)) {
+      try {
+        await sl<AppDatabase>().close();
+      } catch (_) {}
+    }
     await Future.delayed(const Duration(milliseconds: 60));
 
     try {
@@ -545,7 +554,7 @@ class BackupSourceImpl implements BackupSource {
           createdAt: date,
           memberCount: 0,
           appVersion: '1.0.0+1',
-          schemaVersion: db.schemaVersion,
+          schemaVersion: _activeDb.schemaVersion,
           databaseChecksum: '',
           fileSizeBytes: 0,
         );
