@@ -251,73 +251,73 @@ void main() {
 
   group('MembershipPackage Entity Tests', () {
     test('formattedDuration handles singular, dual, and plural in Arabic', () {
-      const p1 = MembershipPackage(
+      final p1 = MembershipPackage(
         id: 1,
         name: 'يوم',
         price: 50,
         durationValue: 1,
         durationUnit: 'days',
-        createdAt: null as dynamic,
+        createdAt: DateTime(2026, 1, 1),
       );
       expect(p1.formattedDuration, 'يوم واحد');
 
-      const p2 = MembershipPackage(
+      final p2 = MembershipPackage(
         id: 2,
         name: 'يومان',
         price: 90,
         durationValue: 2,
         durationUnit: 'days',
-        createdAt: null as dynamic,
+        createdAt: DateTime(2026, 1, 1),
       );
       expect(p2.formattedDuration, 'يومان');
 
-      const p3 = MembershipPackage(
+      final p3 = MembershipPackage(
         id: 3,
         name: 'أسبوع',
         price: 200,
         durationValue: 7,
         durationUnit: 'days',
-        createdAt: null as dynamic,
+        createdAt: DateTime(2026, 1, 1),
       );
       expect(p3.formattedDuration, '7 أيام');
 
-      const p4 = MembershipPackage(
+      final p4 = MembershipPackage(
         id: 4,
         name: 'شهر',
         price: 500,
         durationValue: 1,
         durationUnit: 'months',
-        createdAt: null as dynamic,
+        createdAt: DateTime(2026, 1, 1),
       );
       expect(p4.formattedDuration, 'شهر واحد');
 
-      const p5 = MembershipPackage(
+      final p5 = MembershipPackage(
         id: 5,
         name: 'شهران',
         price: 900,
         durationValue: 2,
         durationUnit: 'months',
-        createdAt: null as dynamic,
+        createdAt: DateTime(2026, 1, 1),
       );
       expect(p5.formattedDuration, 'شهران');
 
-      const p6 = MembershipPackage(
+      final p6 = MembershipPackage(
         id: 6,
         name: 'ربع سنوي',
         price: 1300,
         durationValue: 3,
         durationUnit: 'months',
-        createdAt: null as dynamic,
+        createdAt: DateTime(2026, 1, 1),
       );
       expect(p6.formattedDuration, '3 شهور');
 
-      const p7 = MembershipPackage(
+      final p7 = MembershipPackage(
         id: 7,
         name: 'سنوي',
         price: 4500,
         durationValue: 12,
         durationUnit: 'months',
-        createdAt: null as dynamic,
+        createdAt: DateTime(2026, 1, 1),
       );
       expect(p7.formattedDuration, 'سنة');
     });
