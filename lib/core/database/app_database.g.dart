@@ -732,6 +732,39 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _priceMeta = const VerificationMeta('price');
+  @override
+  late final GeneratedColumn<double> price = GeneratedColumn<double>(
+    'price',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _durationValueMeta = const VerificationMeta(
+    'durationValue',
+  );
+  @override
+  late final GeneratedColumn<int> durationValue = GeneratedColumn<int>(
+    'duration_value',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(30),
+  );
+  static const VerificationMeta _durationUnitMeta = const VerificationMeta(
+    'durationUnit',
+  );
+  @override
+  late final GeneratedColumn<String> durationUnit = GeneratedColumn<String>(
+    'duration_unit',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('days'),
+  );
   static const VerificationMeta _durationInDaysMeta = const VerificationMeta(
     'durationInDays',
   );
@@ -741,16 +774,23 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
     aliasedName,
     false,
     type: DriftSqlType.int,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(30),
   );
-  static const VerificationMeta _priceMeta = const VerificationMeta('price');
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
   @override
-  late final GeneratedColumn<double> price = GeneratedColumn<double>(
-    'price',
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
     aliasedName,
     false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
   );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
@@ -768,8 +808,11 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
   List<GeneratedColumn> get $columns => [
     id,
     name,
-    durationInDays,
     price,
+    durationValue,
+    durationUnit,
+    durationInDays,
+    isActive,
     createdAt,
   ];
   @override
@@ -795,6 +838,32 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
     } else if (isInserting) {
       context.missing(_nameMeta);
     }
+    if (data.containsKey('price')) {
+      context.handle(
+        _priceMeta,
+        price.isAcceptableOrUnknown(data['price']!, _priceMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_priceMeta);
+    }
+    if (data.containsKey('duration_value')) {
+      context.handle(
+        _durationValueMeta,
+        durationValue.isAcceptableOrUnknown(
+          data['duration_value']!,
+          _durationValueMeta,
+        ),
+      );
+    }
+    if (data.containsKey('duration_unit')) {
+      context.handle(
+        _durationUnitMeta,
+        durationUnit.isAcceptableOrUnknown(
+          data['duration_unit']!,
+          _durationUnitMeta,
+        ),
+      );
+    }
     if (data.containsKey('duration_in_days')) {
       context.handle(
         _durationInDaysMeta,
@@ -803,16 +872,12 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
           _durationInDaysMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_durationInDaysMeta);
     }
-    if (data.containsKey('price')) {
+    if (data.containsKey('is_active')) {
       context.handle(
-        _priceMeta,
-        price.isAcceptableOrUnknown(data['price']!, _priceMeta),
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
-    } else if (isInserting) {
-      context.missing(_priceMeta);
     }
     if (data.containsKey('created_at')) {
       context.handle(
@@ -837,13 +902,25 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
         DriftSqlType.string,
         data['${effectivePrefix}name'],
       )!,
+      price: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}price'],
+      )!,
+      durationValue: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}duration_value'],
+      )!,
+      durationUnit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}duration_unit'],
+      )!,
       durationInDays: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}duration_in_days'],
       )!,
-      price: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}price'],
+      isActive: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_active'],
       )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -861,14 +938,20 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
 class Package extends DataClass implements Insertable<Package> {
   final int id;
   final String name;
-  final int durationInDays;
   final double price;
+  final int durationValue;
+  final String durationUnit;
+  final int durationInDays;
+  final bool isActive;
   final DateTime createdAt;
   const Package({
     required this.id,
     required this.name,
-    required this.durationInDays,
     required this.price,
+    required this.durationValue,
+    required this.durationUnit,
+    required this.durationInDays,
+    required this.isActive,
     required this.createdAt,
   });
   @override
@@ -876,8 +959,11 @@ class Package extends DataClass implements Insertable<Package> {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
     map['name'] = Variable<String>(name);
-    map['duration_in_days'] = Variable<int>(durationInDays);
     map['price'] = Variable<double>(price);
+    map['duration_value'] = Variable<int>(durationValue);
+    map['duration_unit'] = Variable<String>(durationUnit);
+    map['duration_in_days'] = Variable<int>(durationInDays);
+    map['is_active'] = Variable<bool>(isActive);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -886,8 +972,11 @@ class Package extends DataClass implements Insertable<Package> {
     return PackagesCompanion(
       id: Value(id),
       name: Value(name),
-      durationInDays: Value(durationInDays),
       price: Value(price),
+      durationValue: Value(durationValue),
+      durationUnit: Value(durationUnit),
+      durationInDays: Value(durationInDays),
+      isActive: Value(isActive),
       createdAt: Value(createdAt),
     );
   }
@@ -900,8 +989,11 @@ class Package extends DataClass implements Insertable<Package> {
     return Package(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
-      durationInDays: serializer.fromJson<int>(json['durationInDays']),
       price: serializer.fromJson<double>(json['price']),
+      durationValue: serializer.fromJson<int>(json['durationValue']),
+      durationUnit: serializer.fromJson<String>(json['durationUnit']),
+      durationInDays: serializer.fromJson<int>(json['durationInDays']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -911,8 +1003,11 @@ class Package extends DataClass implements Insertable<Package> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'name': serializer.toJson<String>(name),
-      'durationInDays': serializer.toJson<int>(durationInDays),
       'price': serializer.toJson<double>(price),
+      'durationValue': serializer.toJson<int>(durationValue),
+      'durationUnit': serializer.toJson<String>(durationUnit),
+      'durationInDays': serializer.toJson<int>(durationInDays),
+      'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -920,24 +1015,37 @@ class Package extends DataClass implements Insertable<Package> {
   Package copyWith({
     int? id,
     String? name,
-    int? durationInDays,
     double? price,
+    int? durationValue,
+    String? durationUnit,
+    int? durationInDays,
+    bool? isActive,
     DateTime? createdAt,
   }) => Package(
     id: id ?? this.id,
     name: name ?? this.name,
-    durationInDays: durationInDays ?? this.durationInDays,
     price: price ?? this.price,
+    durationValue: durationValue ?? this.durationValue,
+    durationUnit: durationUnit ?? this.durationUnit,
+    durationInDays: durationInDays ?? this.durationInDays,
+    isActive: isActive ?? this.isActive,
     createdAt: createdAt ?? this.createdAt,
   );
   Package copyWithCompanion(PackagesCompanion data) {
     return Package(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
+      price: data.price.present ? data.price.value : this.price,
+      durationValue: data.durationValue.present
+          ? data.durationValue.value
+          : this.durationValue,
+      durationUnit: data.durationUnit.present
+          ? data.durationUnit.value
+          : this.durationUnit,
       durationInDays: data.durationInDays.present
           ? data.durationInDays.value
           : this.durationInDays,
-      price: data.price.present ? data.price.value : this.price,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -947,60 +1055,89 @@ class Package extends DataClass implements Insertable<Package> {
     return (StringBuffer('Package(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('durationInDays: $durationInDays, ')
           ..write('price: $price, ')
+          ..write('durationValue: $durationValue, ')
+          ..write('durationUnit: $durationUnit, ')
+          ..write('durationInDays: $durationInDays, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, durationInDays, price, createdAt);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    price,
+    durationValue,
+    durationUnit,
+    durationInDays,
+    isActive,
+    createdAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Package &&
           other.id == this.id &&
           other.name == this.name &&
-          other.durationInDays == this.durationInDays &&
           other.price == this.price &&
+          other.durationValue == this.durationValue &&
+          other.durationUnit == this.durationUnit &&
+          other.durationInDays == this.durationInDays &&
+          other.isActive == this.isActive &&
           other.createdAt == this.createdAt);
 }
 
 class PackagesCompanion extends UpdateCompanion<Package> {
   final Value<int> id;
   final Value<String> name;
-  final Value<int> durationInDays;
   final Value<double> price;
+  final Value<int> durationValue;
+  final Value<String> durationUnit;
+  final Value<int> durationInDays;
+  final Value<bool> isActive;
   final Value<DateTime> createdAt;
   const PackagesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
-    this.durationInDays = const Value.absent(),
     this.price = const Value.absent(),
+    this.durationValue = const Value.absent(),
+    this.durationUnit = const Value.absent(),
+    this.durationInDays = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   PackagesCompanion.insert({
     this.id = const Value.absent(),
     required String name,
-    required int durationInDays,
     required double price,
+    this.durationValue = const Value.absent(),
+    this.durationUnit = const Value.absent(),
+    this.durationInDays = const Value.absent(),
+    this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : name = Value(name),
-       durationInDays = Value(durationInDays),
        price = Value(price);
   static Insertable<Package> custom({
     Expression<int>? id,
     Expression<String>? name,
-    Expression<int>? durationInDays,
     Expression<double>? price,
+    Expression<int>? durationValue,
+    Expression<String>? durationUnit,
+    Expression<int>? durationInDays,
+    Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (name != null) 'name': name,
-      if (durationInDays != null) 'duration_in_days': durationInDays,
       if (price != null) 'price': price,
+      if (durationValue != null) 'duration_value': durationValue,
+      if (durationUnit != null) 'duration_unit': durationUnit,
+      if (durationInDays != null) 'duration_in_days': durationInDays,
+      if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -1008,15 +1145,21 @@ class PackagesCompanion extends UpdateCompanion<Package> {
   PackagesCompanion copyWith({
     Value<int>? id,
     Value<String>? name,
-    Value<int>? durationInDays,
     Value<double>? price,
+    Value<int>? durationValue,
+    Value<String>? durationUnit,
+    Value<int>? durationInDays,
+    Value<bool>? isActive,
     Value<DateTime>? createdAt,
   }) {
     return PackagesCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
-      durationInDays: durationInDays ?? this.durationInDays,
       price: price ?? this.price,
+      durationValue: durationValue ?? this.durationValue,
+      durationUnit: durationUnit ?? this.durationUnit,
+      durationInDays: durationInDays ?? this.durationInDays,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -1030,11 +1173,20 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
+    if (price.present) {
+      map['price'] = Variable<double>(price.value);
+    }
+    if (durationValue.present) {
+      map['duration_value'] = Variable<int>(durationValue.value);
+    }
+    if (durationUnit.present) {
+      map['duration_unit'] = Variable<String>(durationUnit.value);
+    }
     if (durationInDays.present) {
       map['duration_in_days'] = Variable<int>(durationInDays.value);
     }
-    if (price.present) {
-      map['price'] = Variable<double>(price.value);
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -1047,8 +1199,11 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     return (StringBuffer('PackagesCompanion(')
           ..write('id: $id, ')
           ..write('name: $name, ')
-          ..write('durationInDays: $durationInDays, ')
           ..write('price: $price, ')
+          ..write('durationValue: $durationValue, ')
+          ..write('durationUnit: $durationUnit, ')
+          ..write('durationInDays: $durationInDays, ')
+          ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1102,6 +1257,28 @@ class $SubscriptionsTable extends Subscriptions
       'REFERENCES packages (id)',
     ),
   );
+  static const VerificationMeta _packageNameSnapshotMeta =
+      const VerificationMeta('packageNameSnapshot');
+  @override
+  late final GeneratedColumn<String> packageNameSnapshot =
+      GeneratedColumn<String>(
+        'package_name_snapshot',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _priceSnapshotMeta = const VerificationMeta(
+    'priceSnapshot',
+  );
+  @override
+  late final GeneratedColumn<double> priceSnapshot = GeneratedColumn<double>(
+    'price_snapshot',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _startDateMeta = const VerificationMeta(
     'startDate',
   );
@@ -1149,6 +1326,52 @@ class $SubscriptionsTable extends Subscriptions
     requiredDuringInsert: false,
     defaultValue: const Constant('active'),
   );
+  static const VerificationMeta _pausedAtMeta = const VerificationMeta(
+    'pausedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> pausedAt = GeneratedColumn<DateTime>(
+    'paused_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _pauseReasonMeta = const VerificationMeta(
+    'pauseReason',
+  );
+  @override
+  late final GeneratedColumn<String> pauseReason = GeneratedColumn<String>(
+    'pause_reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _totalPausedDaysMeta = const VerificationMeta(
+    'totalPausedDays',
+  );
+  @override
+  late final GeneratedColumn<int> totalPausedDays = GeneratedColumn<int>(
+    'total_paused_days',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _amountPaidMeta = const VerificationMeta(
+    'amountPaid',
+  );
+  @override
+  late final GeneratedColumn<double> amountPaid = GeneratedColumn<double>(
+    'amount_paid',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1166,10 +1389,16 @@ class $SubscriptionsTable extends Subscriptions
     id,
     memberId,
     packageId,
+    packageNameSnapshot,
+    priceSnapshot,
     startDate,
     endDate,
     isRenewal,
     status,
+    pausedAt,
+    pauseReason,
+    totalPausedDays,
+    amountPaid,
     createdAt,
   ];
   @override
@@ -1201,6 +1430,24 @@ class $SubscriptionsTable extends Subscriptions
         packageId.isAcceptableOrUnknown(data['package_id']!, _packageIdMeta),
       );
     }
+    if (data.containsKey('package_name_snapshot')) {
+      context.handle(
+        _packageNameSnapshotMeta,
+        packageNameSnapshot.isAcceptableOrUnknown(
+          data['package_name_snapshot']!,
+          _packageNameSnapshotMeta,
+        ),
+      );
+    }
+    if (data.containsKey('price_snapshot')) {
+      context.handle(
+        _priceSnapshotMeta,
+        priceSnapshot.isAcceptableOrUnknown(
+          data['price_snapshot']!,
+          _priceSnapshotMeta,
+        ),
+      );
+    }
     if (data.containsKey('start_date')) {
       context.handle(
         _startDateMeta,
@@ -1227,6 +1474,36 @@ class $SubscriptionsTable extends Subscriptions
       context.handle(
         _statusMeta,
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('paused_at')) {
+      context.handle(
+        _pausedAtMeta,
+        pausedAt.isAcceptableOrUnknown(data['paused_at']!, _pausedAtMeta),
+      );
+    }
+    if (data.containsKey('pause_reason')) {
+      context.handle(
+        _pauseReasonMeta,
+        pauseReason.isAcceptableOrUnknown(
+          data['pause_reason']!,
+          _pauseReasonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total_paused_days')) {
+      context.handle(
+        _totalPausedDaysMeta,
+        totalPausedDays.isAcceptableOrUnknown(
+          data['total_paused_days']!,
+          _totalPausedDaysMeta,
+        ),
+      );
+    }
+    if (data.containsKey('amount_paid')) {
+      context.handle(
+        _amountPaidMeta,
+        amountPaid.isAcceptableOrUnknown(data['amount_paid']!, _amountPaidMeta),
       );
     }
     if (data.containsKey('created_at')) {
@@ -1256,6 +1533,14 @@ class $SubscriptionsTable extends Subscriptions
         DriftSqlType.int,
         data['${effectivePrefix}package_id'],
       ),
+      packageNameSnapshot: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}package_name_snapshot'],
+      ),
+      priceSnapshot: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}price_snapshot'],
+      ),
       startDate: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}start_date'],
@@ -1271,6 +1556,22 @@ class $SubscriptionsTable extends Subscriptions
       status: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}status'],
+      )!,
+      pausedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}paused_at'],
+      ),
+      pauseReason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}pause_reason'],
+      ),
+      totalPausedDays: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_paused_days'],
+      )!,
+      amountPaid: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}amount_paid'],
       )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -1289,19 +1590,31 @@ class Subscription extends DataClass implements Insertable<Subscription> {
   final int id;
   final int memberId;
   final int? packageId;
+  final String? packageNameSnapshot;
+  final double? priceSnapshot;
   final DateTime startDate;
   final DateTime endDate;
   final bool isRenewal;
   final String status;
+  final DateTime? pausedAt;
+  final String? pauseReason;
+  final int totalPausedDays;
+  final double amountPaid;
   final DateTime createdAt;
   const Subscription({
     required this.id,
     required this.memberId,
     this.packageId,
+    this.packageNameSnapshot,
+    this.priceSnapshot,
     required this.startDate,
     required this.endDate,
     required this.isRenewal,
     required this.status,
+    this.pausedAt,
+    this.pauseReason,
+    required this.totalPausedDays,
+    required this.amountPaid,
     required this.createdAt,
   });
   @override
@@ -1312,10 +1625,24 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     if (!nullToAbsent || packageId != null) {
       map['package_id'] = Variable<int>(packageId);
     }
+    if (!nullToAbsent || packageNameSnapshot != null) {
+      map['package_name_snapshot'] = Variable<String>(packageNameSnapshot);
+    }
+    if (!nullToAbsent || priceSnapshot != null) {
+      map['price_snapshot'] = Variable<double>(priceSnapshot);
+    }
     map['start_date'] = Variable<DateTime>(startDate);
     map['end_date'] = Variable<DateTime>(endDate);
     map['is_renewal'] = Variable<bool>(isRenewal);
     map['status'] = Variable<String>(status);
+    if (!nullToAbsent || pausedAt != null) {
+      map['paused_at'] = Variable<DateTime>(pausedAt);
+    }
+    if (!nullToAbsent || pauseReason != null) {
+      map['pause_reason'] = Variable<String>(pauseReason);
+    }
+    map['total_paused_days'] = Variable<int>(totalPausedDays);
+    map['amount_paid'] = Variable<double>(amountPaid);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -1327,10 +1654,24 @@ class Subscription extends DataClass implements Insertable<Subscription> {
       packageId: packageId == null && nullToAbsent
           ? const Value.absent()
           : Value(packageId),
+      packageNameSnapshot: packageNameSnapshot == null && nullToAbsent
+          ? const Value.absent()
+          : Value(packageNameSnapshot),
+      priceSnapshot: priceSnapshot == null && nullToAbsent
+          ? const Value.absent()
+          : Value(priceSnapshot),
       startDate: Value(startDate),
       endDate: Value(endDate),
       isRenewal: Value(isRenewal),
       status: Value(status),
+      pausedAt: pausedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pausedAt),
+      pauseReason: pauseReason == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pauseReason),
+      totalPausedDays: Value(totalPausedDays),
+      amountPaid: Value(amountPaid),
       createdAt: Value(createdAt),
     );
   }
@@ -1344,10 +1685,18 @@ class Subscription extends DataClass implements Insertable<Subscription> {
       id: serializer.fromJson<int>(json['id']),
       memberId: serializer.fromJson<int>(json['memberId']),
       packageId: serializer.fromJson<int?>(json['packageId']),
+      packageNameSnapshot: serializer.fromJson<String?>(
+        json['packageNameSnapshot'],
+      ),
+      priceSnapshot: serializer.fromJson<double?>(json['priceSnapshot']),
       startDate: serializer.fromJson<DateTime>(json['startDate']),
       endDate: serializer.fromJson<DateTime>(json['endDate']),
       isRenewal: serializer.fromJson<bool>(json['isRenewal']),
       status: serializer.fromJson<String>(json['status']),
+      pausedAt: serializer.fromJson<DateTime?>(json['pausedAt']),
+      pauseReason: serializer.fromJson<String?>(json['pauseReason']),
+      totalPausedDays: serializer.fromJson<int>(json['totalPausedDays']),
+      amountPaid: serializer.fromJson<double>(json['amountPaid']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -1358,10 +1707,16 @@ class Subscription extends DataClass implements Insertable<Subscription> {
       'id': serializer.toJson<int>(id),
       'memberId': serializer.toJson<int>(memberId),
       'packageId': serializer.toJson<int?>(packageId),
+      'packageNameSnapshot': serializer.toJson<String?>(packageNameSnapshot),
+      'priceSnapshot': serializer.toJson<double?>(priceSnapshot),
       'startDate': serializer.toJson<DateTime>(startDate),
       'endDate': serializer.toJson<DateTime>(endDate),
       'isRenewal': serializer.toJson<bool>(isRenewal),
       'status': serializer.toJson<String>(status),
+      'pausedAt': serializer.toJson<DateTime?>(pausedAt),
+      'pauseReason': serializer.toJson<String?>(pauseReason),
+      'totalPausedDays': serializer.toJson<int>(totalPausedDays),
+      'amountPaid': serializer.toJson<double>(amountPaid),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -1370,19 +1725,35 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     int? id,
     int? memberId,
     Value<int?> packageId = const Value.absent(),
+    Value<String?> packageNameSnapshot = const Value.absent(),
+    Value<double?> priceSnapshot = const Value.absent(),
     DateTime? startDate,
     DateTime? endDate,
     bool? isRenewal,
     String? status,
+    Value<DateTime?> pausedAt = const Value.absent(),
+    Value<String?> pauseReason = const Value.absent(),
+    int? totalPausedDays,
+    double? amountPaid,
     DateTime? createdAt,
   }) => Subscription(
     id: id ?? this.id,
     memberId: memberId ?? this.memberId,
     packageId: packageId.present ? packageId.value : this.packageId,
+    packageNameSnapshot: packageNameSnapshot.present
+        ? packageNameSnapshot.value
+        : this.packageNameSnapshot,
+    priceSnapshot: priceSnapshot.present
+        ? priceSnapshot.value
+        : this.priceSnapshot,
     startDate: startDate ?? this.startDate,
     endDate: endDate ?? this.endDate,
     isRenewal: isRenewal ?? this.isRenewal,
     status: status ?? this.status,
+    pausedAt: pausedAt.present ? pausedAt.value : this.pausedAt,
+    pauseReason: pauseReason.present ? pauseReason.value : this.pauseReason,
+    totalPausedDays: totalPausedDays ?? this.totalPausedDays,
+    amountPaid: amountPaid ?? this.amountPaid,
     createdAt: createdAt ?? this.createdAt,
   );
   Subscription copyWithCompanion(SubscriptionsCompanion data) {
@@ -1390,10 +1761,26 @@ class Subscription extends DataClass implements Insertable<Subscription> {
       id: data.id.present ? data.id.value : this.id,
       memberId: data.memberId.present ? data.memberId.value : this.memberId,
       packageId: data.packageId.present ? data.packageId.value : this.packageId,
+      packageNameSnapshot: data.packageNameSnapshot.present
+          ? data.packageNameSnapshot.value
+          : this.packageNameSnapshot,
+      priceSnapshot: data.priceSnapshot.present
+          ? data.priceSnapshot.value
+          : this.priceSnapshot,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
       endDate: data.endDate.present ? data.endDate.value : this.endDate,
       isRenewal: data.isRenewal.present ? data.isRenewal.value : this.isRenewal,
       status: data.status.present ? data.status.value : this.status,
+      pausedAt: data.pausedAt.present ? data.pausedAt.value : this.pausedAt,
+      pauseReason: data.pauseReason.present
+          ? data.pauseReason.value
+          : this.pauseReason,
+      totalPausedDays: data.totalPausedDays.present
+          ? data.totalPausedDays.value
+          : this.totalPausedDays,
+      amountPaid: data.amountPaid.present
+          ? data.amountPaid.value
+          : this.amountPaid,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1404,10 +1791,16 @@ class Subscription extends DataClass implements Insertable<Subscription> {
           ..write('id: $id, ')
           ..write('memberId: $memberId, ')
           ..write('packageId: $packageId, ')
+          ..write('packageNameSnapshot: $packageNameSnapshot, ')
+          ..write('priceSnapshot: $priceSnapshot, ')
           ..write('startDate: $startDate, ')
           ..write('endDate: $endDate, ')
           ..write('isRenewal: $isRenewal, ')
           ..write('status: $status, ')
+          ..write('pausedAt: $pausedAt, ')
+          ..write('pauseReason: $pauseReason, ')
+          ..write('totalPausedDays: $totalPausedDays, ')
+          ..write('amountPaid: $amountPaid, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1418,10 +1811,16 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     id,
     memberId,
     packageId,
+    packageNameSnapshot,
+    priceSnapshot,
     startDate,
     endDate,
     isRenewal,
     status,
+    pausedAt,
+    pauseReason,
+    totalPausedDays,
+    amountPaid,
     createdAt,
   );
   @override
@@ -1431,10 +1830,16 @@ class Subscription extends DataClass implements Insertable<Subscription> {
           other.id == this.id &&
           other.memberId == this.memberId &&
           other.packageId == this.packageId &&
+          other.packageNameSnapshot == this.packageNameSnapshot &&
+          other.priceSnapshot == this.priceSnapshot &&
           other.startDate == this.startDate &&
           other.endDate == this.endDate &&
           other.isRenewal == this.isRenewal &&
           other.status == this.status &&
+          other.pausedAt == this.pausedAt &&
+          other.pauseReason == this.pauseReason &&
+          other.totalPausedDays == this.totalPausedDays &&
+          other.amountPaid == this.amountPaid &&
           other.createdAt == this.createdAt);
 }
 
@@ -1442,29 +1847,47 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
   final Value<int> id;
   final Value<int> memberId;
   final Value<int?> packageId;
+  final Value<String?> packageNameSnapshot;
+  final Value<double?> priceSnapshot;
   final Value<DateTime> startDate;
   final Value<DateTime> endDate;
   final Value<bool> isRenewal;
   final Value<String> status;
+  final Value<DateTime?> pausedAt;
+  final Value<String?> pauseReason;
+  final Value<int> totalPausedDays;
+  final Value<double> amountPaid;
   final Value<DateTime> createdAt;
   const SubscriptionsCompanion({
     this.id = const Value.absent(),
     this.memberId = const Value.absent(),
     this.packageId = const Value.absent(),
+    this.packageNameSnapshot = const Value.absent(),
+    this.priceSnapshot = const Value.absent(),
     this.startDate = const Value.absent(),
     this.endDate = const Value.absent(),
     this.isRenewal = const Value.absent(),
     this.status = const Value.absent(),
+    this.pausedAt = const Value.absent(),
+    this.pauseReason = const Value.absent(),
+    this.totalPausedDays = const Value.absent(),
+    this.amountPaid = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   SubscriptionsCompanion.insert({
     this.id = const Value.absent(),
     required int memberId,
     this.packageId = const Value.absent(),
+    this.packageNameSnapshot = const Value.absent(),
+    this.priceSnapshot = const Value.absent(),
     required DateTime startDate,
     required DateTime endDate,
     this.isRenewal = const Value.absent(),
     this.status = const Value.absent(),
+    this.pausedAt = const Value.absent(),
+    this.pauseReason = const Value.absent(),
+    this.totalPausedDays = const Value.absent(),
+    this.amountPaid = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : memberId = Value(memberId),
        startDate = Value(startDate),
@@ -1473,20 +1896,33 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     Expression<int>? id,
     Expression<int>? memberId,
     Expression<int>? packageId,
+    Expression<String>? packageNameSnapshot,
+    Expression<double>? priceSnapshot,
     Expression<DateTime>? startDate,
     Expression<DateTime>? endDate,
     Expression<bool>? isRenewal,
     Expression<String>? status,
+    Expression<DateTime>? pausedAt,
+    Expression<String>? pauseReason,
+    Expression<int>? totalPausedDays,
+    Expression<double>? amountPaid,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (memberId != null) 'member_id': memberId,
       if (packageId != null) 'package_id': packageId,
+      if (packageNameSnapshot != null)
+        'package_name_snapshot': packageNameSnapshot,
+      if (priceSnapshot != null) 'price_snapshot': priceSnapshot,
       if (startDate != null) 'start_date': startDate,
       if (endDate != null) 'end_date': endDate,
       if (isRenewal != null) 'is_renewal': isRenewal,
       if (status != null) 'status': status,
+      if (pausedAt != null) 'paused_at': pausedAt,
+      if (pauseReason != null) 'pause_reason': pauseReason,
+      if (totalPausedDays != null) 'total_paused_days': totalPausedDays,
+      if (amountPaid != null) 'amount_paid': amountPaid,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -1495,20 +1931,32 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     Value<int>? id,
     Value<int>? memberId,
     Value<int?>? packageId,
+    Value<String?>? packageNameSnapshot,
+    Value<double?>? priceSnapshot,
     Value<DateTime>? startDate,
     Value<DateTime>? endDate,
     Value<bool>? isRenewal,
     Value<String>? status,
+    Value<DateTime?>? pausedAt,
+    Value<String?>? pauseReason,
+    Value<int>? totalPausedDays,
+    Value<double>? amountPaid,
     Value<DateTime>? createdAt,
   }) {
     return SubscriptionsCompanion(
       id: id ?? this.id,
       memberId: memberId ?? this.memberId,
       packageId: packageId ?? this.packageId,
+      packageNameSnapshot: packageNameSnapshot ?? this.packageNameSnapshot,
+      priceSnapshot: priceSnapshot ?? this.priceSnapshot,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       isRenewal: isRenewal ?? this.isRenewal,
       status: status ?? this.status,
+      pausedAt: pausedAt ?? this.pausedAt,
+      pauseReason: pauseReason ?? this.pauseReason,
+      totalPausedDays: totalPausedDays ?? this.totalPausedDays,
+      amountPaid: amountPaid ?? this.amountPaid,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -1525,6 +1973,14 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     if (packageId.present) {
       map['package_id'] = Variable<int>(packageId.value);
     }
+    if (packageNameSnapshot.present) {
+      map['package_name_snapshot'] = Variable<String>(
+        packageNameSnapshot.value,
+      );
+    }
+    if (priceSnapshot.present) {
+      map['price_snapshot'] = Variable<double>(priceSnapshot.value);
+    }
     if (startDate.present) {
       map['start_date'] = Variable<DateTime>(startDate.value);
     }
@@ -1536,6 +1992,18 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
+    }
+    if (pausedAt.present) {
+      map['paused_at'] = Variable<DateTime>(pausedAt.value);
+    }
+    if (pauseReason.present) {
+      map['pause_reason'] = Variable<String>(pauseReason.value);
+    }
+    if (totalPausedDays.present) {
+      map['total_paused_days'] = Variable<int>(totalPausedDays.value);
+    }
+    if (amountPaid.present) {
+      map['amount_paid'] = Variable<double>(amountPaid.value);
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -1549,10 +2017,16 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
           ..write('id: $id, ')
           ..write('memberId: $memberId, ')
           ..write('packageId: $packageId, ')
+          ..write('packageNameSnapshot: $packageNameSnapshot, ')
+          ..write('priceSnapshot: $priceSnapshot, ')
           ..write('startDate: $startDate, ')
           ..write('endDate: $endDate, ')
           ..write('isRenewal: $isRenewal, ')
           ..write('status: $status, ')
+          ..write('pausedAt: $pausedAt, ')
+          ..write('pauseReason: $pauseReason, ')
+          ..write('totalPausedDays: $totalPausedDays, ')
+          ..write('amountPaid: $amountPaid, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -3053,6 +3527,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_subscriptions_status',
     'CREATE INDEX idx_subscriptions_status ON subscriptions (status)',
   );
+  late final Index idxSubscriptionsMemberId = Index(
+    'idx_subscriptions_member_id',
+    'CREATE INDEX idx_subscriptions_member_id ON subscriptions (member_id)',
+  );
   late final Index idxPaymentsPaidAt = Index(
     'idx_payments_paid_at',
     'CREATE INDEX idx_payments_paid_at ON payments (paid_at)',
@@ -3073,6 +3551,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final MembersDao membersDao = MembersDao(this as AppDatabase);
   late final NotesDao notesDao = NotesDao(this as AppDatabase);
   late final AttendanceDao attendanceDao = AttendanceDao(this as AppDatabase);
+  late final MembershipsDao membershipsDao = MembershipsDao(
+    this as AppDatabase,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3091,6 +3572,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxSubscriptionsEndDate,
     idxSubscriptionsStartDate,
     idxSubscriptionsStatus,
+    idxSubscriptionsMemberId,
     idxPaymentsPaidAt,
     idxExpensesDate,
     idxAttendanceMemberTime,
@@ -3839,15 +4321,21 @@ typedef $$MembersTableProcessedTableManager =
 typedef $$PackagesTableCreateCompanionBuilder = PackagesCompanion Function({
   Value<int> id,
   required String name,
-  required int durationInDays,
   required double price,
+  Value<int> durationValue,
+  Value<String> durationUnit,
+  Value<int> durationInDays,
+  Value<bool> isActive,
   Value<DateTime> createdAt,
 });
 typedef $$PackagesTableUpdateCompanionBuilder = PackagesCompanion Function({
   Value<int> id,
   Value<String> name,
-  Value<int> durationInDays,
   Value<double> price,
+  Value<int> durationValue,
+  Value<String> durationUnit,
+  Value<int> durationInDays,
+  Value<bool> isActive,
   Value<DateTime> createdAt,
 });
 
@@ -3893,13 +4381,28 @@ class $$PackagesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<double> get price => $composableBuilder(
+    column: $table.price,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get durationValue => $composableBuilder(
+    column: $table.durationValue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get durationUnit => $composableBuilder(
+    column: $table.durationUnit,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<int> get durationInDays => $composableBuilder(
     column: $table.durationInDays,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<double> get price => $composableBuilder(
-    column: $table.price,
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3953,13 +4456,28 @@ class $$PackagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get price => $composableBuilder(
+    column: $table.price,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get durationValue => $composableBuilder(
+    column: $table.durationValue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get durationUnit => $composableBuilder(
+    column: $table.durationUnit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get durationInDays => $composableBuilder(
     column: $table.durationInDays,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<double> get price => $composableBuilder(
-    column: $table.price,
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3984,13 +4502,26 @@ class $$PackagesTableAnnotationComposer
   GeneratedColumn<String> get name =>
       $composableBuilder(column: $table.name, builder: (column) => column);
 
+  GeneratedColumn<double> get price =>
+      $composableBuilder(column: $table.price, builder: (column) => column);
+
+  GeneratedColumn<int> get durationValue => $composableBuilder(
+    column: $table.durationValue,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get durationUnit => $composableBuilder(
+    column: $table.durationUnit,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<int> get durationInDays => $composableBuilder(
     column: $table.durationInDays,
     builder: (column) => column,
   );
 
-  GeneratedColumn<double> get price =>
-      $composableBuilder(column: $table.price, builder: (column) => column);
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4051,28 +4582,40 @@ class $$PackagesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<String> name = const Value.absent(),
-                Value<int> durationInDays = const Value.absent(),
                 Value<double> price = const Value.absent(),
+                Value<int> durationValue = const Value.absent(),
+                Value<String> durationUnit = const Value.absent(),
+                Value<int> durationInDays = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => PackagesCompanion(
                 id: id,
                 name: name,
-                durationInDays: durationInDays,
                 price: price,
+                durationValue: durationValue,
+                durationUnit: durationUnit,
+                durationInDays: durationInDays,
+                isActive: isActive,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
                 required String name,
-                required int durationInDays,
                 required double price,
+                Value<int> durationValue = const Value.absent(),
+                Value<String> durationUnit = const Value.absent(),
+                Value<int> durationInDays = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => PackagesCompanion.insert(
                 id: id,
                 name: name,
-                durationInDays: durationInDays,
                 price: price,
+                durationValue: durationValue,
+                durationUnit: durationUnit,
+                durationInDays: durationInDays,
+                isActive: isActive,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
@@ -4137,10 +4680,16 @@ typedef $$SubscriptionsTableCreateCompanionBuilder =
       Value<int> id,
       required int memberId,
       Value<int?> packageId,
+      Value<String?> packageNameSnapshot,
+      Value<double?> priceSnapshot,
       required DateTime startDate,
       required DateTime endDate,
       Value<bool> isRenewal,
       Value<String> status,
+      Value<DateTime?> pausedAt,
+      Value<String?> pauseReason,
+      Value<int> totalPausedDays,
+      Value<double> amountPaid,
       Value<DateTime> createdAt,
     });
 typedef $$SubscriptionsTableUpdateCompanionBuilder =
@@ -4148,10 +4697,16 @@ typedef $$SubscriptionsTableUpdateCompanionBuilder =
       Value<int> id,
       Value<int> memberId,
       Value<int?> packageId,
+      Value<String?> packageNameSnapshot,
+      Value<double?> priceSnapshot,
       Value<DateTime> startDate,
       Value<DateTime> endDate,
       Value<bool> isRenewal,
       Value<String> status,
+      Value<DateTime?> pausedAt,
+      Value<String?> pauseReason,
+      Value<int> totalPausedDays,
+      Value<double> amountPaid,
       Value<DateTime> createdAt,
     });
 
@@ -4231,6 +4786,16 @@ class $$SubscriptionsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<String> get packageNameSnapshot => $composableBuilder(
+    column: $table.packageNameSnapshot,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get priceSnapshot => $composableBuilder(
+    column: $table.priceSnapshot,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get startDate => $composableBuilder(
     column: $table.startDate,
     builder: (column) => ColumnFilters(column),
@@ -4248,6 +4813,26 @@ class $$SubscriptionsTableFilterComposer
 
   ColumnFilters<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get pausedAt => $composableBuilder(
+    column: $table.pausedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get pauseReason => $composableBuilder(
+    column: $table.pauseReason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalPausedDays => $composableBuilder(
+    column: $table.totalPausedDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get amountPaid => $composableBuilder(
+    column: $table.amountPaid,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4342,6 +4927,16 @@ class $$SubscriptionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get packageNameSnapshot => $composableBuilder(
+    column: $table.packageNameSnapshot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get priceSnapshot => $composableBuilder(
+    column: $table.priceSnapshot,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get startDate => $composableBuilder(
     column: $table.startDate,
     builder: (column) => ColumnOrderings(column),
@@ -4359,6 +4954,26 @@ class $$SubscriptionsTableOrderingComposer
 
   ColumnOrderings<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get pausedAt => $composableBuilder(
+    column: $table.pausedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get pauseReason => $composableBuilder(
+    column: $table.pauseReason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalPausedDays => $composableBuilder(
+    column: $table.totalPausedDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get amountPaid => $composableBuilder(
+    column: $table.amountPaid,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -4426,6 +5041,16 @@ class $$SubscriptionsTableAnnotationComposer
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
+  GeneratedColumn<String> get packageNameSnapshot => $composableBuilder(
+    column: $table.packageNameSnapshot,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get priceSnapshot => $composableBuilder(
+    column: $table.priceSnapshot,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<DateTime> get startDate =>
       $composableBuilder(column: $table.startDate, builder: (column) => column);
 
@@ -4437,6 +5062,24 @@ class $$SubscriptionsTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get pausedAt =>
+      $composableBuilder(column: $table.pausedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get pauseReason => $composableBuilder(
+    column: $table.pauseReason,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalPausedDays => $composableBuilder(
+    column: $table.totalPausedDays,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get amountPaid => $composableBuilder(
+    column: $table.amountPaid,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4548,19 +5191,31 @@ class $$SubscriptionsTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<int> memberId = const Value.absent(),
                 Value<int?> packageId = const Value.absent(),
+                Value<String?> packageNameSnapshot = const Value.absent(),
+                Value<double?> priceSnapshot = const Value.absent(),
                 Value<DateTime> startDate = const Value.absent(),
                 Value<DateTime> endDate = const Value.absent(),
                 Value<bool> isRenewal = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<DateTime?> pausedAt = const Value.absent(),
+                Value<String?> pauseReason = const Value.absent(),
+                Value<int> totalPausedDays = const Value.absent(),
+                Value<double> amountPaid = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => SubscriptionsCompanion(
                 id: id,
                 memberId: memberId,
                 packageId: packageId,
+                packageNameSnapshot: packageNameSnapshot,
+                priceSnapshot: priceSnapshot,
                 startDate: startDate,
                 endDate: endDate,
                 isRenewal: isRenewal,
                 status: status,
+                pausedAt: pausedAt,
+                pauseReason: pauseReason,
+                totalPausedDays: totalPausedDays,
+                amountPaid: amountPaid,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
@@ -4568,19 +5223,31 @@ class $$SubscriptionsTableTableManager
                 Value<int> id = const Value.absent(),
                 required int memberId,
                 Value<int?> packageId = const Value.absent(),
+                Value<String?> packageNameSnapshot = const Value.absent(),
+                Value<double?> priceSnapshot = const Value.absent(),
                 required DateTime startDate,
                 required DateTime endDate,
                 Value<bool> isRenewal = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<DateTime?> pausedAt = const Value.absent(),
+                Value<String?> pauseReason = const Value.absent(),
+                Value<int> totalPausedDays = const Value.absent(),
+                Value<double> amountPaid = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => SubscriptionsCompanion.insert(
                 id: id,
                 memberId: memberId,
                 packageId: packageId,
+                packageNameSnapshot: packageNameSnapshot,
+                priceSnapshot: priceSnapshot,
                 startDate: startDate,
                 endDate: endDate,
                 isRenewal: isRenewal,
                 status: status,
+                pausedAt: pausedAt,
+                pauseReason: pauseReason,
+                totalPausedDays: totalPausedDays,
+                amountPaid: amountPaid,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
