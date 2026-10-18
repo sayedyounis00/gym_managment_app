@@ -6,7 +6,7 @@ class Packages extends Table {
   RealColumn get price => real()();
   IntColumn get durationValue => integer().withDefault(const Constant(30))();
   TextColumn get durationUnit => text().withDefault(const Constant('days'))(); // 'days' | 'months'
-  IntColumn get durationInDays => integer().withDefault(const Constant(30))(); // backwards compatibility
+  IntColumn get durationInDays => integer()(); // backwards compatibility
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
