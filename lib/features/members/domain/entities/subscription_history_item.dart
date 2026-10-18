@@ -11,6 +11,7 @@ class SubscriptionHistoryItem extends Equatable {
   final double paidAmount;
   final MemberStatusType status;
   final bool isRenewal;
+  final String? paymentMethod;
 
   const SubscriptionHistoryItem({
     required this.id,
@@ -22,9 +23,20 @@ class SubscriptionHistoryItem extends Equatable {
     required this.paidAmount,
     required this.status,
     this.isRenewal = false,
+    this.paymentMethod,
   });
 
   double get remainingAmount => (price - paidAmount).clamp(0, double.infinity);
+
+  PaymentStatusType get paymentStatus {
+    if (paidAmount >= price && price > 0) {
+      return PaymentStatusType.paid;
+    } else if (paidAmount > 0) {
+      return PaymentStatusType.partiallyPaid;
+    } else {
+      return PaymentStatusType.unpaid;
+    }
+  }
 
   @override
   List<Object?> get props => [
@@ -37,6 +49,7 @@ class SubscriptionHistoryItem extends Equatable {
         paidAmount,
         status,
         isRenewal,
+        paymentMethod,
       ];
 }
 
