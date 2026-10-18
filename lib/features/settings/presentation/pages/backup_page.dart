@@ -51,7 +51,7 @@ class _BackupView extends StatelessWidget {
       if (validatedInfo == null || !context.mounted) return;
 
       final formattedDate =
-          DateFormat('yyyy/MM/dd - hh:mm a', 'ar').format(validatedInfo.createdAt);
+          DateFormat('yyyy/MM/dd - hh:mm a', 'ar').format(validatedInfo.createdAt.toLocal());
 
       final confirmed = await ConfirmDialog.show(
         context,
@@ -264,7 +264,7 @@ class _BackupView extends StatelessWidget {
                               final dateFormatted = DateFormat(
                                 'yyyy/MM/dd - hh:mm a',
                                 'ar',
-                              ).format(item.createdAt);
+                              ).format(item.createdAt.toLocal());
 
                               return ListTile(
                                 leading: Container(

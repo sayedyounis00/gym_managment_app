@@ -570,7 +570,13 @@ class BackupSourceImpl implements BackupSource {
       try {
         final bytes = await file.readAsBytes();
         final archive = ZipDecoder().decodeBytes(bytes);
-        final manifestFile = archive.findFile('manifest.json');
+        ArchiveFile? manifestFile;
+        for (final f in archive) {
+          if (f.isFile && (f.name == 'manifest.json' || p.basename(f.name) == 'manifest.json')) {
+            manifestFile = f;
+            break;
+          }
+        }
         if (manifestFile != null) {
           final jsonStr = utf8.decode(manifestFile.content as List<int>);
           final map = jsonDecode(jsonStr) as Map<String, dynamic>;

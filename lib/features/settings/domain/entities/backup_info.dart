@@ -10,22 +10,22 @@ class BackupInfo extends Equatable {
   final String databaseChecksum;
   final int fileSizeBytes;
 
-  const BackupInfo({
+  BackupInfo({
     required this.filePath,
     required this.fileName,
-    required this.createdAt,
+    required DateTime createdAt,
     required this.memberCount,
     required this.appVersion,
     required this.schemaVersion,
     required this.databaseChecksum,
     required this.fileSizeBytes,
-  });
+  }) : createdAt = createdAt.toLocal();
 
   Map<String, dynamic> toManifestJson() {
     return {
       'app_version': appVersion,
       'schema_version': schemaVersion,
-      'created_at': createdAt.toIso8601String(),
+      'created_at': createdAt.toUtc().toIso8601String(),
       'member_count': memberCount,
       'checksum': databaseChecksum,
     };
@@ -40,7 +40,7 @@ class BackupInfo extends Equatable {
     return BackupInfo(
       filePath: filePath,
       fileName: fileName,
-      createdAt: DateTime.parse(manifest['created_at'] as String),
+      createdAt: DateTime.parse(manifest['created_at'] as String).toLocal(),
       memberCount: (manifest['member_count'] as num).toInt(),
       appVersion: manifest['app_version'] as String? ?? '1.0.0',
       schemaVersion: (manifest['schema_version'] as num).toInt(),

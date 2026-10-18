@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_managment_app/core/database/app_database.dart';
 import 'package:gym_managment_app/core/services/notification_service.dart';
 import 'package:gym_managment_app/features/settings/data/datasources/backup_source.dart';
+import 'package:gym_managment_app/features/settings/domain/entities/backup_info.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAppDatabase extends Mock implements AppDatabase {}
@@ -65,6 +66,29 @@ void main() {
       expect(actualChecksum, equals(decodedManifest['checksum']));
       expect(decodedManifest['schema_version'], lessThanOrEqualTo(6));
       expect(decodedManifest['member_count'], equals(15));
+    });
+
+    test('BackupInfo.fromManifest converts UTC timestamp to local timezone', () {
+      const utcString = '2026-10-18T18:36:00.000Z';
+      final manifest = {
+        'app_version': '1.0.0+1',
+        'schema_version': 6,
+        'created_at': utcString,
+        'member_count': 10,
+        'checksum': 'some_checksum',
+      };
+
+      final backupInfo = BackupInfo.fromManifest(
+        manifest: manifest,
+        filePath: '/data/backup.gymbak',
+        fileName: 'backup.gymbak',
+        fileSizeBytes: 1024,
+      );
+
+      final expectedLocal = DateTime.parse(utcString).toLocal();
+      expect(backupInfo.createdAt.isUtc, isFalse);
+      expect(backupInfo.createdAt.hour, equals(expectedLocal.hour));
+      expect(backupInfo.createdAt.minute, equals(expectedLocal.minute));
     });
 
     test('rejects backup with checksum mismatch', () {

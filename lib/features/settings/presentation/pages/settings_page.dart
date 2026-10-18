@@ -75,6 +75,22 @@ class _SettingsPageState extends State<SettingsPage> {
     await _storage.write(key: 'notification_days_before', value: days.toString());
   }
 
+  String _formatBackupTimeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date.toLocal());
+    if (diff.inDays > 30) {
+      final months = (diff.inDays / 30).floor();
+      return 'منذ $months شهر';
+    } else if (diff.inDays > 0) {
+      return 'منذ ${diff.inDays} ${diff.inDays == 1 ? "يوم" : "أيام"}';
+    } else if (diff.inHours > 0) {
+      return 'منذ ${diff.inHours} ${diff.inHours == 1 ? "ساعة" : "ساعات"}';
+    } else if (diff.inMinutes > 0) {
+      return 'منذ ${diff.inMinutes} دقيقة';
+    } else {
+      return 'الآن';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -134,7 +150,7 @@ class _SettingsPageState extends State<SettingsPage> {
           },
           builder: (context, state) {
             final backupSubtitle = state.lastBackup != null
-                ? 'آخر نسخة: منذ ${DateTime.now().difference(state.lastBackup!.createdAt).inDays} أيام'
+                ? 'آخر نسخة: ${_formatBackupTimeAgo(state.lastBackup!.createdAt)}'
                 : 'لم يتم إنشاء نسخة احتياطية بعد';
 
             return ListView(
