@@ -50,17 +50,21 @@ class AttendanceCubit extends Cubit<AttendanceState> {
     changeMonth(next);
   }
 
-  Future<void> checkIn({bool allowDuplicate = false}) async {
+  Future<void> checkIn() async {
     if (_memberId == null) return;
     final s = state;
     if (s is AttendanceLoaded) {
+      if (s.hasCheckedInToday) {
+        emit(AttendanceDuplicateWarning(_memberId!));
+        emit(s.copyWith(isCheckingIn: false));
+        return;
+      }
       emit(s.copyWith(isCheckingIn: true, successMessage: null));
     }
 
     final result = await recordAttendance(
       RecordAttendanceParams(
         memberId: _memberId!,
-        allowDuplicate: allowDuplicate,
       ),
     );
 
@@ -68,9 +72,8 @@ class AttendanceCubit extends Cubit<AttendanceState> {
       (failure) {
         if (failure.message == 'ALREADY_CHECKED_IN_TODAY') {
           emit(AttendanceDuplicateWarning(_memberId!));
-          // Restore previous state after emitting warning
           if (s is AttendanceLoaded) {
-            emit(s.copyWith(isCheckingIn: false));
+            emit(s.copyWith(isCheckingIn: false, hasCheckedInToday: true));
           }
         } else {
           emit(AttendanceError(failure.message));

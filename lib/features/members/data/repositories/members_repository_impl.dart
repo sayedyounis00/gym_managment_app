@@ -215,6 +215,10 @@ class MembersRepositoryImpl implements MembersRepository {
           now: now,
         );
 
+        final paymentMethod = relatedPayments.isNotEmpty
+            ? relatedPayments.first.paymentMethod
+            : (sub.amountPaid > 0 ? 'cash' : null);
+
         return SubscriptionHistoryItem(
           id: sub.id,
           memberId: sub.memberId,
@@ -225,6 +229,7 @@ class MembersRepositoryImpl implements MembersRepository {
           paidAmount: totalPaid,
           status: status,
           isRenewal: sub.isRenewal,
+          paymentMethod: paymentMethod,
         );
       }).toList();
 

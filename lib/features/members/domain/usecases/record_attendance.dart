@@ -22,14 +22,12 @@ class RecordAttendance implements UseCase<Unit, RecordAttendanceParams> {
 
   @override
   Future<Either<Failure, Unit>> call(RecordAttendanceParams params) async {
-    if (!params.allowDuplicate) {
-      final alreadyCheckedIn = await repository.hasCheckedInToday(params.memberId);
-      final hasCheckedIn = alreadyCheckedIn.getOrElse((_) => false);
-      if (hasCheckedIn) {
-        return const Left(
-          DatabaseFailure('ALREADY_CHECKED_IN_TODAY'),
-        );
-      }
+    final alreadyCheckedIn = await repository.hasCheckedInToday(params.memberId);
+    final hasCheckedIn = alreadyCheckedIn.getOrElse((_) => false);
+    if (hasCheckedIn) {
+      return const Left(
+        DatabaseFailure('ALREADY_CHECKED_IN_TODAY'),
+      );
     }
 
     return repository.recordAttendance(
