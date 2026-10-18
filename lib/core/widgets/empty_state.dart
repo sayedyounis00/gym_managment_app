@@ -15,10 +15,11 @@ class EmptyState extends StatelessWidget {
     super.key,
     required this.icon,
     required this.title,
-    required this.message,
+    String? message,
+    String? subtitle,
     this.actionLabel,
     this.onAction,
-  });
+  }) : message = message ?? subtitle ?? '';
 
   @override
   Widget build(BuildContext context) {

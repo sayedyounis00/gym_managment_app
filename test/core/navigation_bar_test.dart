@@ -8,6 +8,7 @@ import 'package:drift/native.dart';
 import 'package:gym_managment_app/core/router/app_router.dart';
 import 'package:gym_managment_app/core/router/routes.dart';
 import 'package:gym_managment_app/features/members/presentation/pages/members_page.dart';
+import 'package:gym_managment_app/features/memberships/presentation/pages/packages_page.dart';
 
 void main() {
   late AppDatabase testDb;
@@ -48,7 +49,7 @@ void main() {
     // Navigate to Memberships
     await tester.tap(find.text('الباقات'));
     await tester.pumpAndSettle();
-    expect(find.text('إدارة باقات واشتراكات الجيم'), findsOneWidget);
+    expect(find.byType(PackagesPage), findsOneWidget);
 
     // Navigate to Finance
     await tester.tap(find.text('الحسابات').last);

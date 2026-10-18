@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:gym_managment_app/core/database/app_database.dart';
 import 'package:gym_managment_app/core/database/daos/memberships_dao.dart';
 

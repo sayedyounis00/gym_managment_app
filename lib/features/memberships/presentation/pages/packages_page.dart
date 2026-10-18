@@ -5,7 +5,6 @@ import 'package:gym_managment_app/core/router/routes.dart';
 import 'package:gym_managment_app/core/theme/app_colors.dart';
 import 'package:gym_managment_app/core/theme/app_spacing.dart';
 import 'package:gym_managment_app/core/theme/app_text_styles.dart';
-import 'package:gym_managment_app/core/widgets/app_button.dart';
 import 'package:gym_managment_app/core/widgets/empty_state.dart';
 import 'package:gym_managment_app/core/widgets/loaders/package_card_skeleton.dart';
 import '../cubit/packages/packages_cubit.dart';
@@ -142,7 +141,7 @@ class _PackagesPageState extends State<PackagesPage> {
                       bottom: 88, // Space for FAB
                     ),
                     itemCount: packages.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+                    separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
                     itemBuilder: (context, index) {
                       final pkg = packages[index];
                       return PackageCard(

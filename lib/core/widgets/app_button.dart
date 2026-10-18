@@ -28,13 +28,28 @@ class AppButton extends StatelessWidget {
     required this.label,
     required this.onPressed,
     this.variant = AppButtonVariant.primary,
-    this.leadingIcon,
+    IconData? leadingIcon,
+    IconData? icon,
     this.trailingIcon,
     this.isLoading = false,
     this.isFullWidth = false,
     this.height = 52.0,
     this.padding,
-  });
+  }) : leadingIcon = icon ?? leadingIcon;
+
+  const AppButton.outlined({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    IconData? leadingIcon,
+    IconData? icon,
+    this.trailingIcon,
+    this.isLoading = false,
+    this.isFullWidth = false,
+    this.height = 52.0,
+    this.padding,
+  })  : variant = AppButtonVariant.outlined,
+        leadingIcon = icon ?? leadingIcon;
 
   @override
   Widget build(BuildContext context) {
