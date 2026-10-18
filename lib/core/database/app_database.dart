@@ -139,23 +139,31 @@ class AppDatabase extends _$AppDatabase {
               );
             }
           }
+          Future<void> safeAddColumn(String table, String column, String definition) async {
+            try {
+              final rows = await customSelect('PRAGMA table_info($table);').get();
+              final columnExists = rows.any((r) => r.read<String>('name') == column);
+              if (!columnExists) {
+                await customStatement('ALTER TABLE $table ADD COLUMN $column $definition;');
+              }
+            } catch (_) {}
+          }
+
           if (from < 5) {
             await customStatement('DROP TABLE IF EXISTS attendance;');
           }
           if (from < 6) {
-            await m.addColumn(members, members.gender);
+            await safeAddColumn('members', 'gender', 'TEXT');
           }
           if (from < 7) {
-            await customStatement('ALTER TABLE payments ADD COLUMN member_name_snapshot TEXT;');
-            await customStatement('ALTER TABLE payments ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0;');
-            await customStatement('ALTER TABLE payments ADD COLUMN voided_at INTEGER;');
-            await customStatement('ALTER TABLE payments ADD COLUMN void_reason TEXT;');
-            await customStatement('ALTER TABLE expenses ADD COLUMN custom_label TEXT;');
-            await customStatement('ALTER TABLE expenses ADD COLUMN payment_method TEXT;');
-            try {
-              await customStatement('ALTER TABLE expenses ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0;');
-            } catch (_) {}
-            await customStatement('ALTER TABLE expenses ADD COLUMN voided_at INTEGER;');
+            await safeAddColumn('payments', 'member_name_snapshot', 'TEXT');
+            await safeAddColumn('payments', 'created_at', 'INTEGER NOT NULL DEFAULT 0');
+            await safeAddColumn('payments', 'voided_at', 'INTEGER');
+            await safeAddColumn('payments', 'void_reason', 'TEXT');
+            await safeAddColumn('expenses', 'custom_label', 'TEXT');
+            await safeAddColumn('expenses', 'payment_method', 'TEXT');
+            await safeAddColumn('expenses', 'created_at', 'INTEGER NOT NULL DEFAULT 0');
+            await safeAddColumn('expenses', 'voided_at', 'INTEGER');
           }
         },
         beforeOpen: (details) async {
