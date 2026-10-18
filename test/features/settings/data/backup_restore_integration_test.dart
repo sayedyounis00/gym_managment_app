@@ -1,3 +1,4 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive.dart';
@@ -12,23 +13,8 @@ import 'package:gym_managment_app/core/services/notification_service.dart';
 import 'package:gym_managment_app/features/settings/data/datasources/backup_source.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 class MockNotificationService extends Mock implements NotificationService {}
-
-class FakePathProviderPlatform extends Fake
-    with MockPlatformInterfaceMixin
-    implements PathProviderPlatform {
-  final String path;
-  FakePathProviderPlatform(this.path);
-
-  @override
-  Future<String?> getApplicationDocumentsPath() async => path;
-
-  @override
-  Future<String?> getTemporaryPath() async => path;
-}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +30,6 @@ void main() {
     FlutterSecureStorage.setMockInitialValues({});
     await sl.reset();
     tempDir = await Directory.systemTemp.createTemp('gym_backup_test_');
-    PathProviderPlatform.instance = FakePathProviderPlatform(tempDir.path);
 
     mockNotificationService = MockNotificationService();
     when(() => mockNotificationService.cancelAll()).thenAnswer((_) async {});
@@ -63,6 +48,7 @@ void main() {
       db: db,
       secureStorage: const FlutterSecureStorage(),
       notificationService: mockNotificationService,
+      getDocumentsDirectory: () async => tempDir,
       onReinitializeDatabase: () async {
         if (sl.isRegistered<AppDatabase>()) {
           await sl.unregister<AppDatabase>();
