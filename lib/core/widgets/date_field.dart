@@ -73,7 +73,7 @@ class DateField extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.md),
           child: Container(
             height: 56,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm + 4),
             decoration: BoxDecoration(
               color: readOnly ? AppColors.surfaceVariant.withValues(alpha: 0.6) : AppColors.surfaceVariant,
               borderRadius: BorderRadius.circular(AppRadius.md),
@@ -87,22 +87,31 @@ class DateField extends StatelessWidget {
                 const Icon(
                   Icons.calendar_month_rounded,
                   color: AppColors.textSecondary,
-                  size: 20,
+                  size: 18,
                 ),
-                const SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.xs + 2),
                 Expanded(
-                  child: Text(
-                    formattedDate,
-                    style: AppTextStyles.bodyLarge.copyWith(
-                      color: readOnly ? AppColors.textSecondary : AppColors.textPrimary,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      formattedDate,
+                      maxLines: 1,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: readOnly ? AppColors.textSecondary : AppColors.textPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
-                if (!readOnly)
+                if (!readOnly) ...[
+                  const SizedBox(width: AppSpacing.xs),
                   const Icon(
                     Icons.arrow_drop_down_rounded,
                     color: AppColors.textSecondary,
+                    size: 20,
                   ),
+                ],
               ],
             ),
           ),
