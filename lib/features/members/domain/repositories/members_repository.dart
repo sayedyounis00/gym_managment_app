@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:gym_managment_app/core/errors/failures.dart';
 import 'package:gym_managment_app/core/widgets/status_chip.dart';
+import '../entities/gender.dart';
 import '../entities/member.dart';
 import '../entities/member_summary.dart';
 import '../entities/subscription_history_item.dart';
@@ -19,6 +20,7 @@ abstract class MembersRepository {
     required String name,
     required String phone,
     String? photoPath,
+    Gender? gender,
     int? age,
     double? weightKg,
     double? heightCm,

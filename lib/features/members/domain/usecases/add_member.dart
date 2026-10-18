@@ -2,12 +2,14 @@ import 'package:fpdart/fpdart.dart';
 import 'package:gym_managment_app/core/errors/failures.dart';
 import 'package:gym_managment_app/core/usecases/usecase.dart';
 import 'package:gym_managment_app/core/utils/validators.dart';
+import '../entities/gender.dart';
 import '../repositories/members_repository.dart';
 
 class AddMemberParams {
   final String name;
   final String phone;
   final String? photoPath;
+  final Gender? gender;
   final int? age;
   final double? weightKg;
   final double? heightCm;
@@ -17,6 +19,7 @@ class AddMemberParams {
     required this.name,
     required this.phone,
     this.photoPath,
+    this.gender,
     this.age,
     this.weightKg,
     this.heightCm,
@@ -39,6 +42,10 @@ class AddMember implements UseCase<int, AddMemberParams> {
     final phoneError = FormValidators.validatePhone(params.phone);
     if (phoneError != null) {
       return Left(DatabaseFailure(phoneError));
+    }
+
+    if (params.gender == null) {
+      return const Left(DatabaseFailure('يرجى تحديد الجنس'));
     }
 
     if (params.age != null) {
@@ -66,6 +73,7 @@ class AddMember implements UseCase<int, AddMemberParams> {
       name: params.name,
       phone: params.phone,
       photoPath: params.photoPath,
+      gender: params.gender,
       age: params.age,
       weightKg: params.weightKg,
       heightCm: params.heightCm,
