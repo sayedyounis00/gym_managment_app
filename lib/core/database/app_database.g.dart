@@ -774,8 +774,7 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
     aliasedName,
     false,
     type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultValue: const Constant(30),
+    requiredDuringInsert: true,
   );
   static const VerificationMeta _isActiveMeta = const VerificationMeta(
     'isActive',
@@ -872,6 +871,8 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
           _durationInDaysMeta,
         ),
       );
+    } else if (isInserting) {
+      context.missing(_durationInDaysMeta);
     }
     if (data.containsKey('is_active')) {
       context.handle(
@@ -1115,11 +1116,12 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     required double price,
     this.durationValue = const Value.absent(),
     this.durationUnit = const Value.absent(),
-    this.durationInDays = const Value.absent(),
+    required int durationInDays,
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : name = Value(name),
-       price = Value(price);
+       price = Value(price),
+       durationInDays = Value(durationInDays);
   static Insertable<Package> custom({
     Expression<int>? id,
     Expression<String>? name,
@@ -4324,7 +4326,7 @@ typedef $$PackagesTableCreateCompanionBuilder = PackagesCompanion Function({
   required double price,
   Value<int> durationValue,
   Value<String> durationUnit,
-  Value<int> durationInDays,
+  required int durationInDays,
   Value<bool> isActive,
   Value<DateTime> createdAt,
 });
@@ -4605,7 +4607,7 @@ class $$PackagesTableTableManager
                 required double price,
                 Value<int> durationValue = const Value.absent(),
                 Value<String> durationUnit = const Value.absent(),
-                Value<int> durationInDays = const Value.absent(),
+                required int durationInDays,
                 Value<bool> isActive = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => PackagesCompanion.insert(
