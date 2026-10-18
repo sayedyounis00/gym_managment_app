@@ -158,15 +158,6 @@ class MembersRepositoryImpl implements MembersRepository {
   @override
   Future<Either<Failure, Unit>> deleteMember(int id) async {
     try {
-      final hasPay = await membersDao.hasPayments(id);
-      if (hasPay) {
-        return const Left(
-          DatabaseFailure(
-            'لا يمكن حذف المشترك لوجود سجلات مالية مسجلة له. يمكنك إيقافه مؤقتاً.',
-          ),
-        );
-      }
-
       final member = await membersDao.getMemberById(id);
       if (member?.photoPath != null) {
         await imageStorageService.deletePhoto(member!.photoPath!);

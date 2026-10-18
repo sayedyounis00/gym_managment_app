@@ -164,7 +164,47 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
 
   Future<void> deleteMember(int id) {
     return transaction(() async {
+      final memberSubs = await (select(subscriptions)..where((s) => s.memberId.equals(id))).get();
+      final subIds = memberSubs.map((s) => s.id).toList();
+
+      List<int> periodIds = [];
+      List<int> installmentIds = [];
+
+      if (subIds.isNotEmpty) {
+        final periods = await (select(db.subscriptionPeriods)..where((p) => p.subscriptionId.isIn(subIds))).get();
+        periodIds = periods.map((p) => p.id).toList();
+
+        if (periodIds.isNotEmpty) {
+          final insts = await (select(db.installments)..where((i) => i.periodId.isIn(periodIds))).get();
+          installmentIds = insts.map((i) => i.id).toList();
+        }
+      }
+
+      // 1. Delete payments first (payments reference member, subscriptions, periods, and installments)
+      await (delete(payments)..where((p) =>
+        p.memberId.equals(id) |
+        p.subscriptionId.isIn(subIds) |
+        p.periodId.isIn(periodIds) |
+        p.installmentId.isIn(installmentIds)
+      )).go();
+
+      // 2. Delete installments (installments reference subscriptionPeriods)
+      if (periodIds.isNotEmpty) {
+        await (delete(db.installments)..where((i) => i.periodId.isIn(periodIds))).go();
+      }
+
+      // 3. Delete subscription periods (subscriptionPeriods reference subscriptions)
+      if (subIds.isNotEmpty) {
+        await (delete(db.subscriptionPeriods)..where((p) => p.subscriptionId.isIn(subIds))).go();
+      }
+
+      // 4. Delete subscriptions (subscriptions reference members)
+      await (delete(subscriptions)..where((s) => s.memberId.equals(id))).go();
+
+      // 5. Delete member notes
       await (delete(memberNotes)..where((n) => n.memberId.equals(id))).go();
+
+      // 6. Delete member
       await (delete(members)..where((m) => m.id.equals(id))).go();
     });
   }

@@ -12,8 +12,9 @@ void main() {
   late MembersDao membersDao;
   late NotesDao notesDao;
 
-  setUp(() {
+  setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement('PRAGMA foreign_keys = ON;');
     membersDao = MembersDao(db);
     notesDao = NotesDao(db);
   });
@@ -164,6 +165,62 @@ void main() {
       final deletedMember = await membersDao.getMemberById(id);
       expect(deletedMember, isNull);
 
+      final remainingNotes = await notesDao.watchNotes(id).first;
+      expect(remainingNotes.isEmpty, isTrue);
+    });
+
+    test('deleteMember unconditionally cascades subscriptions, periods, installments, and payments', () async {
+      final id = await membersDao.insertMember(
+        MembersCompanion.insert(name: 'هشام', phone: '01099998888'),
+      );
+
+      final subId = await db.into(db.subscriptions).insert(
+        SubscriptionsCompanion.insert(
+          memberId: id,
+          startDate: DateTime(2026, 1, 1),
+          endDate: DateTime(2026, 2, 1),
+        ),
+      );
+
+      final periodId = await db.into(db.subscriptionPeriods).insert(
+        SubscriptionPeriodsCompanion.insert(
+          subscriptionId: subId,
+          startDate: DateTime(2026, 1, 1),
+          endDate: DateTime(2026, 2, 1),
+          amountDue: 500.0,
+        ),
+      );
+
+      final instId = await db.into(db.installments).insert(
+        InstallmentsCompanion.insert(
+          periodId: periodId,
+          amount: 500.0,
+          dueDate: DateTime(2026, 1, 1),
+        ),
+      );
+
+      await db.into(db.payments).insert(
+        PaymentsCompanion.insert(
+          memberId: id,
+          subscriptionId: Value(subId),
+          periodId: Value(periodId),
+          installmentId: Value(instId),
+          amount: 500.0,
+        ),
+      );
+
+      await notesDao.insertNote(id, 'ملاحظة مهمة');
+
+      // Unconditional deletion of member
+      await membersDao.deleteMember(id);
+
+      expect(await membersDao.getMemberById(id), isNull);
+      final remainingSubs = await (db.select(db.subscriptions)..where((s) => s.memberId.equals(id))).get();
+      expect(remainingSubs.isEmpty, isTrue);
+      final remainingPeriods = await (db.select(db.subscriptionPeriods)..where((p) => p.subscriptionId.equals(subId))).get();
+      expect(remainingPeriods.isEmpty, isTrue);
+      final remainingPayments = await (db.select(db.payments)..where((p) => p.memberId.equals(id))).get();
+      expect(remainingPayments.isEmpty, isTrue);
       final remainingNotes = await notesDao.watchNotes(id).first;
       expect(remainingNotes.isEmpty, isTrue);
     });
