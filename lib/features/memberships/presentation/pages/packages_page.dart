@@ -111,16 +111,23 @@ class _PackagesPageState extends State<PackagesPage> {
             return LayoutBuilder(
               builder: (context, constraints) {
                 final isLargeScreen = constraints.maxWidth >= 600;
+                final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+                final gridItemHeight = (200.0 * textScale).clamp(200.0, 280.0);
 
                 Widget content;
                 if (isLargeScreen) {
                   content = GridView.builder(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    padding: const EdgeInsets.only(
+                      left: AppSpacing.lg,
+                      right: AppSpacing.lg,
+                      top: AppSpacing.lg,
+                      bottom: 88, // Space for FAB
+                    ),
+                    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                       maxCrossAxisExtent: 420,
                       mainAxisSpacing: AppSpacing.md,
                       crossAxisSpacing: AppSpacing.md,
-                      mainAxisExtent: 185,
+                      mainAxisExtent: gridItemHeight,
                     ),
                     itemCount: packages.length,
                     itemBuilder: (context, index) {
