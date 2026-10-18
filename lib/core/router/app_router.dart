@@ -11,6 +11,10 @@ import '../../features/members/presentation/cubit/members_list/members_list_cubi
 import '../../features/members/presentation/pages/add_edit_member_page.dart';
 import '../../features/members/presentation/pages/member_details_page.dart';
 import '../../features/members/presentation/pages/members_page.dart';
+import '../../features/memberships/presentation/cubit/packages/packages_cubit.dart';
+import '../../features/memberships/presentation/cubit/package_form/package_form_cubit.dart';
+import '../../features/memberships/presentation/pages/packages_page.dart';
+import '../../features/memberships/presentation/pages/add_edit_package_page.dart';
 import '../di/injection_container.dart';
 import '../widgets/main_shell_screen.dart';
 import '../widgets/placeholder_screen.dart';
@@ -56,10 +60,9 @@ final GoRouter appRouter = GoRouter(
           routes: [
             GoRoute(
               path: AppRoutes.memberships,
-              builder: (context, state) => const PlaceholderScreen(
-                title: 'الباقات',
-                icon: Icons.card_membership_rounded,
-                subtitle: 'إدارة باقات واشتراكات الجيم',
+              builder: (context, state) => BlocProvider(
+                create: (_) => sl<PackagesCubit>()..init(),
+                child: const PackagesPage(),
               ),
             ),
           ],
@@ -119,6 +122,32 @@ final GoRouter appRouter = GoRouter(
           child: BlocProvider(
             create: (_) => sl<MemberFormCubit>(),
             child: AddEditMemberPage(memberId: id),
+          ),
+        );
+      },
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: AppRoutes.addPackage,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: BlocProvider(
+          create: (_) => sl<PackageFormCubit>(),
+          child: const AddEditPackagePage(),
+        ),
+      ),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: AppRoutes.editPackage,
+      pageBuilder: (context, state) {
+        final idStr = state.pathParameters['id'] ?? '0';
+        final id = int.tryParse(idStr) ?? 0;
+        return MaterialPage(
+          key: state.pageKey,
+          child: BlocProvider(
+            create: (_) => sl<PackageFormCubit>(),
+            child: AddEditPackagePage(packageId: id),
           ),
         );
       },

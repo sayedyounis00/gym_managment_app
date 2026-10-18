@@ -25,6 +25,10 @@ import '../widgets/body_stats_card.dart';
 import '../widgets/current_membership_card.dart';
 import '../widgets/member_avatar.dart';
 import '../widgets/notes_tab.dart';
+import 'package:gym_managment_app/core/di/injection_container.dart';
+import 'package:gym_managment_app/features/memberships/presentation/cubit/pause/pause_cubit.dart';
+import 'package:gym_managment_app/features/memberships/presentation/widgets/renew_bottom_sheet.dart';
+import 'package:gym_managment_app/features/memberships/presentation/widgets/pause_bottom_sheet.dart';
 
 class MemberDetailsPage extends StatefulWidget {
   final int memberId;
@@ -123,13 +127,59 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
     context.read<AttendanceCubit>().checkIn();
   }
 
-  void _showRenewSheet() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('خدمة التجديد السريع متاحة من تبويب الباقات'),
-        behavior: SnackBarBehavior.floating,
-      ),
+  Future<void> _showRenewSheet([String? memberName, int? packageId]) async {
+    final state = context.read<MemberDetailsCubit>().state;
+    String name = memberName ?? '';
+    if (name.isEmpty && state is MemberDetailsLoaded) {
+      name = state.data.member.name;
+    }
+    final renewed = await RenewBottomSheet.show(
+      context,
+      memberId: widget.memberId,
+      memberName: name,
+      preselectedPackageId: packageId,
     );
+    if (renewed == true && mounted) {
+      context.read<MemberDetailsCubit>().load(widget.memberId);
+    }
+  }
+
+  Future<void> _handlePauseOrResume(dynamic member) async {
+    if (member.isSuspended) {
+      final confirm = await ConfirmDialog.show(
+        context,
+        title: 'استئناف اشتراك ${member.name}؟',
+        message: 'سيتم استئناف الاشتراك وتمديد تاريخ الانتهاء بمقدار أيام فترة الإيقاف المؤقت.',
+        confirmLabel: 'استئناف الاشتراك',
+      );
+      if (confirm == true && mounted) {
+        HapticFeedback.lightImpact();
+        final pauseCubit = sl<PauseCubit>();
+        final ok = await pauseCubit.resume(
+          memberId: widget.memberId,
+          resumeDate: DateTime.now(),
+        );
+        if (ok && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('تم استئناف اشتراك ${member.name} بنجاح'),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          context.read<MemberDetailsCubit>().load(widget.memberId);
+        }
+      }
+    } else {
+      final paused = await PauseBottomSheet.show(
+        context,
+        memberId: widget.memberId,
+        memberName: member.name,
+      );
+      if (paused == true && mounted) {
+        context.read<MemberDetailsCubit>().load(widget.memberId);
+      }
+    }
   }
 
   Future<void> _confirmDelete(String name, bool hasPayments) async {
@@ -303,7 +353,7 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                           if (val == 'delete') {
                             _confirmDelete(state.data.member.name, state.data.hasPayments);
                           } else if (val == 'suspend') {
-                            context.read<MemberDetailsCubit>().toggleSuspension();
+                            _handlePauseOrResume(state.data.member);
                           }
                         },
                         itemBuilder: (ctx) => [
@@ -511,7 +561,7 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                                 variant: AppButtonVariant.primary,
                                 leadingIcon: Icons.autorenew_rounded,
                                 padding: const EdgeInsets.symmetric(horizontal: 4),
-                                onPressed: _showRenewSheet,
+                                onPressed: () => _showRenewSheet(member.name, currentSub?.id),
                               ),
                             ),
                             const SizedBox(width: AppSpacing.xs),
@@ -524,9 +574,7 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                                     : Icons.pause_rounded,
                                 padding: const EdgeInsets.symmetric(horizontal: 4),
                                 isLoading: state.isActionLoading,
-                                onPressed: () {
-                                  context.read<MemberDetailsCubit>().toggleSuspension();
-                                },
+                                onPressed: () => _handlePauseOrResume(member),
                               ),
                             ),
                             const SizedBox(width: AppSpacing.xs),
@@ -555,7 +603,7 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                         CurrentMembershipCard(
                           subscription: currentSub,
                           status: status,
-                          onRenew: _showRenewSheet,
+                          onRenew: () => _showRenewSheet(member.name, currentSub?.id),
                         ),
                         const SizedBox(height: AppSpacing.lg),
 

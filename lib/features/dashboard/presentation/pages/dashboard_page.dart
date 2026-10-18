@@ -16,6 +16,7 @@ import '../cubit/dashboard_state.dart';
 import '../widgets/expiring_list.dart';
 import '../widgets/finance_summary.dart';
 import '../widgets/stat_card.dart';
+import 'package:gym_managment_app/features/memberships/presentation/widgets/renew_bottom_sheet.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -223,7 +224,17 @@ class _DashboardPageState extends State<DashboardPage> {
                       child: ExpiringListSection(
                         expiringSoon: summary.expiringSoon,
                         onMemberTap: (item) {
-                          context.go(AppRoutes.members);
+                          context.go(AppRoutes.memberDetailsPath(item.memberId));
+                        },
+                        onRenewTap: (item) async {
+                          final renewed = await RenewBottomSheet.show(
+                            context,
+                            memberId: item.memberId,
+                            memberName: item.memberName,
+                          );
+                          if (renewed == true && context.mounted) {
+                            context.read<DashboardCubit>().refresh();
+                          }
                         },
                       ),
                     );
