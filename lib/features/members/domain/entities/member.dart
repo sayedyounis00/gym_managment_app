@@ -1,10 +1,13 @@
 import 'package:equatable/equatable.dart';
+import 'bmi_result.dart';
+import 'gender.dart';
 
 class Member extends Equatable {
   final int id;
   final String name;
   final String phone;
   final String? photoPath;
+  final Gender? gender;
   final int? age;
   final double? weightKg;
   final double? heightCm;
@@ -17,6 +20,7 @@ class Member extends Equatable {
     required this.name,
     required this.phone,
     this.photoPath,
+    this.gender,
     this.age,
     this.weightKg,
     this.heightCm,
@@ -25,11 +29,17 @@ class Member extends Equatable {
     required this.updatedAt,
   });
 
+  BmiResult? get bmi => BmiCalculator.calculate(
+        weightKg: weightKg,
+        heightCm: heightCm,
+      );
+
   Member copyWith({
     int? id,
     String? name,
     String? phone,
     String? photoPath,
+    Gender? gender,
     int? age,
     double? weightKg,
     double? heightCm,
@@ -42,6 +52,7 @@ class Member extends Equatable {
       name: name ?? this.name,
       phone: phone ?? this.phone,
       photoPath: photoPath ?? this.photoPath,
+      gender: gender ?? this.gender,
       age: age ?? this.age,
       weightKg: weightKg ?? this.weightKg,
       heightCm: heightCm ?? this.heightCm,
@@ -57,6 +68,7 @@ class Member extends Equatable {
         name,
         phone,
         photoPath,
+        gender,
         age,
         weightKg,
         heightCm,
