@@ -8,6 +8,7 @@ import 'package:gym_managment_app/core/di/injection_container.dart';
 import 'package:gym_managment_app/core/theme/app_colors.dart';
 
 import 'package:gym_managment_app/core/services/notification_service.dart';
+import 'package:gym_managment_app/core/services/background_backup_worker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,7 @@ void main() async {
   try {
     await initDependencies();
     await sl<NotificationService>().init();
+    await BackgroundBackupWorker.init();
   } catch (error, stackTrace) {
     developer.log('Initialization error', error: error, stackTrace: stackTrace);
   }
