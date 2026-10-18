@@ -2035,6 +2035,1325 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
   }
 }
 
+class $SubscriptionPeriodsTable extends SubscriptionPeriods
+    with TableInfo<$SubscriptionPeriodsTable, SubscriptionPeriod> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SubscriptionPeriodsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _subscriptionIdMeta = const VerificationMeta(
+    'subscriptionId',
+  );
+  @override
+  late final GeneratedColumn<int> subscriptionId = GeneratedColumn<int>(
+    'subscription_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES subscriptions (id)',
+    ),
+  );
+  static const VerificationMeta _periodNumberMeta = const VerificationMeta(
+    'periodNumber',
+  );
+  @override
+  late final GeneratedColumn<int> periodNumber = GeneratedColumn<int>(
+    'period_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _startDateMeta = const VerificationMeta(
+    'startDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> startDate = GeneratedColumn<DateTime>(
+    'start_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _endDateMeta = const VerificationMeta(
+    'endDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> endDate = GeneratedColumn<DateTime>(
+    'end_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountDueMeta = const VerificationMeta(
+    'amountDue',
+  );
+  @override
+  late final GeneratedColumn<double> amountDue = GeneratedColumn<double>(
+    'amount_due',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _discountMeta = const VerificationMeta(
+    'discount',
+  );
+  @override
+  late final GeneratedColumn<double> discount = GeneratedColumn<double>(
+    'discount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _paymentStatusMeta = const VerificationMeta(
+    'paymentStatus',
+  );
+  @override
+  late final GeneratedColumn<String> paymentStatus = GeneratedColumn<String>(
+    'payment_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('unpaid'),
+  );
+  static const VerificationMeta _isFullyPaidMeta = const VerificationMeta(
+    'isFullyPaid',
+  );
+  @override
+  late final GeneratedColumn<bool> isFullyPaid = GeneratedColumn<bool>(
+    'is_fully_paid',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_fully_paid" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _fullyPaidAtMeta = const VerificationMeta(
+    'fullyPaidAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fullyPaidAt = GeneratedColumn<DateTime>(
+    'fully_paid_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    subscriptionId,
+    periodNumber,
+    startDate,
+    endDate,
+    amountDue,
+    discount,
+    paymentStatus,
+    isFullyPaid,
+    fullyPaidAt,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'subscription_periods';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<SubscriptionPeriod> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('subscription_id')) {
+      context.handle(
+        _subscriptionIdMeta,
+        subscriptionId.isAcceptableOrUnknown(
+          data['subscription_id']!,
+          _subscriptionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_subscriptionIdMeta);
+    }
+    if (data.containsKey('period_number')) {
+      context.handle(
+        _periodNumberMeta,
+        periodNumber.isAcceptableOrUnknown(
+          data['period_number']!,
+          _periodNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('start_date')) {
+      context.handle(
+        _startDateMeta,
+        startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startDateMeta);
+    }
+    if (data.containsKey('end_date')) {
+      context.handle(
+        _endDateMeta,
+        endDate.isAcceptableOrUnknown(data['end_date']!, _endDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_endDateMeta);
+    }
+    if (data.containsKey('amount_due')) {
+      context.handle(
+        _amountDueMeta,
+        amountDue.isAcceptableOrUnknown(data['amount_due']!, _amountDueMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountDueMeta);
+    }
+    if (data.containsKey('discount')) {
+      context.handle(
+        _discountMeta,
+        discount.isAcceptableOrUnknown(data['discount']!, _discountMeta),
+      );
+    }
+    if (data.containsKey('payment_status')) {
+      context.handle(
+        _paymentStatusMeta,
+        paymentStatus.isAcceptableOrUnknown(
+          data['payment_status']!,
+          _paymentStatusMeta,
+        ),
+      );
+    }
+    if (data.containsKey('is_fully_paid')) {
+      context.handle(
+        _isFullyPaidMeta,
+        isFullyPaid.isAcceptableOrUnknown(
+          data['is_fully_paid']!,
+          _isFullyPaidMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fully_paid_at')) {
+      context.handle(
+        _fullyPaidAtMeta,
+        fullyPaidAt.isAcceptableOrUnknown(
+          data['fully_paid_at']!,
+          _fullyPaidAtMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SubscriptionPeriod map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SubscriptionPeriod(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      subscriptionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}subscription_id'],
+      )!,
+      periodNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}period_number'],
+      )!,
+      startDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}start_date'],
+      )!,
+      endDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}end_date'],
+      )!,
+      amountDue: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}amount_due'],
+      )!,
+      discount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}discount'],
+      )!,
+      paymentStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payment_status'],
+      )!,
+      isFullyPaid: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_fully_paid'],
+      )!,
+      fullyPaidAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fully_paid_at'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SubscriptionPeriodsTable createAlias(String alias) {
+    return $SubscriptionPeriodsTable(attachedDatabase, alias);
+  }
+}
+
+class SubscriptionPeriod extends DataClass
+    implements Insertable<SubscriptionPeriod> {
+  final int id;
+  final int subscriptionId;
+  final int periodNumber;
+  final DateTime startDate;
+  final DateTime endDate;
+  final double amountDue;
+  final double discount;
+  final String paymentStatus;
+  final bool isFullyPaid;
+  final DateTime? fullyPaidAt;
+  final DateTime createdAt;
+  const SubscriptionPeriod({
+    required this.id,
+    required this.subscriptionId,
+    required this.periodNumber,
+    required this.startDate,
+    required this.endDate,
+    required this.amountDue,
+    required this.discount,
+    required this.paymentStatus,
+    required this.isFullyPaid,
+    this.fullyPaidAt,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['subscription_id'] = Variable<int>(subscriptionId);
+    map['period_number'] = Variable<int>(periodNumber);
+    map['start_date'] = Variable<DateTime>(startDate);
+    map['end_date'] = Variable<DateTime>(endDate);
+    map['amount_due'] = Variable<double>(amountDue);
+    map['discount'] = Variable<double>(discount);
+    map['payment_status'] = Variable<String>(paymentStatus);
+    map['is_fully_paid'] = Variable<bool>(isFullyPaid);
+    if (!nullToAbsent || fullyPaidAt != null) {
+      map['fully_paid_at'] = Variable<DateTime>(fullyPaidAt);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  SubscriptionPeriodsCompanion toCompanion(bool nullToAbsent) {
+    return SubscriptionPeriodsCompanion(
+      id: Value(id),
+      subscriptionId: Value(subscriptionId),
+      periodNumber: Value(periodNumber),
+      startDate: Value(startDate),
+      endDate: Value(endDate),
+      amountDue: Value(amountDue),
+      discount: Value(discount),
+      paymentStatus: Value(paymentStatus),
+      isFullyPaid: Value(isFullyPaid),
+      fullyPaidAt: fullyPaidAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fullyPaidAt),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory SubscriptionPeriod.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SubscriptionPeriod(
+      id: serializer.fromJson<int>(json['id']),
+      subscriptionId: serializer.fromJson<int>(json['subscriptionId']),
+      periodNumber: serializer.fromJson<int>(json['periodNumber']),
+      startDate: serializer.fromJson<DateTime>(json['startDate']),
+      endDate: serializer.fromJson<DateTime>(json['endDate']),
+      amountDue: serializer.fromJson<double>(json['amountDue']),
+      discount: serializer.fromJson<double>(json['discount']),
+      paymentStatus: serializer.fromJson<String>(json['paymentStatus']),
+      isFullyPaid: serializer.fromJson<bool>(json['isFullyPaid']),
+      fullyPaidAt: serializer.fromJson<DateTime?>(json['fullyPaidAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'subscriptionId': serializer.toJson<int>(subscriptionId),
+      'periodNumber': serializer.toJson<int>(periodNumber),
+      'startDate': serializer.toJson<DateTime>(startDate),
+      'endDate': serializer.toJson<DateTime>(endDate),
+      'amountDue': serializer.toJson<double>(amountDue),
+      'discount': serializer.toJson<double>(discount),
+      'paymentStatus': serializer.toJson<String>(paymentStatus),
+      'isFullyPaid': serializer.toJson<bool>(isFullyPaid),
+      'fullyPaidAt': serializer.toJson<DateTime?>(fullyPaidAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  SubscriptionPeriod copyWith({
+    int? id,
+    int? subscriptionId,
+    int? periodNumber,
+    DateTime? startDate,
+    DateTime? endDate,
+    double? amountDue,
+    double? discount,
+    String? paymentStatus,
+    bool? isFullyPaid,
+    Value<DateTime?> fullyPaidAt = const Value.absent(),
+    DateTime? createdAt,
+  }) => SubscriptionPeriod(
+    id: id ?? this.id,
+    subscriptionId: subscriptionId ?? this.subscriptionId,
+    periodNumber: periodNumber ?? this.periodNumber,
+    startDate: startDate ?? this.startDate,
+    endDate: endDate ?? this.endDate,
+    amountDue: amountDue ?? this.amountDue,
+    discount: discount ?? this.discount,
+    paymentStatus: paymentStatus ?? this.paymentStatus,
+    isFullyPaid: isFullyPaid ?? this.isFullyPaid,
+    fullyPaidAt: fullyPaidAt.present ? fullyPaidAt.value : this.fullyPaidAt,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  SubscriptionPeriod copyWithCompanion(SubscriptionPeriodsCompanion data) {
+    return SubscriptionPeriod(
+      id: data.id.present ? data.id.value : this.id,
+      subscriptionId: data.subscriptionId.present
+          ? data.subscriptionId.value
+          : this.subscriptionId,
+      periodNumber: data.periodNumber.present
+          ? data.periodNumber.value
+          : this.periodNumber,
+      startDate: data.startDate.present ? data.startDate.value : this.startDate,
+      endDate: data.endDate.present ? data.endDate.value : this.endDate,
+      amountDue: data.amountDue.present ? data.amountDue.value : this.amountDue,
+      discount: data.discount.present ? data.discount.value : this.discount,
+      paymentStatus: data.paymentStatus.present
+          ? data.paymentStatus.value
+          : this.paymentStatus,
+      isFullyPaid: data.isFullyPaid.present
+          ? data.isFullyPaid.value
+          : this.isFullyPaid,
+      fullyPaidAt: data.fullyPaidAt.present
+          ? data.fullyPaidAt.value
+          : this.fullyPaidAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SubscriptionPeriod(')
+          ..write('id: $id, ')
+          ..write('subscriptionId: $subscriptionId, ')
+          ..write('periodNumber: $periodNumber, ')
+          ..write('startDate: $startDate, ')
+          ..write('endDate: $endDate, ')
+          ..write('amountDue: $amountDue, ')
+          ..write('discount: $discount, ')
+          ..write('paymentStatus: $paymentStatus, ')
+          ..write('isFullyPaid: $isFullyPaid, ')
+          ..write('fullyPaidAt: $fullyPaidAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    subscriptionId,
+    periodNumber,
+    startDate,
+    endDate,
+    amountDue,
+    discount,
+    paymentStatus,
+    isFullyPaid,
+    fullyPaidAt,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SubscriptionPeriod &&
+          other.id == this.id &&
+          other.subscriptionId == this.subscriptionId &&
+          other.periodNumber == this.periodNumber &&
+          other.startDate == this.startDate &&
+          other.endDate == this.endDate &&
+          other.amountDue == this.amountDue &&
+          other.discount == this.discount &&
+          other.paymentStatus == this.paymentStatus &&
+          other.isFullyPaid == this.isFullyPaid &&
+          other.fullyPaidAt == this.fullyPaidAt &&
+          other.createdAt == this.createdAt);
+}
+
+class SubscriptionPeriodsCompanion extends UpdateCompanion<SubscriptionPeriod> {
+  final Value<int> id;
+  final Value<int> subscriptionId;
+  final Value<int> periodNumber;
+  final Value<DateTime> startDate;
+  final Value<DateTime> endDate;
+  final Value<double> amountDue;
+  final Value<double> discount;
+  final Value<String> paymentStatus;
+  final Value<bool> isFullyPaid;
+  final Value<DateTime?> fullyPaidAt;
+  final Value<DateTime> createdAt;
+  const SubscriptionPeriodsCompanion({
+    this.id = const Value.absent(),
+    this.subscriptionId = const Value.absent(),
+    this.periodNumber = const Value.absent(),
+    this.startDate = const Value.absent(),
+    this.endDate = const Value.absent(),
+    this.amountDue = const Value.absent(),
+    this.discount = const Value.absent(),
+    this.paymentStatus = const Value.absent(),
+    this.isFullyPaid = const Value.absent(),
+    this.fullyPaidAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  SubscriptionPeriodsCompanion.insert({
+    this.id = const Value.absent(),
+    required int subscriptionId,
+    this.periodNumber = const Value.absent(),
+    required DateTime startDate,
+    required DateTime endDate,
+    required double amountDue,
+    this.discount = const Value.absent(),
+    this.paymentStatus = const Value.absent(),
+    this.isFullyPaid = const Value.absent(),
+    this.fullyPaidAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  }) : subscriptionId = Value(subscriptionId),
+       startDate = Value(startDate),
+       endDate = Value(endDate),
+       amountDue = Value(amountDue);
+  static Insertable<SubscriptionPeriod> custom({
+    Expression<int>? id,
+    Expression<int>? subscriptionId,
+    Expression<int>? periodNumber,
+    Expression<DateTime>? startDate,
+    Expression<DateTime>? endDate,
+    Expression<double>? amountDue,
+    Expression<double>? discount,
+    Expression<String>? paymentStatus,
+    Expression<bool>? isFullyPaid,
+    Expression<DateTime>? fullyPaidAt,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (subscriptionId != null) 'subscription_id': subscriptionId,
+      if (periodNumber != null) 'period_number': periodNumber,
+      if (startDate != null) 'start_date': startDate,
+      if (endDate != null) 'end_date': endDate,
+      if (amountDue != null) 'amount_due': amountDue,
+      if (discount != null) 'discount': discount,
+      if (paymentStatus != null) 'payment_status': paymentStatus,
+      if (isFullyPaid != null) 'is_fully_paid': isFullyPaid,
+      if (fullyPaidAt != null) 'fully_paid_at': fullyPaidAt,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  SubscriptionPeriodsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? subscriptionId,
+    Value<int>? periodNumber,
+    Value<DateTime>? startDate,
+    Value<DateTime>? endDate,
+    Value<double>? amountDue,
+    Value<double>? discount,
+    Value<String>? paymentStatus,
+    Value<bool>? isFullyPaid,
+    Value<DateTime?>? fullyPaidAt,
+    Value<DateTime>? createdAt,
+  }) {
+    return SubscriptionPeriodsCompanion(
+      id: id ?? this.id,
+      subscriptionId: subscriptionId ?? this.subscriptionId,
+      periodNumber: periodNumber ?? this.periodNumber,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      amountDue: amountDue ?? this.amountDue,
+      discount: discount ?? this.discount,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      isFullyPaid: isFullyPaid ?? this.isFullyPaid,
+      fullyPaidAt: fullyPaidAt ?? this.fullyPaidAt,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (subscriptionId.present) {
+      map['subscription_id'] = Variable<int>(subscriptionId.value);
+    }
+    if (periodNumber.present) {
+      map['period_number'] = Variable<int>(periodNumber.value);
+    }
+    if (startDate.present) {
+      map['start_date'] = Variable<DateTime>(startDate.value);
+    }
+    if (endDate.present) {
+      map['end_date'] = Variable<DateTime>(endDate.value);
+    }
+    if (amountDue.present) {
+      map['amount_due'] = Variable<double>(amountDue.value);
+    }
+    if (discount.present) {
+      map['discount'] = Variable<double>(discount.value);
+    }
+    if (paymentStatus.present) {
+      map['payment_status'] = Variable<String>(paymentStatus.value);
+    }
+    if (isFullyPaid.present) {
+      map['is_fully_paid'] = Variable<bool>(isFullyPaid.value);
+    }
+    if (fullyPaidAt.present) {
+      map['fully_paid_at'] = Variable<DateTime>(fullyPaidAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SubscriptionPeriodsCompanion(')
+          ..write('id: $id, ')
+          ..write('subscriptionId: $subscriptionId, ')
+          ..write('periodNumber: $periodNumber, ')
+          ..write('startDate: $startDate, ')
+          ..write('endDate: $endDate, ')
+          ..write('amountDue: $amountDue, ')
+          ..write('discount: $discount, ')
+          ..write('paymentStatus: $paymentStatus, ')
+          ..write('isFullyPaid: $isFullyPaid, ')
+          ..write('fullyPaidAt: $fullyPaidAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $InstallmentsTable extends Installments
+    with TableInfo<$InstallmentsTable, Installment> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $InstallmentsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _periodIdMeta = const VerificationMeta(
+    'periodId',
+  );
+  @override
+  late final GeneratedColumn<int> periodId = GeneratedColumn<int>(
+    'period_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES subscription_periods (id)',
+    ),
+  );
+  static const VerificationMeta _installmentNumberMeta = const VerificationMeta(
+    'installmentNumber',
+  );
+  @override
+  late final GeneratedColumn<int> installmentNumber = GeneratedColumn<int>(
+    'installment_number',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
+  @override
+  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
+    'amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _paidAmountMeta = const VerificationMeta(
+    'paidAmount',
+  );
+  @override
+  late final GeneratedColumn<double> paidAmount = GeneratedColumn<double>(
+    'paid_amount',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _dueDateMeta = const VerificationMeta(
+    'dueDate',
+  );
+  @override
+  late final GeneratedColumn<DateTime> dueDate = GeneratedColumn<DateTime>(
+    'due_date',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _paidAtMeta = const VerificationMeta('paidAt');
+  @override
+  late final GeneratedColumn<DateTime> paidAt = GeneratedColumn<DateTime>(
+    'paid_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _paymentMethodMeta = const VerificationMeta(
+    'paymentMethod',
+  );
+  @override
+  late final GeneratedColumn<String> paymentMethod = GeneratedColumn<String>(
+    'payment_method',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    periodId,
+    installmentNumber,
+    amount,
+    paidAmount,
+    dueDate,
+    status,
+    paidAt,
+    paymentMethod,
+    notes,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'installments';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Installment> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('period_id')) {
+      context.handle(
+        _periodIdMeta,
+        periodId.isAcceptableOrUnknown(data['period_id']!, _periodIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_periodIdMeta);
+    }
+    if (data.containsKey('installment_number')) {
+      context.handle(
+        _installmentNumberMeta,
+        installmentNumber.isAcceptableOrUnknown(
+          data['installment_number']!,
+          _installmentNumberMeta,
+        ),
+      );
+    }
+    if (data.containsKey('amount')) {
+      context.handle(
+        _amountMeta,
+        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMeta);
+    }
+    if (data.containsKey('paid_amount')) {
+      context.handle(
+        _paidAmountMeta,
+        paidAmount.isAcceptableOrUnknown(data['paid_amount']!, _paidAmountMeta),
+      );
+    }
+    if (data.containsKey('due_date')) {
+      context.handle(
+        _dueDateMeta,
+        dueDate.isAcceptableOrUnknown(data['due_date']!, _dueDateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dueDateMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('paid_at')) {
+      context.handle(
+        _paidAtMeta,
+        paidAt.isAcceptableOrUnknown(data['paid_at']!, _paidAtMeta),
+      );
+    }
+    if (data.containsKey('payment_method')) {
+      context.handle(
+        _paymentMethodMeta,
+        paymentMethod.isAcceptableOrUnknown(
+          data['payment_method']!,
+          _paymentMethodMeta,
+        ),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Installment map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Installment(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      periodId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}period_id'],
+      )!,
+      installmentNumber: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}installment_number'],
+      )!,
+      amount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}amount'],
+      )!,
+      paidAmount: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}paid_amount'],
+      )!,
+      dueDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}due_date'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      paidAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}paid_at'],
+      ),
+      paymentMethod: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payment_method'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $InstallmentsTable createAlias(String alias) {
+    return $InstallmentsTable(attachedDatabase, alias);
+  }
+}
+
+class Installment extends DataClass implements Insertable<Installment> {
+  final int id;
+  final int periodId;
+  final int installmentNumber;
+  final double amount;
+  final double paidAmount;
+  final DateTime dueDate;
+  final String status;
+  final DateTime? paidAt;
+  final String? paymentMethod;
+  final String? notes;
+  final DateTime createdAt;
+  const Installment({
+    required this.id,
+    required this.periodId,
+    required this.installmentNumber,
+    required this.amount,
+    required this.paidAmount,
+    required this.dueDate,
+    required this.status,
+    this.paidAt,
+    this.paymentMethod,
+    this.notes,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['period_id'] = Variable<int>(periodId);
+    map['installment_number'] = Variable<int>(installmentNumber);
+    map['amount'] = Variable<double>(amount);
+    map['paid_amount'] = Variable<double>(paidAmount);
+    map['due_date'] = Variable<DateTime>(dueDate);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || paidAt != null) {
+      map['paid_at'] = Variable<DateTime>(paidAt);
+    }
+    if (!nullToAbsent || paymentMethod != null) {
+      map['payment_method'] = Variable<String>(paymentMethod);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  InstallmentsCompanion toCompanion(bool nullToAbsent) {
+    return InstallmentsCompanion(
+      id: Value(id),
+      periodId: Value(periodId),
+      installmentNumber: Value(installmentNumber),
+      amount: Value(amount),
+      paidAmount: Value(paidAmount),
+      dueDate: Value(dueDate),
+      status: Value(status),
+      paidAt: paidAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paidAt),
+      paymentMethod: paymentMethod == null && nullToAbsent
+          ? const Value.absent()
+          : Value(paymentMethod),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory Installment.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Installment(
+      id: serializer.fromJson<int>(json['id']),
+      periodId: serializer.fromJson<int>(json['periodId']),
+      installmentNumber: serializer.fromJson<int>(json['installmentNumber']),
+      amount: serializer.fromJson<double>(json['amount']),
+      paidAmount: serializer.fromJson<double>(json['paidAmount']),
+      dueDate: serializer.fromJson<DateTime>(json['dueDate']),
+      status: serializer.fromJson<String>(json['status']),
+      paidAt: serializer.fromJson<DateTime?>(json['paidAt']),
+      paymentMethod: serializer.fromJson<String?>(json['paymentMethod']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'periodId': serializer.toJson<int>(periodId),
+      'installmentNumber': serializer.toJson<int>(installmentNumber),
+      'amount': serializer.toJson<double>(amount),
+      'paidAmount': serializer.toJson<double>(paidAmount),
+      'dueDate': serializer.toJson<DateTime>(dueDate),
+      'status': serializer.toJson<String>(status),
+      'paidAt': serializer.toJson<DateTime?>(paidAt),
+      'paymentMethod': serializer.toJson<String?>(paymentMethod),
+      'notes': serializer.toJson<String?>(notes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  Installment copyWith({
+    int? id,
+    int? periodId,
+    int? installmentNumber,
+    double? amount,
+    double? paidAmount,
+    DateTime? dueDate,
+    String? status,
+    Value<DateTime?> paidAt = const Value.absent(),
+    Value<String?> paymentMethod = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
+    DateTime? createdAt,
+  }) => Installment(
+    id: id ?? this.id,
+    periodId: periodId ?? this.periodId,
+    installmentNumber: installmentNumber ?? this.installmentNumber,
+    amount: amount ?? this.amount,
+    paidAmount: paidAmount ?? this.paidAmount,
+    dueDate: dueDate ?? this.dueDate,
+    status: status ?? this.status,
+    paidAt: paidAt.present ? paidAt.value : this.paidAt,
+    paymentMethod: paymentMethod.present
+        ? paymentMethod.value
+        : this.paymentMethod,
+    notes: notes.present ? notes.value : this.notes,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  Installment copyWithCompanion(InstallmentsCompanion data) {
+    return Installment(
+      id: data.id.present ? data.id.value : this.id,
+      periodId: data.periodId.present ? data.periodId.value : this.periodId,
+      installmentNumber: data.installmentNumber.present
+          ? data.installmentNumber.value
+          : this.installmentNumber,
+      amount: data.amount.present ? data.amount.value : this.amount,
+      paidAmount: data.paidAmount.present
+          ? data.paidAmount.value
+          : this.paidAmount,
+      dueDate: data.dueDate.present ? data.dueDate.value : this.dueDate,
+      status: data.status.present ? data.status.value : this.status,
+      paidAt: data.paidAt.present ? data.paidAt.value : this.paidAt,
+      paymentMethod: data.paymentMethod.present
+          ? data.paymentMethod.value
+          : this.paymentMethod,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Installment(')
+          ..write('id: $id, ')
+          ..write('periodId: $periodId, ')
+          ..write('installmentNumber: $installmentNumber, ')
+          ..write('amount: $amount, ')
+          ..write('paidAmount: $paidAmount, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('status: $status, ')
+          ..write('paidAt: $paidAt, ')
+          ..write('paymentMethod: $paymentMethod, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    periodId,
+    installmentNumber,
+    amount,
+    paidAmount,
+    dueDate,
+    status,
+    paidAt,
+    paymentMethod,
+    notes,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Installment &&
+          other.id == this.id &&
+          other.periodId == this.periodId &&
+          other.installmentNumber == this.installmentNumber &&
+          other.amount == this.amount &&
+          other.paidAmount == this.paidAmount &&
+          other.dueDate == this.dueDate &&
+          other.status == this.status &&
+          other.paidAt == this.paidAt &&
+          other.paymentMethod == this.paymentMethod &&
+          other.notes == this.notes &&
+          other.createdAt == this.createdAt);
+}
+
+class InstallmentsCompanion extends UpdateCompanion<Installment> {
+  final Value<int> id;
+  final Value<int> periodId;
+  final Value<int> installmentNumber;
+  final Value<double> amount;
+  final Value<double> paidAmount;
+  final Value<DateTime> dueDate;
+  final Value<String> status;
+  final Value<DateTime?> paidAt;
+  final Value<String?> paymentMethod;
+  final Value<String?> notes;
+  final Value<DateTime> createdAt;
+  const InstallmentsCompanion({
+    this.id = const Value.absent(),
+    this.periodId = const Value.absent(),
+    this.installmentNumber = const Value.absent(),
+    this.amount = const Value.absent(),
+    this.paidAmount = const Value.absent(),
+    this.dueDate = const Value.absent(),
+    this.status = const Value.absent(),
+    this.paidAt = const Value.absent(),
+    this.paymentMethod = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  InstallmentsCompanion.insert({
+    this.id = const Value.absent(),
+    required int periodId,
+    this.installmentNumber = const Value.absent(),
+    required double amount,
+    this.paidAmount = const Value.absent(),
+    required DateTime dueDate,
+    this.status = const Value.absent(),
+    this.paidAt = const Value.absent(),
+    this.paymentMethod = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  }) : periodId = Value(periodId),
+       amount = Value(amount),
+       dueDate = Value(dueDate);
+  static Insertable<Installment> custom({
+    Expression<int>? id,
+    Expression<int>? periodId,
+    Expression<int>? installmentNumber,
+    Expression<double>? amount,
+    Expression<double>? paidAmount,
+    Expression<DateTime>? dueDate,
+    Expression<String>? status,
+    Expression<DateTime>? paidAt,
+    Expression<String>? paymentMethod,
+    Expression<String>? notes,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (periodId != null) 'period_id': periodId,
+      if (installmentNumber != null) 'installment_number': installmentNumber,
+      if (amount != null) 'amount': amount,
+      if (paidAmount != null) 'paid_amount': paidAmount,
+      if (dueDate != null) 'due_date': dueDate,
+      if (status != null) 'status': status,
+      if (paidAt != null) 'paid_at': paidAt,
+      if (paymentMethod != null) 'payment_method': paymentMethod,
+      if (notes != null) 'notes': notes,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  InstallmentsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? periodId,
+    Value<int>? installmentNumber,
+    Value<double>? amount,
+    Value<double>? paidAmount,
+    Value<DateTime>? dueDate,
+    Value<String>? status,
+    Value<DateTime?>? paidAt,
+    Value<String?>? paymentMethod,
+    Value<String?>? notes,
+    Value<DateTime>? createdAt,
+  }) {
+    return InstallmentsCompanion(
+      id: id ?? this.id,
+      periodId: periodId ?? this.periodId,
+      installmentNumber: installmentNumber ?? this.installmentNumber,
+      amount: amount ?? this.amount,
+      paidAmount: paidAmount ?? this.paidAmount,
+      dueDate: dueDate ?? this.dueDate,
+      status: status ?? this.status,
+      paidAt: paidAt ?? this.paidAt,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      notes: notes ?? this.notes,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (periodId.present) {
+      map['period_id'] = Variable<int>(periodId.value);
+    }
+    if (installmentNumber.present) {
+      map['installment_number'] = Variable<int>(installmentNumber.value);
+    }
+    if (amount.present) {
+      map['amount'] = Variable<double>(amount.value);
+    }
+    if (paidAmount.present) {
+      map['paid_amount'] = Variable<double>(paidAmount.value);
+    }
+    if (dueDate.present) {
+      map['due_date'] = Variable<DateTime>(dueDate.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (paidAt.present) {
+      map['paid_at'] = Variable<DateTime>(paidAt.value);
+    }
+    if (paymentMethod.present) {
+      map['payment_method'] = Variable<String>(paymentMethod.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('InstallmentsCompanion(')
+          ..write('id: $id, ')
+          ..write('periodId: $periodId, ')
+          ..write('installmentNumber: $installmentNumber, ')
+          ..write('amount: $amount, ')
+          ..write('paidAmount: $paidAmount, ')
+          ..write('dueDate: $dueDate, ')
+          ..write('status: $status, ')
+          ..write('paidAt: $paidAt, ')
+          ..write('paymentMethod: $paymentMethod, ')
+          ..write('notes: $notes, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -2079,6 +3398,34 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
     requiredDuringInsert: false,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'REFERENCES subscriptions (id)',
+    ),
+  );
+  static const VerificationMeta _periodIdMeta = const VerificationMeta(
+    'periodId',
+  );
+  @override
+  late final GeneratedColumn<int> periodId = GeneratedColumn<int>(
+    'period_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES subscription_periods (id)',
+    ),
+  );
+  static const VerificationMeta _installmentIdMeta = const VerificationMeta(
+    'installmentId',
+  );
+  @override
+  late final GeneratedColumn<int> installmentId = GeneratedColumn<int>(
+    'installment_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES installments (id)',
     ),
   );
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
@@ -2126,6 +3473,8 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
     id,
     memberId,
     subscriptionId,
+    periodId,
+    installmentId,
     amount,
     paidAt,
     paymentMethod,
@@ -2160,6 +3509,21 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
         subscriptionId.isAcceptableOrUnknown(
           data['subscription_id']!,
           _subscriptionIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('period_id')) {
+      context.handle(
+        _periodIdMeta,
+        periodId.isAcceptableOrUnknown(data['period_id']!, _periodIdMeta),
+      );
+    }
+    if (data.containsKey('installment_id')) {
+      context.handle(
+        _installmentIdMeta,
+        installmentId.isAcceptableOrUnknown(
+          data['installment_id']!,
+          _installmentIdMeta,
         ),
       );
     }
@@ -2213,6 +3577,14 @@ class $PaymentsTable extends Payments with TableInfo<$PaymentsTable, Payment> {
         DriftSqlType.int,
         data['${effectivePrefix}subscription_id'],
       ),
+      periodId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}period_id'],
+      ),
+      installmentId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}installment_id'],
+      ),
       amount: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}amount'],
@@ -2242,6 +3614,8 @@ class Payment extends DataClass implements Insertable<Payment> {
   final int id;
   final int memberId;
   final int? subscriptionId;
+  final int? periodId;
+  final int? installmentId;
   final double amount;
   final DateTime paidAt;
   final String paymentMethod;
@@ -2250,6 +3624,8 @@ class Payment extends DataClass implements Insertable<Payment> {
     required this.id,
     required this.memberId,
     this.subscriptionId,
+    this.periodId,
+    this.installmentId,
     required this.amount,
     required this.paidAt,
     required this.paymentMethod,
@@ -2262,6 +3638,12 @@ class Payment extends DataClass implements Insertable<Payment> {
     map['member_id'] = Variable<int>(memberId);
     if (!nullToAbsent || subscriptionId != null) {
       map['subscription_id'] = Variable<int>(subscriptionId);
+    }
+    if (!nullToAbsent || periodId != null) {
+      map['period_id'] = Variable<int>(periodId);
+    }
+    if (!nullToAbsent || installmentId != null) {
+      map['installment_id'] = Variable<int>(installmentId);
     }
     map['amount'] = Variable<double>(amount);
     map['paid_at'] = Variable<DateTime>(paidAt);
@@ -2279,6 +3661,12 @@ class Payment extends DataClass implements Insertable<Payment> {
       subscriptionId: subscriptionId == null && nullToAbsent
           ? const Value.absent()
           : Value(subscriptionId),
+      periodId: periodId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(periodId),
+      installmentId: installmentId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(installmentId),
       amount: Value(amount),
       paidAt: Value(paidAt),
       paymentMethod: Value(paymentMethod),
@@ -2297,6 +3685,8 @@ class Payment extends DataClass implements Insertable<Payment> {
       id: serializer.fromJson<int>(json['id']),
       memberId: serializer.fromJson<int>(json['memberId']),
       subscriptionId: serializer.fromJson<int?>(json['subscriptionId']),
+      periodId: serializer.fromJson<int?>(json['periodId']),
+      installmentId: serializer.fromJson<int?>(json['installmentId']),
       amount: serializer.fromJson<double>(json['amount']),
       paidAt: serializer.fromJson<DateTime>(json['paidAt']),
       paymentMethod: serializer.fromJson<String>(json['paymentMethod']),
@@ -2310,6 +3700,8 @@ class Payment extends DataClass implements Insertable<Payment> {
       'id': serializer.toJson<int>(id),
       'memberId': serializer.toJson<int>(memberId),
       'subscriptionId': serializer.toJson<int?>(subscriptionId),
+      'periodId': serializer.toJson<int?>(periodId),
+      'installmentId': serializer.toJson<int?>(installmentId),
       'amount': serializer.toJson<double>(amount),
       'paidAt': serializer.toJson<DateTime>(paidAt),
       'paymentMethod': serializer.toJson<String>(paymentMethod),
@@ -2321,6 +3713,8 @@ class Payment extends DataClass implements Insertable<Payment> {
     int? id,
     int? memberId,
     Value<int?> subscriptionId = const Value.absent(),
+    Value<int?> periodId = const Value.absent(),
+    Value<int?> installmentId = const Value.absent(),
     double? amount,
     DateTime? paidAt,
     String? paymentMethod,
@@ -2331,6 +3725,10 @@ class Payment extends DataClass implements Insertable<Payment> {
     subscriptionId: subscriptionId.present
         ? subscriptionId.value
         : this.subscriptionId,
+    periodId: periodId.present ? periodId.value : this.periodId,
+    installmentId: installmentId.present
+        ? installmentId.value
+        : this.installmentId,
     amount: amount ?? this.amount,
     paidAt: paidAt ?? this.paidAt,
     paymentMethod: paymentMethod ?? this.paymentMethod,
@@ -2343,6 +3741,10 @@ class Payment extends DataClass implements Insertable<Payment> {
       subscriptionId: data.subscriptionId.present
           ? data.subscriptionId.value
           : this.subscriptionId,
+      periodId: data.periodId.present ? data.periodId.value : this.periodId,
+      installmentId: data.installmentId.present
+          ? data.installmentId.value
+          : this.installmentId,
       amount: data.amount.present ? data.amount.value : this.amount,
       paidAt: data.paidAt.present ? data.paidAt.value : this.paidAt,
       paymentMethod: data.paymentMethod.present
@@ -2358,6 +3760,8 @@ class Payment extends DataClass implements Insertable<Payment> {
           ..write('id: $id, ')
           ..write('memberId: $memberId, ')
           ..write('subscriptionId: $subscriptionId, ')
+          ..write('periodId: $periodId, ')
+          ..write('installmentId: $installmentId, ')
           ..write('amount: $amount, ')
           ..write('paidAt: $paidAt, ')
           ..write('paymentMethod: $paymentMethod, ')
@@ -2371,6 +3775,8 @@ class Payment extends DataClass implements Insertable<Payment> {
     id,
     memberId,
     subscriptionId,
+    periodId,
+    installmentId,
     amount,
     paidAt,
     paymentMethod,
@@ -2383,6 +3789,8 @@ class Payment extends DataClass implements Insertable<Payment> {
           other.id == this.id &&
           other.memberId == this.memberId &&
           other.subscriptionId == this.subscriptionId &&
+          other.periodId == this.periodId &&
+          other.installmentId == this.installmentId &&
           other.amount == this.amount &&
           other.paidAt == this.paidAt &&
           other.paymentMethod == this.paymentMethod &&
@@ -2393,6 +3801,8 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
   final Value<int> id;
   final Value<int> memberId;
   final Value<int?> subscriptionId;
+  final Value<int?> periodId;
+  final Value<int?> installmentId;
   final Value<double> amount;
   final Value<DateTime> paidAt;
   final Value<String> paymentMethod;
@@ -2401,6 +3811,8 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     this.id = const Value.absent(),
     this.memberId = const Value.absent(),
     this.subscriptionId = const Value.absent(),
+    this.periodId = const Value.absent(),
+    this.installmentId = const Value.absent(),
     this.amount = const Value.absent(),
     this.paidAt = const Value.absent(),
     this.paymentMethod = const Value.absent(),
@@ -2410,6 +3822,8 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     this.id = const Value.absent(),
     required int memberId,
     this.subscriptionId = const Value.absent(),
+    this.periodId = const Value.absent(),
+    this.installmentId = const Value.absent(),
     required double amount,
     this.paidAt = const Value.absent(),
     this.paymentMethod = const Value.absent(),
@@ -2420,6 +3834,8 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     Expression<int>? id,
     Expression<int>? memberId,
     Expression<int>? subscriptionId,
+    Expression<int>? periodId,
+    Expression<int>? installmentId,
     Expression<double>? amount,
     Expression<DateTime>? paidAt,
     Expression<String>? paymentMethod,
@@ -2429,6 +3845,8 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
       if (id != null) 'id': id,
       if (memberId != null) 'member_id': memberId,
       if (subscriptionId != null) 'subscription_id': subscriptionId,
+      if (periodId != null) 'period_id': periodId,
+      if (installmentId != null) 'installment_id': installmentId,
       if (amount != null) 'amount': amount,
       if (paidAt != null) 'paid_at': paidAt,
       if (paymentMethod != null) 'payment_method': paymentMethod,
@@ -2440,6 +3858,8 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     Value<int>? id,
     Value<int>? memberId,
     Value<int?>? subscriptionId,
+    Value<int?>? periodId,
+    Value<int?>? installmentId,
     Value<double>? amount,
     Value<DateTime>? paidAt,
     Value<String>? paymentMethod,
@@ -2449,6 +3869,8 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
       id: id ?? this.id,
       memberId: memberId ?? this.memberId,
       subscriptionId: subscriptionId ?? this.subscriptionId,
+      periodId: periodId ?? this.periodId,
+      installmentId: installmentId ?? this.installmentId,
       amount: amount ?? this.amount,
       paidAt: paidAt ?? this.paidAt,
       paymentMethod: paymentMethod ?? this.paymentMethod,
@@ -2467,6 +3889,12 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
     }
     if (subscriptionId.present) {
       map['subscription_id'] = Variable<int>(subscriptionId.value);
+    }
+    if (periodId.present) {
+      map['period_id'] = Variable<int>(periodId.value);
+    }
+    if (installmentId.present) {
+      map['installment_id'] = Variable<int>(installmentId.value);
     }
     if (amount.present) {
       map['amount'] = Variable<double>(amount.value);
@@ -2489,6 +3917,8 @@ class PaymentsCompanion extends UpdateCompanion<Payment> {
           ..write('id: $id, ')
           ..write('memberId: $memberId, ')
           ..write('subscriptionId: $subscriptionId, ')
+          ..write('periodId: $periodId, ')
+          ..write('installmentId: $installmentId, ')
           ..write('amount: $amount, ')
           ..write('paidAt: $paidAt, ')
           ..write('paymentMethod: $paymentMethod, ')
@@ -3244,6 +4674,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $MembersTable members = $MembersTable(this);
   late final $PackagesTable packages = $PackagesTable(this);
   late final $SubscriptionsTable subscriptions = $SubscriptionsTable(this);
+  late final $SubscriptionPeriodsTable subscriptionPeriods =
+      $SubscriptionPeriodsTable(this);
+  late final $InstallmentsTable installments = $InstallmentsTable(this);
   late final $PaymentsTable payments = $PaymentsTable(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
   late final $MemberNotesTable memberNotes = $MemberNotesTable(this);
@@ -3275,9 +4708,37 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_subscriptions_member_id',
     'CREATE INDEX idx_subscriptions_member_id ON subscriptions (member_id)',
   );
+  late final Index idxSubscriptionPeriodsSubId = Index(
+    'idx_subscription_periods_sub_id',
+    'CREATE INDEX idx_subscription_periods_sub_id ON subscription_periods (subscription_id)',
+  );
+  late final Index idxSubscriptionPeriodsDates = Index(
+    'idx_subscription_periods_dates',
+    'CREATE INDEX idx_subscription_periods_dates ON subscription_periods (start_date, end_date)',
+  );
+  late final Index idxSubscriptionPeriodsStatus = Index(
+    'idx_subscription_periods_status',
+    'CREATE INDEX idx_subscription_periods_status ON subscription_periods (payment_status)',
+  );
+  late final Index idxInstallmentsPeriodId = Index(
+    'idx_installments_period_id',
+    'CREATE INDEX idx_installments_period_id ON installments (period_id)',
+  );
+  late final Index idxInstallmentsDueDate = Index(
+    'idx_installments_due_date',
+    'CREATE INDEX idx_installments_due_date ON installments (due_date)',
+  );
+  late final Index idxInstallmentsStatus = Index(
+    'idx_installments_status',
+    'CREATE INDEX idx_installments_status ON installments (status)',
+  );
   late final Index idxPaymentsPaidAt = Index(
     'idx_payments_paid_at',
     'CREATE INDEX idx_payments_paid_at ON payments (paid_at)',
+  );
+  late final Index idxPaymentsInstallmentId = Index(
+    'idx_payments_installment_id',
+    'CREATE INDEX idx_payments_installment_id ON payments (installment_id)',
   );
   late final Index idxExpensesDate = Index(
     'idx_expenses_date',
@@ -3301,6 +4762,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     members,
     packages,
     subscriptions,
+    subscriptionPeriods,
+    installments,
     payments,
     expenses,
     memberNotes,
@@ -3311,7 +4774,14 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxSubscriptionsStartDate,
     idxSubscriptionsStatus,
     idxSubscriptionsMemberId,
+    idxSubscriptionPeriodsSubId,
+    idxSubscriptionPeriodsDates,
+    idxSubscriptionPeriodsStatus,
+    idxInstallmentsPeriodId,
+    idxInstallmentsDueDate,
+    idxInstallmentsStatus,
     idxPaymentsPaidAt,
+    idxPaymentsInstallmentId,
     idxExpensesDate,
     idxMemberNotesMemberId,
   ];
@@ -4389,6 +5859,30 @@ final class $$SubscriptionsTableReferences
     );
   }
 
+  static MultiTypedResultKey<
+    $SubscriptionPeriodsTable,
+    List<SubscriptionPeriod>
+  >
+  _subscriptionPeriodsRefsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.subscriptionPeriods,
+        aliasName: 'subscriptions__id__subscription_periods__subscription_id',
+      );
+
+  $$SubscriptionPeriodsTableProcessedTableManager get subscriptionPeriodsRefs {
+    final manager = $$SubscriptionPeriodsTableTableManager(
+      $_db,
+      $_db.subscriptionPeriods,
+    ).filter((f) => f.subscriptionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(
+      _subscriptionPeriodsRefsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$PaymentsTable, List<Payment>> _paymentsRefsTable(
     _$AppDatabase db,
   ) => MultiTypedResultKey.fromTable(
@@ -4522,6 +6016,31 @@ class $$SubscriptionsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> subscriptionPeriodsRefs(
+    Expression<bool> Function($$SubscriptionPeriodsTableFilterComposer f) f,
+  ) {
+    final $$SubscriptionPeriodsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.subscriptionPeriods,
+      getReferencedColumn: (t) => t.subscriptionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SubscriptionPeriodsTableFilterComposer(
+            $db: $db,
+            $table: $db.subscriptionPeriods,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<bool> paymentsRefs(
@@ -4767,6 +6286,32 @@ class $$SubscriptionsTableAnnotationComposer
     return composer;
   }
 
+  Expression<T> subscriptionPeriodsRefs<T extends Object>(
+    Expression<T> Function($$SubscriptionPeriodsTableAnnotationComposer a) f,
+  ) {
+    final $$SubscriptionPeriodsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.id,
+          referencedTable: $db.subscriptionPeriods,
+          getReferencedColumn: (t) => t.subscriptionId,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SubscriptionPeriodsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.subscriptionPeriods,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return f(composer);
+  }
+
   Expression<T> paymentsRefs<T extends Object>(
     Expression<T> Function($$PaymentsTableAnnotationComposer a) f,
   ) {
@@ -4809,6 +6354,7 @@ class $$SubscriptionsTableTableManager
           PrefetchHooks Function({
             bool memberId,
             bool packageId,
+            bool subscriptionPeriodsRefs,
             bool paymentsRefs,
           })
         > {
@@ -4896,10 +6442,18 @@ class $$SubscriptionsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({memberId = false, packageId = false, paymentsRefs = false}) {
+              ({
+                memberId = false,
+                packageId = false,
+                subscriptionPeriodsRefs = false,
+                paymentsRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
-                  explicitlyWatchedTables: [if (paymentsRefs) db.payments],
+                  explicitlyWatchedTables: [
+                    if (subscriptionPeriodsRefs) db.subscriptionPeriods,
+                    if (paymentsRefs) db.payments,
+                  ],
                   addJoins:
                       <
                         T extends TableManagerState<
@@ -4943,6 +6497,27 @@ class $$SubscriptionsTableTableManager
                       },
                   getPrefetchedDataCallback: (items) async {
                     return [
+                      if (subscriptionPeriodsRefs)
+                        await $_getPrefetchedData<
+                          Subscription,
+                          $SubscriptionsTable,
+                          SubscriptionPeriod
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SubscriptionsTableReferences
+                              ._subscriptionPeriodsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SubscriptionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).subscriptionPeriodsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.subscriptionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                       if (paymentsRefs)
                         await $_getPrefetchedData<
                           Subscription,
@@ -4984,12 +6559,1191 @@ typedef $$SubscriptionsTableProcessedTableManager =
       $$SubscriptionsTableUpdateCompanionBuilder,
       (Subscription, $$SubscriptionsTableReferences),
       Subscription,
-      PrefetchHooks Function({bool memberId, bool packageId, bool paymentsRefs})
+      PrefetchHooks Function({
+        bool memberId,
+        bool packageId,
+        bool subscriptionPeriodsRefs,
+        bool paymentsRefs,
+      })
+    >;
+typedef $$SubscriptionPeriodsTableCreateCompanionBuilder =
+    SubscriptionPeriodsCompanion Function({
+      Value<int> id,
+      required int subscriptionId,
+      Value<int> periodNumber,
+      required DateTime startDate,
+      required DateTime endDate,
+      required double amountDue,
+      Value<double> discount,
+      Value<String> paymentStatus,
+      Value<bool> isFullyPaid,
+      Value<DateTime?> fullyPaidAt,
+      Value<DateTime> createdAt,
+    });
+typedef $$SubscriptionPeriodsTableUpdateCompanionBuilder =
+    SubscriptionPeriodsCompanion Function({
+      Value<int> id,
+      Value<int> subscriptionId,
+      Value<int> periodNumber,
+      Value<DateTime> startDate,
+      Value<DateTime> endDate,
+      Value<double> amountDue,
+      Value<double> discount,
+      Value<String> paymentStatus,
+      Value<bool> isFullyPaid,
+      Value<DateTime?> fullyPaidAt,
+      Value<DateTime> createdAt,
+    });
+
+final class $$SubscriptionPeriodsTableReferences
+    extends
+        BaseReferences<
+          _$AppDatabase,
+          $SubscriptionPeriodsTable,
+          SubscriptionPeriod
+        > {
+  $$SubscriptionPeriodsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $SubscriptionsTable _subscriptionIdTable(_$AppDatabase db) => db
+      .subscriptions
+      .createAlias('subscription_periods__subscription_id__subscriptions__id');
+
+  $$SubscriptionsTableProcessedTableManager get subscriptionId {
+    final $_column = $_itemColumn<int>('subscription_id')!;
+
+    final manager = $$SubscriptionsTableTableManager(
+      $_db,
+      $_db.subscriptions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_subscriptionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$InstallmentsTable, List<Installment>>
+  _installmentsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.installments,
+    aliasName: 'subscription_periods__id__installments__period_id',
+  );
+
+  $$InstallmentsTableProcessedTableManager get installmentsRefs {
+    final manager = $$InstallmentsTableTableManager(
+      $_db,
+      $_db.installments,
+    ).filter((f) => f.periodId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_installmentsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$PaymentsTable, List<Payment>> _paymentsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.payments,
+    aliasName: 'subscription_periods__id__payments__period_id',
+  );
+
+  $$PaymentsTableProcessedTableManager get paymentsRefs {
+    final manager = $$PaymentsTableTableManager(
+      $_db,
+      $_db.payments,
+    ).filter((f) => f.periodId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_paymentsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$SubscriptionPeriodsTableFilterComposer
+    extends Composer<_$AppDatabase, $SubscriptionPeriodsTable> {
+  $$SubscriptionPeriodsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get periodNumber => $composableBuilder(
+    column: $table.periodNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get endDate => $composableBuilder(
+    column: $table.endDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get amountDue => $composableBuilder(
+    column: $table.amountDue,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get discount => $composableBuilder(
+    column: $table.discount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paymentStatus => $composableBuilder(
+    column: $table.paymentStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isFullyPaid => $composableBuilder(
+    column: $table.isFullyPaid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fullyPaidAt => $composableBuilder(
+    column: $table.fullyPaidAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$SubscriptionsTableFilterComposer get subscriptionId {
+    final $$SubscriptionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.subscriptionId,
+      referencedTable: $db.subscriptions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SubscriptionsTableFilterComposer(
+            $db: $db,
+            $table: $db.subscriptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> installmentsRefs(
+    Expression<bool> Function($$InstallmentsTableFilterComposer f) f,
+  ) {
+    final $$InstallmentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.installments,
+      getReferencedColumn: (t) => t.periodId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InstallmentsTableFilterComposer(
+            $db: $db,
+            $table: $db.installments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> paymentsRefs(
+    Expression<bool> Function($$PaymentsTableFilterComposer f) f,
+  ) {
+    final $$PaymentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.payments,
+      getReferencedColumn: (t) => t.periodId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PaymentsTableFilterComposer(
+            $db: $db,
+            $table: $db.payments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$SubscriptionPeriodsTableOrderingComposer
+    extends Composer<_$AppDatabase, $SubscriptionPeriodsTable> {
+  $$SubscriptionPeriodsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get periodNumber => $composableBuilder(
+    column: $table.periodNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startDate => $composableBuilder(
+    column: $table.startDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get endDate => $composableBuilder(
+    column: $table.endDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get amountDue => $composableBuilder(
+    column: $table.amountDue,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get discount => $composableBuilder(
+    column: $table.discount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get paymentStatus => $composableBuilder(
+    column: $table.paymentStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isFullyPaid => $composableBuilder(
+    column: $table.isFullyPaid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fullyPaidAt => $composableBuilder(
+    column: $table.fullyPaidAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SubscriptionsTableOrderingComposer get subscriptionId {
+    final $$SubscriptionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.subscriptionId,
+      referencedTable: $db.subscriptions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SubscriptionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.subscriptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SubscriptionPeriodsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SubscriptionPeriodsTable> {
+  $$SubscriptionPeriodsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get periodNumber => $composableBuilder(
+    column: $table.periodNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get startDate =>
+      $composableBuilder(column: $table.startDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endDate =>
+      $composableBuilder(column: $table.endDate, builder: (column) => column);
+
+  GeneratedColumn<double> get amountDue =>
+      $composableBuilder(column: $table.amountDue, builder: (column) => column);
+
+  GeneratedColumn<double> get discount =>
+      $composableBuilder(column: $table.discount, builder: (column) => column);
+
+  GeneratedColumn<String> get paymentStatus => $composableBuilder(
+    column: $table.paymentStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isFullyPaid => $composableBuilder(
+    column: $table.isFullyPaid,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get fullyPaidAt => $composableBuilder(
+    column: $table.fullyPaidAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$SubscriptionsTableAnnotationComposer get subscriptionId {
+    final $$SubscriptionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.subscriptionId,
+      referencedTable: $db.subscriptions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SubscriptionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.subscriptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<T> installmentsRefs<T extends Object>(
+    Expression<T> Function($$InstallmentsTableAnnotationComposer a) f,
+  ) {
+    final $$InstallmentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.installments,
+      getReferencedColumn: (t) => t.periodId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InstallmentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.installments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> paymentsRefs<T extends Object>(
+    Expression<T> Function($$PaymentsTableAnnotationComposer a) f,
+  ) {
+    final $$PaymentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.payments,
+      getReferencedColumn: (t) => t.periodId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PaymentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.payments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$SubscriptionPeriodsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SubscriptionPeriodsTable,
+          SubscriptionPeriod,
+          $$SubscriptionPeriodsTableFilterComposer,
+          $$SubscriptionPeriodsTableOrderingComposer,
+          $$SubscriptionPeriodsTableAnnotationComposer,
+          $$SubscriptionPeriodsTableCreateCompanionBuilder,
+          $$SubscriptionPeriodsTableUpdateCompanionBuilder,
+          (SubscriptionPeriod, $$SubscriptionPeriodsTableReferences),
+          SubscriptionPeriod,
+          PrefetchHooks Function({
+            bool subscriptionId,
+            bool installmentsRefs,
+            bool paymentsRefs,
+          })
+        > {
+  $$SubscriptionPeriodsTableTableManager(
+    _$AppDatabase db,
+    $SubscriptionPeriodsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SubscriptionPeriodsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SubscriptionPeriodsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer: () =>
+              $$SubscriptionPeriodsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> subscriptionId = const Value.absent(),
+                Value<int> periodNumber = const Value.absent(),
+                Value<DateTime> startDate = const Value.absent(),
+                Value<DateTime> endDate = const Value.absent(),
+                Value<double> amountDue = const Value.absent(),
+                Value<double> discount = const Value.absent(),
+                Value<String> paymentStatus = const Value.absent(),
+                Value<bool> isFullyPaid = const Value.absent(),
+                Value<DateTime?> fullyPaidAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => SubscriptionPeriodsCompanion(
+                id: id,
+                subscriptionId: subscriptionId,
+                periodNumber: periodNumber,
+                startDate: startDate,
+                endDate: endDate,
+                amountDue: amountDue,
+                discount: discount,
+                paymentStatus: paymentStatus,
+                isFullyPaid: isFullyPaid,
+                fullyPaidAt: fullyPaidAt,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int subscriptionId,
+                Value<int> periodNumber = const Value.absent(),
+                required DateTime startDate,
+                required DateTime endDate,
+                required double amountDue,
+                Value<double> discount = const Value.absent(),
+                Value<String> paymentStatus = const Value.absent(),
+                Value<bool> isFullyPaid = const Value.absent(),
+                Value<DateTime?> fullyPaidAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => SubscriptionPeriodsCompanion.insert(
+                id: id,
+                subscriptionId: subscriptionId,
+                periodNumber: periodNumber,
+                startDate: startDate,
+                endDate: endDate,
+                amountDue: amountDue,
+                discount: discount,
+                paymentStatus: paymentStatus,
+                isFullyPaid: isFullyPaid,
+                fullyPaidAt: fullyPaidAt,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$SubscriptionPeriodsTable, SubscriptionPeriod>(
+                    table,
+                  ),
+                  $$SubscriptionPeriodsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                subscriptionId = false,
+                installmentsRefs = false,
+                paymentsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (installmentsRefs) db.installments,
+                    if (paymentsRefs) db.payments,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (subscriptionId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.subscriptionId,
+                            referencedTable:
+                                $$SubscriptionPeriodsTableReferences
+                                    ._subscriptionIdTable(db),
+                            referencedColumn:
+                                $$SubscriptionPeriodsTableReferences
+                                    ._subscriptionIdTable(db)
+                                    .id,
+                          ) as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (installmentsRefs)
+                        await $_getPrefetchedData<
+                          SubscriptionPeriod,
+                          $SubscriptionPeriodsTable,
+                          Installment
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SubscriptionPeriodsTableReferences
+                              ._installmentsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SubscriptionPeriodsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).installmentsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.periodId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (paymentsRefs)
+                        await $_getPrefetchedData<
+                          SubscriptionPeriod,
+                          $SubscriptionPeriodsTable,
+                          Payment
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SubscriptionPeriodsTableReferences
+                              ._paymentsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SubscriptionPeriodsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).paymentsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.periodId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$SubscriptionPeriodsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SubscriptionPeriodsTable,
+      SubscriptionPeriod,
+      $$SubscriptionPeriodsTableFilterComposer,
+      $$SubscriptionPeriodsTableOrderingComposer,
+      $$SubscriptionPeriodsTableAnnotationComposer,
+      $$SubscriptionPeriodsTableCreateCompanionBuilder,
+      $$SubscriptionPeriodsTableUpdateCompanionBuilder,
+      (SubscriptionPeriod, $$SubscriptionPeriodsTableReferences),
+      SubscriptionPeriod,
+      PrefetchHooks Function({
+        bool subscriptionId,
+        bool installmentsRefs,
+        bool paymentsRefs,
+      })
+    >;
+typedef $$InstallmentsTableCreateCompanionBuilder =
+    InstallmentsCompanion Function({
+      Value<int> id,
+      required int periodId,
+      Value<int> installmentNumber,
+      required double amount,
+      Value<double> paidAmount,
+      required DateTime dueDate,
+      Value<String> status,
+      Value<DateTime?> paidAt,
+      Value<String?> paymentMethod,
+      Value<String?> notes,
+      Value<DateTime> createdAt,
+    });
+typedef $$InstallmentsTableUpdateCompanionBuilder =
+    InstallmentsCompanion Function({
+      Value<int> id,
+      Value<int> periodId,
+      Value<int> installmentNumber,
+      Value<double> amount,
+      Value<double> paidAmount,
+      Value<DateTime> dueDate,
+      Value<String> status,
+      Value<DateTime?> paidAt,
+      Value<String?> paymentMethod,
+      Value<String?> notes,
+      Value<DateTime> createdAt,
+    });
+
+final class $$InstallmentsTableReferences
+    extends BaseReferences<_$AppDatabase, $InstallmentsTable, Installment> {
+  $$InstallmentsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $SubscriptionPeriodsTable _periodIdTable(_$AppDatabase db) => db
+      .subscriptionPeriods
+      .createAlias('installments__period_id__subscription_periods__id');
+
+  $$SubscriptionPeriodsTableProcessedTableManager get periodId {
+    final $_column = $_itemColumn<int>('period_id')!;
+
+    final manager = $$SubscriptionPeriodsTableTableManager(
+      $_db,
+      $_db.subscriptionPeriods,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_periodIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static MultiTypedResultKey<$PaymentsTable, List<Payment>> _paymentsRefsTable(
+    _$AppDatabase db,
+  ) => MultiTypedResultKey.fromTable(
+    db.payments,
+    aliasName: 'installments__id__payments__installment_id',
+  );
+
+  $$PaymentsTableProcessedTableManager get paymentsRefs {
+    final manager = $$PaymentsTableTableManager(
+      $_db,
+      $_db.payments,
+    ).filter((f) => f.installmentId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_paymentsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
+
+class $$InstallmentsTableFilterComposer
+    extends Composer<_$AppDatabase, $InstallmentsTable> {
+  $$InstallmentsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get installmentNumber => $composableBuilder(
+    column: $table.installmentNumber,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get paidAmount => $composableBuilder(
+    column: $table.paidAmount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get paidAt => $composableBuilder(
+    column: $table.paidAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get paymentMethod => $composableBuilder(
+    column: $table.paymentMethod,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$SubscriptionPeriodsTableFilterComposer get periodId {
+    final $$SubscriptionPeriodsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.periodId,
+      referencedTable: $db.subscriptionPeriods,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SubscriptionPeriodsTableFilterComposer(
+            $db: $db,
+            $table: $db.subscriptionPeriods,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  Expression<bool> paymentsRefs(
+    Expression<bool> Function($$PaymentsTableFilterComposer f) f,
+  ) {
+    final $$PaymentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.payments,
+      getReferencedColumn: (t) => t.installmentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PaymentsTableFilterComposer(
+            $db: $db,
+            $table: $db.payments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$InstallmentsTableOrderingComposer
+    extends Composer<_$AppDatabase, $InstallmentsTable> {
+  $$InstallmentsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get installmentNumber => $composableBuilder(
+    column: $table.installmentNumber,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get amount => $composableBuilder(
+    column: $table.amount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get paidAmount => $composableBuilder(
+    column: $table.paidAmount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get dueDate => $composableBuilder(
+    column: $table.dueDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get paidAt => $composableBuilder(
+    column: $table.paidAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get paymentMethod => $composableBuilder(
+    column: $table.paymentMethod,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SubscriptionPeriodsTableOrderingComposer get periodId {
+    final $$SubscriptionPeriodsTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.periodId,
+          referencedTable: $db.subscriptionPeriods,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SubscriptionPeriodsTableOrderingComposer(
+                $db: $db,
+                $table: $db.subscriptionPeriods,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+}
+
+class $$InstallmentsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $InstallmentsTable> {
+  $$InstallmentsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get installmentNumber => $composableBuilder(
+    column: $table.installmentNumber,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get amount =>
+      $composableBuilder(column: $table.amount, builder: (column) => column);
+
+  GeneratedColumn<double> get paidAmount => $composableBuilder(
+    column: $table.paidAmount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get dueDate =>
+      $composableBuilder(column: $table.dueDate, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get paidAt =>
+      $composableBuilder(column: $table.paidAt, builder: (column) => column);
+
+  GeneratedColumn<String> get paymentMethod => $composableBuilder(
+    column: $table.paymentMethod,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$SubscriptionPeriodsTableAnnotationComposer get periodId {
+    final $$SubscriptionPeriodsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.periodId,
+          referencedTable: $db.subscriptionPeriods,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SubscriptionPeriodsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.subscriptionPeriods,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  Expression<T> paymentsRefs<T extends Object>(
+    Expression<T> Function($$PaymentsTableAnnotationComposer a) f,
+  ) {
+    final $$PaymentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.payments,
+      getReferencedColumn: (t) => t.installmentId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$PaymentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.payments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+}
+
+class $$InstallmentsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $InstallmentsTable,
+          Installment,
+          $$InstallmentsTableFilterComposer,
+          $$InstallmentsTableOrderingComposer,
+          $$InstallmentsTableAnnotationComposer,
+          $$InstallmentsTableCreateCompanionBuilder,
+          $$InstallmentsTableUpdateCompanionBuilder,
+          (Installment, $$InstallmentsTableReferences),
+          Installment,
+          PrefetchHooks Function({bool periodId, bool paymentsRefs})
+        > {
+  $$InstallmentsTableTableManager(_$AppDatabase db, $InstallmentsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$InstallmentsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$InstallmentsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$InstallmentsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> periodId = const Value.absent(),
+                Value<int> installmentNumber = const Value.absent(),
+                Value<double> amount = const Value.absent(),
+                Value<double> paidAmount = const Value.absent(),
+                Value<DateTime> dueDate = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> paidAt = const Value.absent(),
+                Value<String?> paymentMethod = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => InstallmentsCompanion(
+                id: id,
+                periodId: periodId,
+                installmentNumber: installmentNumber,
+                amount: amount,
+                paidAmount: paidAmount,
+                dueDate: dueDate,
+                status: status,
+                paidAt: paidAt,
+                paymentMethod: paymentMethod,
+                notes: notes,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int periodId,
+                Value<int> installmentNumber = const Value.absent(),
+                required double amount,
+                Value<double> paidAmount = const Value.absent(),
+                required DateTime dueDate,
+                Value<String> status = const Value.absent(),
+                Value<DateTime?> paidAt = const Value.absent(),
+                Value<String?> paymentMethod = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => InstallmentsCompanion.insert(
+                id: id,
+                periodId: periodId,
+                installmentNumber: installmentNumber,
+                amount: amount,
+                paidAmount: paidAmount,
+                dueDate: dueDate,
+                status: status,
+                paidAt: paidAt,
+                paymentMethod: paymentMethod,
+                notes: notes,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$InstallmentsTable, Installment>(table),
+                  $$InstallmentsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({periodId = false, paymentsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (paymentsRefs) db.payments],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (periodId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.periodId,
+                        referencedTable: $$InstallmentsTableReferences
+                            ._periodIdTable(db),
+                        referencedColumn: $$InstallmentsTableReferences
+                            ._periodIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (paymentsRefs)
+                    await $_getPrefetchedData<
+                      Installment,
+                      $InstallmentsTable,
+                      Payment
+                    >(
+                      currentTable: table,
+                      referencedTable: $$InstallmentsTableReferences
+                          ._paymentsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$InstallmentsTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).paymentsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where(
+                            (e) => e.installmentId == item.id,
+                          ),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$InstallmentsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $InstallmentsTable,
+      Installment,
+      $$InstallmentsTableFilterComposer,
+      $$InstallmentsTableOrderingComposer,
+      $$InstallmentsTableAnnotationComposer,
+      $$InstallmentsTableCreateCompanionBuilder,
+      $$InstallmentsTableUpdateCompanionBuilder,
+      (Installment, $$InstallmentsTableReferences),
+      Installment,
+      PrefetchHooks Function({bool periodId, bool paymentsRefs})
     >;
 typedef $$PaymentsTableCreateCompanionBuilder = PaymentsCompanion Function({
   Value<int> id,
   required int memberId,
   Value<int?> subscriptionId,
+  Value<int?> periodId,
+  Value<int?> installmentId,
   required double amount,
   Value<DateTime> paidAt,
   Value<String> paymentMethod,
@@ -4999,6 +7753,8 @@ typedef $$PaymentsTableUpdateCompanionBuilder = PaymentsCompanion Function({
   Value<int> id,
   Value<int> memberId,
   Value<int?> subscriptionId,
+  Value<int?> periodId,
+  Value<int?> installmentId,
   Value<double> amount,
   Value<DateTime> paidAt,
   Value<String> paymentMethod,
@@ -5038,6 +7794,41 @@ final class $$PaymentsTableReferences
       $_db.subscriptions,
     ).filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_subscriptionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SubscriptionPeriodsTable _periodIdTable(_$AppDatabase db) => db
+      .subscriptionPeriods
+      .createAlias('payments__period_id__subscription_periods__id');
+
+  $$SubscriptionPeriodsTableProcessedTableManager? get periodId {
+    final $_column = $_itemColumn<int>('period_id');
+    if ($_column == null) return null;
+    final manager = $$SubscriptionPeriodsTableTableManager(
+      $_db,
+      $_db.subscriptionPeriods,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_periodIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $InstallmentsTable _installmentIdTable(_$AppDatabase db) =>
+      db.installments.createAlias('payments__installment_id__installments__id');
+
+  $$InstallmentsTableProcessedTableManager? get installmentId {
+    final $_column = $_itemColumn<int>('installment_id');
+    if ($_column == null) return null;
+    final manager = $$InstallmentsTableTableManager(
+      $_db,
+      $_db.installments,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_installmentIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: [item]),
@@ -5116,6 +7907,52 @@ class $$PaymentsTableFilterComposer
           }) => $$SubscriptionsTableFilterComposer(
             $db: $db,
             $table: $db.subscriptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SubscriptionPeriodsTableFilterComposer get periodId {
+    final $$SubscriptionPeriodsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.periodId,
+      referencedTable: $db.subscriptionPeriods,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SubscriptionPeriodsTableFilterComposer(
+            $db: $db,
+            $table: $db.subscriptionPeriods,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$InstallmentsTableFilterComposer get installmentId {
+    final $$InstallmentsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.installmentId,
+      referencedTable: $db.installments,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InstallmentsTableFilterComposer(
+            $db: $db,
+            $table: $db.installments,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5205,6 +8042,53 @@ class $$PaymentsTableOrderingComposer
     );
     return composer;
   }
+
+  $$SubscriptionPeriodsTableOrderingComposer get periodId {
+    final $$SubscriptionPeriodsTableOrderingComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.periodId,
+          referencedTable: $db.subscriptionPeriods,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SubscriptionPeriodsTableOrderingComposer(
+                $db: $db,
+                $table: $db.subscriptionPeriods,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$InstallmentsTableOrderingComposer get installmentId {
+    final $$InstallmentsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.installmentId,
+      referencedTable: $db.installments,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InstallmentsTableOrderingComposer(
+            $db: $db,
+            $table: $db.installments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$PaymentsTableAnnotationComposer
@@ -5278,6 +8162,53 @@ class $$PaymentsTableAnnotationComposer
     );
     return composer;
   }
+
+  $$SubscriptionPeriodsTableAnnotationComposer get periodId {
+    final $$SubscriptionPeriodsTableAnnotationComposer composer =
+        $composerBuilder(
+          composer: this,
+          getCurrentColumn: (t) => t.periodId,
+          referencedTable: $db.subscriptionPeriods,
+          getReferencedColumn: (t) => t.id,
+          builder:
+              (
+                joinBuilder, {
+                $addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer,
+              }) => $$SubscriptionPeriodsTableAnnotationComposer(
+                $db: $db,
+                $table: $db.subscriptionPeriods,
+                $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                joinBuilder: joinBuilder,
+                $removeJoinBuilderFromRootComposer:
+                    $removeJoinBuilderFromRootComposer,
+              ),
+        );
+    return composer;
+  }
+
+  $$InstallmentsTableAnnotationComposer get installmentId {
+    final $$InstallmentsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.installmentId,
+      referencedTable: $db.installments,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$InstallmentsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.installments,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
 }
 
 class $$PaymentsTableTableManager
@@ -5293,7 +8224,12 @@ class $$PaymentsTableTableManager
           $$PaymentsTableUpdateCompanionBuilder,
           (Payment, $$PaymentsTableReferences),
           Payment,
-          PrefetchHooks Function({bool memberId, bool subscriptionId})
+          PrefetchHooks Function({
+            bool memberId,
+            bool subscriptionId,
+            bool periodId,
+            bool installmentId,
+          })
         > {
   $$PaymentsTableTableManager(_$AppDatabase db, $PaymentsTable table)
     : super(
@@ -5311,6 +8247,8 @@ class $$PaymentsTableTableManager
                 Value<int> id = const Value.absent(),
                 Value<int> memberId = const Value.absent(),
                 Value<int?> subscriptionId = const Value.absent(),
+                Value<int?> periodId = const Value.absent(),
+                Value<int?> installmentId = const Value.absent(),
                 Value<double> amount = const Value.absent(),
                 Value<DateTime> paidAt = const Value.absent(),
                 Value<String> paymentMethod = const Value.absent(),
@@ -5319,6 +8257,8 @@ class $$PaymentsTableTableManager
                 id: id,
                 memberId: memberId,
                 subscriptionId: subscriptionId,
+                periodId: periodId,
+                installmentId: installmentId,
                 amount: amount,
                 paidAt: paidAt,
                 paymentMethod: paymentMethod,
@@ -5329,6 +8269,8 @@ class $$PaymentsTableTableManager
                 Value<int> id = const Value.absent(),
                 required int memberId,
                 Value<int?> subscriptionId = const Value.absent(),
+                Value<int?> periodId = const Value.absent(),
+                Value<int?> installmentId = const Value.absent(),
                 required double amount,
                 Value<DateTime> paidAt = const Value.absent(),
                 Value<String> paymentMethod = const Value.absent(),
@@ -5337,6 +8279,8 @@ class $$PaymentsTableTableManager
                 id: id,
                 memberId: memberId,
                 subscriptionId: subscriptionId,
+                periodId: periodId,
+                installmentId: installmentId,
                 amount: amount,
                 paidAt: paidAt,
                 paymentMethod: paymentMethod,
@@ -5350,56 +8294,84 @@ class $$PaymentsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({memberId = false, subscriptionId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (memberId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.memberId,
-                        referencedTable: $$PaymentsTableReferences
-                            ._memberIdTable(db),
-                        referencedColumn: $$PaymentsTableReferences
-                            ._memberIdTable(db)
-                            .id,
-                      ) as T;
-                    }
-                    if (subscriptionId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.subscriptionId,
-                        referencedTable: $$PaymentsTableReferences
-                            ._subscriptionIdTable(db),
-                        referencedColumn: $$PaymentsTableReferences
-                            ._subscriptionIdTable(db)
-                            .id,
-                      ) as T;
-                    }
+          prefetchHooksCallback:
+              ({
+                memberId = false,
+                subscriptionId = false,
+                periodId = false,
+                installmentId = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (memberId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.memberId,
+                            referencedTable: $$PaymentsTableReferences
+                                ._memberIdTable(db),
+                            referencedColumn: $$PaymentsTableReferences
+                                ._memberIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (subscriptionId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.subscriptionId,
+                            referencedTable: $$PaymentsTableReferences
+                                ._subscriptionIdTable(db),
+                            referencedColumn: $$PaymentsTableReferences
+                                ._subscriptionIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (periodId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.periodId,
+                            referencedTable: $$PaymentsTableReferences
+                                ._periodIdTable(db),
+                            referencedColumn: $$PaymentsTableReferences
+                                ._periodIdTable(db)
+                                .id,
+                          ) as T;
+                        }
+                        if (installmentId) {
+                          state = state.withJoin(
+                            currentTable: table,
+                            currentColumn: table.installmentId,
+                            referencedTable: $$PaymentsTableReferences
+                                ._installmentIdTable(db),
+                            referencedColumn: $$PaymentsTableReferences
+                                ._installmentIdTable(db)
+                                .id,
+                          ) as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -5416,7 +8388,12 @@ typedef $$PaymentsTableProcessedTableManager =
       $$PaymentsTableUpdateCompanionBuilder,
       (Payment, $$PaymentsTableReferences),
       Payment,
-      PrefetchHooks Function({bool memberId, bool subscriptionId})
+      PrefetchHooks Function({
+        bool memberId,
+        bool subscriptionId,
+        bool periodId,
+        bool installmentId,
+      })
     >;
 typedef $$ExpensesTableCreateCompanionBuilder = ExpensesCompanion Function({
   Value<int> id,
@@ -5951,6 +8928,10 @@ class $AppDatabaseManager {
       $$PackagesTableTableManager(_db, _db.packages);
   $$SubscriptionsTableTableManager get subscriptions =>
       $$SubscriptionsTableTableManager(_db, _db.subscriptions);
+  $$SubscriptionPeriodsTableTableManager get subscriptionPeriods =>
+      $$SubscriptionPeriodsTableTableManager(_db, _db.subscriptionPeriods);
+  $$InstallmentsTableTableManager get installments =>
+      $$InstallmentsTableTableManager(_db, _db.installments);
   $$PaymentsTableTableManager get payments =>
       $$PaymentsTableTableManager(_db, _db.payments);
   $$ExpensesTableTableManager get expenses =>

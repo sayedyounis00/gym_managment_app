@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:gym_managment_app/core/utils/date_utils.dart';
 import 'package:gym_managment_app/core/widgets/status_chip.dart';
+import 'installment.dart';
+import 'subscription_period.dart';
 
 class Subscription extends Equatable {
   final int id;
@@ -17,6 +19,7 @@ class Subscription extends Equatable {
   final int totalPausedDays;
   final double amountPaid;
   final DateTime createdAt;
+  final List<SubscriptionPeriod> periods;
 
   const Subscription({
     required this.id,
@@ -33,14 +36,55 @@ class Subscription extends Equatable {
     this.totalPausedDays = 0,
     this.amountPaid = 0.0,
     required this.createdAt,
+    this.periods = const [],
   });
 
   bool get isPaused => status == 'paused';
   bool get isExpired => status == 'expired';
   bool get isActive => status == 'active';
 
-  /// Remaining unpaid balance.
-  double get remainingAmount => (priceSnapshot - amountPaid).clamp(0.0, double.infinity);
+  /// Currently active period based on today's date, or the latest period if none matches
+  SubscriptionPeriod? get currentPeriod {
+    if (periods.isEmpty) return null;
+    final now = DateTime.now();
+    return periods.where((p) => p.isCurrent(now)).firstOrNull ?? periods.last;
+  }
+
+  /// Outstanding balance across all periods (or fallback to legacy calculation)
+  double get totalOutstandingBalance {
+    if (periods.isNotEmpty) {
+      return periods.fold<double>(0.0, (sum, p) => sum + p.remainingBalance);
+    }
+    return remainingAmount;
+  }
+
+  /// Backward-compatible remaining balance getter
+  double get remainingAmount {
+    if (periods.isNotEmpty) {
+      return totalOutstandingBalance;
+    }
+    return (priceSnapshot - amountPaid).clamp(0.0, double.infinity);
+  }
+
+  /// Whether any period has overdue installments
+  bool get hasOverdueInstallments =>
+      periods.any((p) => p.hasOverdueInstallments());
+
+  /// All installments across all periods
+  List<Installment> get allInstallments =>
+      periods.expand((p) => p.installments).toList();
+
+  /// All pending installments
+  List<Installment> get pendingInstallments =>
+      allInstallments.where((i) => i.isPending).toList();
+
+  /// Next pending installment due to be paid
+  Installment? get nextPendingInstallment {
+    final pending = pendingInstallments;
+    if (pending.isEmpty) return null;
+    pending.sort((a, b) => a.dueDate.compareTo(b.dueDate));
+    return pending.first;
+  }
 
   /// Remaining calendar days until expiration.
   int remainingDays([DateTime? now]) {
@@ -104,6 +148,7 @@ class Subscription extends Equatable {
     int? totalPausedDays,
     double? amountPaid,
     DateTime? createdAt,
+    List<SubscriptionPeriod>? periods,
   }) {
     return Subscription(
       id: id ?? this.id,
@@ -120,6 +165,7 @@ class Subscription extends Equatable {
       totalPausedDays: totalPausedDays ?? this.totalPausedDays,
       amountPaid: amountPaid ?? this.amountPaid,
       createdAt: createdAt ?? this.createdAt,
+      periods: periods ?? this.periods,
     );
   }
 
@@ -139,5 +185,6 @@ class Subscription extends Equatable {
         totalPausedDays,
         amountPaid,
         createdAt,
+        periods,
       ];
 }
