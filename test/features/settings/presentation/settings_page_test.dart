@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:get_it/get_it.dart';
+import 'package:gym_managment_app/core/services/notification_service.dart';
 import 'package:gym_managment_app/core/usecases/usecase.dart';
 import 'package:gym_managment_app/core/widgets/status_chip.dart';
 import 'package:gym_managment_app/features/settings/domain/entities/backup_info.dart';
@@ -28,6 +30,7 @@ class MockRestoreBackup extends Mock implements RestoreBackup {}
 class MockGetLastBackupInfo extends Mock implements GetLastBackupInfo {}
 class MockExportMembersCsv extends Mock implements ExportMembersCsv {}
 class MockExportMembersPdf extends Mock implements ExportMembersPdf {}
+class MockNotificationService extends Mock implements NotificationService {}
 
 void main() {
   final sl = GetIt.instance;
@@ -37,6 +40,7 @@ void main() {
   late MockGetLastBackupInfo mockGetLastBackupInfo;
   late MockExportMembersCsv mockExportCsv;
   late MockExportMembersPdf mockExportPdf;
+  late MockNotificationService mockNotificationService;
 
   setUpAll(() async {
     await initializeDateFormatting('ar', null);
@@ -44,6 +48,7 @@ void main() {
   });
 
   setUp(() async {
+    FlutterSecureStorage.setMockInitialValues({});
     await sl.reset();
 
     mockBackupRepo = MockBackupRepository();
@@ -52,11 +57,18 @@ void main() {
     mockGetLastBackupInfo = MockGetLastBackupInfo();
     mockExportCsv = MockExportMembersCsv();
     mockExportPdf = MockExportMembersPdf();
+    mockNotificationService = MockNotificationService();
 
     when(() => mockBackupRepo.getLocalBackups())
         .thenAnswer((_) async => const Right([]));
     when(() => mockGetLastBackupInfo(any()))
         .thenAnswer((_) async => const Right(null));
+    when(() => mockNotificationService.cancelAll())
+        .thenAnswer((_) async {});
+    when(() => mockNotificationService.requestPermission())
+        .thenAnswer((_) async => true);
+
+    sl.registerLazySingleton<NotificationService>(() => mockNotificationService);
 
     sl.registerFactory<BackupCubit>(
       () => BackupCubit(
@@ -104,6 +116,19 @@ void main() {
       expect(find.text('تصدير المشتركين'), findsOneWidget);
       expect(find.text('تفعيل التنبيهات'), findsOneWidget);
       expect(find.text('إصدار التطبيق'), findsOneWidget);
+    });
+
+    testWidgets('Toggling notifications switch calls notificationService', (tester) async {
+      await tester.pumpWidget(buildTestableWidget(const SettingsPage()));
+      await tester.pumpAndSettle();
+
+      final switchFinder = find.byType(Switch);
+      expect(switchFinder, findsOneWidget);
+
+      await tester.tap(switchFinder);
+      await tester.pumpAndSettle();
+
+      verify(() => mockNotificationService.cancelAll()).called(1);
     });
 
     testWidgets('BackupStatusCard shows protected state when backup is fresh', (tester) async {
