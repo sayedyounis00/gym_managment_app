@@ -1,3 +1,4 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import '../database/app_database.dart';
 import '../database/daos/dashboard_dao.dart';
@@ -5,6 +6,20 @@ import '../database/daos/members_dao.dart';
 import '../database/daos/notes_dao.dart';
 import '../services/image_storage_service.dart';
 import '../services/notification_service.dart';
+
+import '../../features/settings/data/datasources/backup_source.dart';
+import '../../features/settings/data/datasources/export_source.dart';
+import '../../features/settings/data/repositories/backup_repository_impl.dart';
+import '../../features/settings/data/repositories/export_repository_impl.dart';
+import '../../features/settings/domain/repositories/backup_repository.dart';
+import '../../features/settings/domain/repositories/export_repository.dart';
+import '../../features/settings/domain/usecases/create_backup.dart';
+import '../../features/settings/domain/usecases/get_last_backup_info.dart';
+import '../../features/settings/domain/usecases/restore_backup.dart';
+import '../../features/settings/domain/usecases/export_members_csv.dart';
+import '../../features/settings/domain/usecases/export_members_pdf.dart';
+import '../../features/settings/presentation/cubit/backup_cubit.dart';
+import '../../features/settings/presentation/cubit/export_cubit.dart';
 
 import '../../features/dashboard/data/datasources/dashboard_local_datasource.dart';
 import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
@@ -340,4 +355,148 @@ Future<void> initDependencies({
       ),
     );
   }
+
+  // Storage
+  if (!sl.isRegistered<FlutterSecureStorage>()) {
+    sl.registerLazySingleton<FlutterSecureStorage>(
+      () => const FlutterSecureStorage(),
+    );
+  }
+
+  // Settings & Backup
+  if (!sl.isRegistered<BackupSource>()) {
+    sl.registerLazySingleton<BackupSource>(
+      () => BackupSourceImpl(
+        db: sl<AppDatabase>(),
+        secureStorage: sl<FlutterSecureStorage>(),
+        notificationService: sl<NotificationService>(),
+        onReinitializeDatabase: reinitializeDatabase,
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<BackupRepository>()) {
+    sl.registerLazySingleton<BackupRepository>(
+      () => BackupRepositoryImpl(backupSource: sl<BackupSource>()),
+    );
+  }
+
+  if (!sl.isRegistered<CreateBackup>()) {
+    sl.registerLazySingleton<CreateBackup>(
+      () => CreateBackup(sl<BackupRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<RestoreBackup>()) {
+    sl.registerLazySingleton<RestoreBackup>(
+      () => RestoreBackup(sl<BackupRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<GetLastBackupInfo>()) {
+    sl.registerLazySingleton<GetLastBackupInfo>(
+      () => GetLastBackupInfo(sl<BackupRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<BackupCubit>()) {
+    sl.registerFactory<BackupCubit>(
+      () => BackupCubit(
+        createBackupUseCase: sl<CreateBackup>(),
+        restoreBackupUseCase: sl<RestoreBackup>(),
+        getLastBackupInfoUseCase: sl<GetLastBackupInfo>(),
+        backupRepository: sl<BackupRepository>(),
+      ),
+    );
+  }
+
+  // Settings & Export
+  if (!sl.isRegistered<ExportSource>()) {
+    sl.registerLazySingleton<ExportSource>(
+      () => ExportSourceImpl(
+        db: sl<AppDatabase>(),
+        membersDao: sl<MembersDao>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<ExportRepository>()) {
+    sl.registerLazySingleton<ExportRepository>(
+      () => ExportRepositoryImpl(exportSource: sl<ExportSource>()),
+    );
+  }
+
+  if (!sl.isRegistered<ExportMembersCsv>()) {
+    sl.registerLazySingleton<ExportMembersCsv>(
+      () => ExportMembersCsv(sl<ExportRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<ExportMembersPdf>()) {
+    sl.registerLazySingleton<ExportMembersPdf>(
+      () => ExportMembersPdf(sl<ExportRepository>()),
+    );
+  }
+
+  if (!sl.isRegistered<ExportCubit>()) {
+    sl.registerFactory<ExportCubit>(
+      () => ExportCubit(
+        exportMembersCsv: sl<ExportMembersCsv>(),
+        exportMembersPdf: sl<ExportMembersPdf>(),
+      ),
+    );
+  }
 }
+
+Future<void> reinitializeDatabase() async {
+  if (sl.isRegistered<AppDatabase>()) {
+    try {
+      await sl<AppDatabase>().close();
+    } catch (_) {}
+    await sl.unregister<AppDatabase>();
+  }
+  if (sl.isRegistered<DashboardDao>()) await sl.unregister<DashboardDao>();
+  if (sl.isRegistered<MembersDao>()) await sl.unregister<MembersDao>();
+  if (sl.isRegistered<NotesDao>()) await sl.unregister<NotesDao>();
+  if (sl.isRegistered<MembershipsDao>()) await sl.unregister<MembershipsDao>();
+  if (sl.isRegistered<DashboardLocalDataSource>()) await sl.unregister<DashboardLocalDataSource>();
+  if (sl.isRegistered<DashboardRepository>()) await sl.unregister<DashboardRepository>();
+  if (sl.isRegistered<MembersRepository>()) await sl.unregister<MembersRepository>();
+  if (sl.isRegistered<NotesRepository>()) await sl.unregister<NotesRepository>();
+  if (sl.isRegistered<MembershipsLocalDataSource>()) await sl.unregister<MembershipsLocalDataSource>();
+  if (sl.isRegistered<MembershipsRepository>()) await sl.unregister<MembershipsRepository>();
+
+  final newDb = AppDatabase();
+  sl.registerSingleton<AppDatabase>(newDb);
+  sl.registerSingleton<DashboardDao>(DashboardDao(newDb));
+  sl.registerSingleton<MembersDao>(MembersDao(newDb));
+  sl.registerSingleton<NotesDao>(NotesDao(newDb));
+  sl.registerSingleton<MembershipsDao>(MembershipsDao(newDb));
+
+  sl.registerLazySingleton<DashboardLocalDataSource>(
+    () => DashboardLocalDataSourceImpl(dashboardDao: sl<DashboardDao>()),
+  );
+  sl.registerLazySingleton<DashboardRepository>(
+    () => DashboardRepositoryImpl(localDataSource: sl<DashboardLocalDataSource>()),
+  );
+  sl.registerLazySingleton<MembersRepository>(
+    () => MembersRepositoryImpl(
+      membersDao: sl<MembersDao>(),
+      notesDao: sl<NotesDao>(),
+      imageStorageService: sl<ImageStorageService>(),
+    ),
+  );
+  sl.registerLazySingleton<NotesRepository>(
+    () => NotesRepositoryImpl(notesDao: sl<NotesDao>()),
+  );
+  sl.registerLazySingleton<MembershipsLocalDataSource>(
+    () => MembershipsLocalDataSourceImpl(dao: sl<MembershipsDao>()),
+  );
+  sl.registerLazySingleton<MembershipsRepository>(
+    () => MembershipsRepositoryImpl(localDataSource: sl<MembershipsLocalDataSource>()),
+  );
+
+  // Trigger migration / opening by pinging database
+  await newDb.customSelect('SELECT 1').get();
+}
+

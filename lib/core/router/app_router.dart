@@ -14,6 +14,8 @@ import '../../features/memberships/presentation/cubit/packages/packages_cubit.da
 import '../../features/memberships/presentation/cubit/package_form/package_form_cubit.dart';
 import '../../features/memberships/presentation/pages/packages_page.dart';
 import '../../features/memberships/presentation/pages/add_edit_package_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/settings/presentation/pages/backup_page.dart';
 import '../di/injection_container.dart';
 import '../widgets/main_shell_screen.dart';
 import '../widgets/placeholder_screen.dart';
@@ -153,10 +155,17 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       parentNavigatorKey: _rootNavigatorKey,
       path: AppRoutes.settings,
-      builder: (context, state) => const PlaceholderScreen(
-        title: 'الإعدادات',
-        icon: Icons.settings_rounded,
-        subtitle: 'الأمان، النسخ الاحتياطي، وإعدادات التطبيق',
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const SettingsPage(),
+      ),
+    ),
+    GoRoute(
+      parentNavigatorKey: _rootNavigatorKey,
+      path: AppRoutes.backup,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const BackupPage(),
       ),
     ),
   ],
