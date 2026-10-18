@@ -36,6 +36,7 @@ class RenewBottomSheet extends StatelessWidget {
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
+      showDragHandle: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -59,6 +60,7 @@ class RenewBottomSheet extends StatelessWidget {
   void _showPackagePicker(BuildContext context, List<MembershipPackage> packages, MembershipPackage? selected) {
     showModalBottomSheet(
       context: context,
+      showDragHandle: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -197,219 +199,224 @@ class RenewBottomSheet extends StatelessWidget {
                   padding: EdgeInsets.only(
                     bottom: MediaQuery.of(context).viewInsets.bottom,
                   ),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.md,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Drag handle is rendered by bottomSheetTheme, title below
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: AppColors.primaryLight,
-                                shape: BoxShape.circle,
+                  child: SafeArea(
+                    top: false,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: AppSpacing.md,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.primaryLight,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.autorenew_rounded,
+                                  color: AppColors.primary,
+                                  size: 22,
+                                ),
                               ),
-                              child: const Icon(
-                                Icons.autorenew_rounded,
-                                color: AppColors.primary,
-                                size: 22,
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'تجديد الاشتراك',
-                                    style: AppTextStyles.titleLarge,
-                                  ),
-                                  Text(
-                                    memberName,
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.textSecondary,
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'تجديد الاشتراك',
+                                      style: AppTextStyles.titleLarge,
                                     ),
+                                    Text(
+                                      memberName,
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close_rounded),
+                                tooltip: 'إغلاق',
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+
+                          // 1. Package selector
+                          Text(
+                            'الباقة',
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xs + 2),
+                          InkWell(
+                            onTap: () => _showPackagePicker(
+                              context,
+                              state.activePackages,
+                              state.selectedPackage,
+                            ),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                            child: Container(
+                              height: 56,
+                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceVariant,
+                                borderRadius: BorderRadius.circular(AppRadius.md),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.card_membership_rounded,
+                                    color: AppColors.textSecondary,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: AppSpacing.md),
+                                  Expanded(
+                                    child: Text(
+                                      state.selectedPackage?.name ?? 'اختر باقة...',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTextStyles.bodyLarge.copyWith(
+                                        color: state.selectedPackage != null
+                                            ? AppColors.textPrimary
+                                            : AppColors.textDisabled,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  if (state.selectedPackage != null)
+                                    Text(
+                                      CurrencyFormatter.format(state.selectedPackage!.price),
+                                      style: AppTextStyles.titleSmall.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  const SizedBox(width: AppSpacing.xs),
+                                  const Icon(
+                                    Icons.arrow_drop_down_rounded,
+                                    color: AppColors.textSecondary,
                                   ),
                                 ],
                               ),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.close_rounded),
-                              tooltip: 'إغلاق',
-                              onPressed: () => Navigator.of(context).pop(),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.lg),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
 
-                        // 1. Package selector
-                        Text(
-                          'الباقة',
-                          style: AppTextStyles.labelMedium.copyWith(
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w600,
+                          // 2 & 3. Dates: Start Date & Live End Date
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: DateField(
+                                  label: 'تاريخ البدء',
+                                  value: state.startDate,
+                                  onChanged: (date) => context.read<RenewCubit>().setStartDate(date),
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: DateField(
+                                  label: 'تاريخ الانتهاء',
+                                  value: state.endDate,
+                                  readOnly: true,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: AppSpacing.xs + 2),
-                        InkWell(
-                          onTap: () => _showPackagePicker(
-                            context,
-                            state.activePackages,
-                            state.selectedPackage,
+                          const SizedBox(height: AppSpacing.md),
+
+                          // 4. Amount Paid
+                          MoneyField(
+                            label: 'المبلغ المدفوع',
+                            initialValue: state.amountPaid,
+                            onChanged: (val) => context.read<RenewCubit>().setAmountPaid(val),
                           ),
-                          borderRadius: BorderRadius.circular(AppRadius.md),
-                          child: Container(
-                            height: 56,
-                            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                          const SizedBox(height: AppSpacing.md),
+
+                          // 5. Payment method chips
+                          PaymentMethodChips(
+                            selectedMethod: state.paymentMethod,
+                            onSelected: (method) => context.read<RenewCubit>().setPaymentMethod(method),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+
+                          // 6. Remaining amount live indicator
+                          Container(
+                            padding: const EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceVariant,
+                              color: state.remainingAmount > 0 ? AppColors.warningTint : AppColors.successTint,
                               borderRadius: BorderRadius.circular(AppRadius.md),
-                              border: Border.all(color: AppColors.border),
+                              border: Border.all(
+                                color: state.remainingAmount > 0 ? AppColors.warning : AppColors.success,
+                                width: 1,
+                              ),
                             ),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Icon(
-                                  Icons.card_membership_rounded,
-                                  color: AppColors.textSecondary,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: AppSpacing.md),
-                                Expanded(
-                                  child: Text(
-                                    state.selectedPackage?.name ?? 'اختر باقة...',
-                                    style: AppTextStyles.bodyLarge.copyWith(
-                                      color: state.selectedPackage != null
-                                          ? AppColors.textPrimary
-                                          : AppColors.textDisabled,
-                                      fontWeight: FontWeight.w600,
+                                Row(
+                                  children: [
+                                    Icon(
+                                      state.remainingAmount > 0
+                                          ? Icons.error_outline_rounded
+                                          : Icons.check_circle_rounded,
+                                      color: state.remainingAmount > 0 ? AppColors.warning : AppColors.success,
+                                      size: 20,
                                     ),
-                                  ),
+                                    const SizedBox(width: AppSpacing.xs + 2),
+                                    Text(
+                                      state.remainingAmount > 0 ? 'المبلغ المتبقي دين:' : 'حالة السداد:',
+                                      style: AppTextStyles.labelMedium.copyWith(
+                                        color: state.remainingAmount > 0 ? AppColors.warning : AppColors.success,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                if (state.selectedPackage != null)
+                                if (state.remainingAmount > 0)
                                   Text(
-                                    CurrencyFormatter.format(state.selectedPackage!.price),
-                                    style: AppTextStyles.titleSmall.copyWith(
-                                      color: AppColors.primary,
+                                    CurrencyFormatter.format(state.remainingAmount),
+                                    style: AppTextStyles.titleMedium.copyWith(
+                                      color: AppColors.error,
                                       fontWeight: FontWeight.w700,
                                     ),
+                                  )
+                                else
+                                  const StatusChip(
+                                    label: 'تم الدفع بالكامل',
+                                    icon: Icons.check_circle_rounded,
+                                    color: AppColors.success,
+                                    backgroundColor: AppColors.surface,
                                   ),
-                                const SizedBox(width: AppSpacing.xs),
-                                const Icon(
-                                  Icons.arrow_drop_down_rounded,
-                                  color: AppColors.textSecondary,
-                                ),
                               ],
                             ),
                           ),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
+                          const SizedBox(height: AppSpacing.xl),
 
-                        // 2 & 3. Dates: Start Date & Live End Date
-                        Row(
-                          children: [
-                            Expanded(
-                              child: DateField(
-                                label: 'تاريخ البدء',
-                                value: state.startDate,
-                                onChanged: (date) => context.read<RenewCubit>().setStartDate(date),
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.md),
-                            Expanded(
-                              child: DateField(
-                                label: 'تاريخ الانتهاء',
-                                value: state.endDate,
-                                readOnly: true,
-                                helperText: 'يحسب تلقائياً',
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-
-                        // 4. Amount Paid
-                        MoneyField(
-                          label: 'المبلغ المدفوع',
-                          initialValue: state.amountPaid,
-                          onChanged: (val) => context.read<RenewCubit>().setAmountPaid(val),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-
-                        // 5. Payment method chips
-                        PaymentMethodChips(
-                          selectedMethod: state.paymentMethod,
-                          onSelected: (method) => context.read<RenewCubit>().setPaymentMethod(method),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-
-                        // 6. Remaining amount live indicator
-                        Container(
-                          padding: const EdgeInsets.all(AppSpacing.md),
-                          decoration: BoxDecoration(
-                            color: state.remainingAmount > 0 ? AppColors.warningTint : AppColors.successTint,
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                            border: Border.all(
-                              color: state.remainingAmount > 0 ? AppColors.warning : AppColors.success,
-                              width: 1,
-                            ),
+                          // 7. Confirm Button
+                          AppButton(
+                            label: 'تأكيد التجديد',
+                            icon: Icons.check_rounded,
+                            isLoading: state.isSubmitting,
+                            isFullWidth: true,
+                            onPressed: () => context.read<RenewCubit>().submit(),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    state.remainingAmount > 0
-                                        ? Icons.error_outline_rounded
-                                        : Icons.check_circle_rounded,
-                                    color: state.remainingAmount > 0 ? AppColors.warning : AppColors.success,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: AppSpacing.xs + 2),
-                                  Text(
-                                    state.remainingAmount > 0 ? 'المبلغ المتبقي دين:' : 'تم الدفع بالكامل',
-                                    style: AppTextStyles.labelMedium.copyWith(
-                                      color: state.remainingAmount > 0 ? AppColors.warning : AppColors.success,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              if (state.remainingAmount > 0)
-                                Text(
-                                  CurrencyFormatter.format(state.remainingAmount),
-                                  style: AppTextStyles.titleMedium.copyWith(
-                                    color: AppColors.error,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                )
-                              else
-                                const StatusChip(
-                                  label: 'مدفوع بالكامل',
-                                  icon: Icons.check_circle_rounded,
-                                  color: AppColors.success,
-                                  backgroundColor: AppColors.surface,
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xl),
-
-                        // 7. Confirm Button
-                        AppButton(
-                          label: 'تأكيد التجديد',
-                          icon: Icons.check_rounded,
-                          isLoading: state.isSubmitting,
-                          onPressed: () => context.read<RenewCubit>().submit(),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                      ],
+                          const SizedBox(height: AppSpacing.sm),
+                        ],
+                      ),
                     ),
                   ),
                 ),

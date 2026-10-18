@@ -29,6 +29,7 @@ class PauseBottomSheet extends StatefulWidget {
     return showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
+      showDragHandle: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
@@ -96,91 +97,95 @@ class _PauseBottomSheetState extends State<PauseBottomSheet> {
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.md,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: AppColors.pausedTint,
-                            shape: BoxShape.circle,
+              child: SafeArea(
+                top: false,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.md,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: AppColors.pausedTint,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.pause_circle_rounded,
+                              color: AppColors.paused,
+                              size: 22,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.pause_circle_rounded,
-                            color: AppColors.paused,
-                            size: 22,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'إيقاف الاشتراك مؤقتاً',
-                                style: AppTextStyles.titleLarge,
-                              ),
-                              Text(
-                                widget.memberName,
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'إيقاف الاشتراك مؤقتاً',
+                                  style: AppTextStyles.titleLarge,
                                 ),
-                              ),
-                            ],
+                                Text(
+                                  widget.memberName,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close_rounded),
-                          tooltip: 'إغلاق',
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
+                          IconButton(
+                            icon: const Icon(Icons.close_rounded),
+                            tooltip: 'إغلاق',
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
 
-                    // Date
-                    DateField(
-                      label: 'تاريخ الإيقاف',
-                      value: state.pauseDate,
-                      onChanged: (date) => context.read<PauseCubit>().setPauseDate(date),
-                      helperText: 'لا تحتسب أيام الإيقاف كأيام منتهية من الاشتراك',
-                    ),
-                    const SizedBox(height: AppSpacing.md),
+                      // Date
+                      DateField(
+                        label: 'تاريخ الإيقاف',
+                        value: state.pauseDate,
+                        onChanged: (date) => context.read<PauseCubit>().setPauseDate(date),
+                        helperText: 'لا تحتسب أيام الإيقاف كأيام منتهية من الاشتراك',
+                      ),
+                      const SizedBox(height: AppSpacing.md),
 
-                    // Reason
-                    AppTextField(
-                      label: 'سبب الإيقاف (اختياري)',
-                      hint: 'مثال: سفر، إصابة، امتحانات...',
-                      controller: _reasonController,
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
+                      // Reason
+                      AppTextField(
+                        label: 'سبب الإيقاف (اختياري)',
+                        hint: 'مثال: سفر، إصابة، امتحانات...',
+                        controller: _reasonController,
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
 
-                    // Confirm button
-                    AppButton(
-                      label: 'تأكيد الإيقاف المؤقت',
-                      icon: Icons.pause_circle_rounded,
-                      isLoading: state.isSubmitting,
-                      onPressed: () {
-                        context.read<PauseCubit>().pause(
-                              memberId: widget.memberId,
-                              pauseDate: state.pauseDate,
-                              reason: _reasonController.text.trim().isEmpty
-                                  ? null
-                                  : _reasonController.text.trim(),
-                            );
-                      },
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                  ],
+                      // Confirm button
+                      AppButton(
+                        label: 'تأكيد الإيقاف المؤقت',
+                        icon: Icons.pause_circle_rounded,
+                        isLoading: state.isSubmitting,
+                        isFullWidth: true,
+                        onPressed: () {
+                          context.read<PauseCubit>().pause(
+                                memberId: widget.memberId,
+                                pauseDate: state.pauseDate,
+                                reason: _reasonController.text.trim().isEmpty
+                                    ? null
+                                    : _reasonController.text.trim(),
+                              );
+                        },
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                    ],
+                  ),
                 ),
               ),
             ),
