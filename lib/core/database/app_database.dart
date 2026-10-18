@@ -38,7 +38,7 @@ class AppDatabase extends _$AppDatabase {
       : super(e ?? driftDatabase(name: 'gym_management_app'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -133,14 +133,19 @@ class AppDatabase extends _$AppDatabase {
               );
             }
           }
+          if (from < 5) {
+            await customStatement('DROP TABLE IF EXISTS attendance;');
+          }
         },
         beforeOpen: (details) async {
+          await customStatement('DROP TABLE IF EXISTS attendance;');
           await customStatement('PRAGMA foreign_keys = ON;');
         },
       );
 
   /// Deletes all data from all tables, leaving the database completely clean.
   Future<void> clearAllData() async {
+    await customStatement('DROP TABLE IF EXISTS attendance;');
     await customStatement('PRAGMA foreign_keys = OFF;');
     await delete(memberNotes).go();
     await delete(payments).go();
