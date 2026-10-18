@@ -33,6 +33,25 @@ import '../../features/members/presentation/cubit/member_details/member_details_
 import '../../features/members/presentation/cubit/member_notes/member_notes_cubit.dart';
 import '../../features/members/presentation/cubit/attendance/attendance_cubit.dart';
 
+import '../database/daos/memberships_dao.dart';
+import '../../features/memberships/data/datasources/memberships_local_datasource.dart';
+import '../../features/memberships/data/repositories/memberships_repository_impl.dart';
+import '../../features/memberships/domain/repositories/memberships_repository.dart';
+import '../../features/memberships/domain/usecases/get_packages.dart';
+import '../../features/memberships/domain/usecases/save_package.dart';
+import '../../features/memberships/domain/usecases/toggle_package_active.dart';
+import '../../features/memberships/domain/usecases/renew_subscription.dart';
+import '../../features/memberships/domain/usecases/pause_subscription.dart';
+import '../../features/memberships/domain/usecases/resume_subscription.dart';
+import '../../features/memberships/domain/usecases/get_member_subscriptions.dart';
+import '../../features/memberships/domain/usecases/get_expiring_subscriptions.dart';
+import '../../features/memberships/presentation/cubit/packages/packages_cubit.dart';
+import '../../features/memberships/presentation/cubit/package_form/package_form_cubit.dart';
+import '../../features/memberships/presentation/cubit/renew/renew_cubit.dart';
+import '../../features/memberships/presentation/cubit/pause/pause_cubit.dart';
+import '../../features/memberships/presentation/cubit/member_subscription/member_subscription_cubit.dart';
+import '../../features/memberships/presentation/cubit/expiring/expiring_cubit.dart';
+
 final sl = GetIt.instance;
 
 Future<void> initDependencies({
@@ -64,6 +83,10 @@ Future<void> initDependencies({
 
   if (!sl.isRegistered<AttendanceDao>()) {
     sl.registerSingleton<AttendanceDao>(AttendanceDao(sl<AppDatabase>()));
+  }
+
+  if (!sl.isRegistered<MembershipsDao>()) {
+    sl.registerSingleton<MembershipsDao>(MembershipsDao(sl<AppDatabase>()));
   }
 
   // Services
@@ -219,6 +242,111 @@ Future<void> initDependencies({
         getMemberAttendance: sl<GetMemberAttendance>(),
         recordAttendance: sl<RecordAttendance>(),
         attendanceRepository: sl<AttendanceRepository>(),
+      ),
+    );
+  }
+
+  // Memberships Repositories
+  if (!sl.isRegistered<MembershipsLocalDataSource>()) {
+    sl.registerLazySingleton<MembershipsLocalDataSource>(
+      () => MembershipsLocalDataSourceImpl(dao: sl<MembershipsDao>()),
+    );
+  }
+
+  if (!sl.isRegistered<MembershipsRepository>()) {
+    sl.registerLazySingleton<MembershipsRepository>(
+      () => MembershipsRepositoryImpl(localDataSource: sl<MembershipsLocalDataSource>()),
+    );
+  }
+
+  // Memberships Use Cases
+  if (!sl.isRegistered<GetPackages>()) {
+    sl.registerLazySingleton<GetPackages>(() => GetPackages(sl<MembershipsRepository>()));
+  }
+
+  if (!sl.isRegistered<SavePackage>()) {
+    sl.registerLazySingleton<SavePackage>(() => SavePackage(sl<MembershipsRepository>()));
+  }
+
+  if (!sl.isRegistered<TogglePackageActive>()) {
+    sl.registerLazySingleton<TogglePackageActive>(() => TogglePackageActive(sl<MembershipsRepository>()));
+  }
+
+  if (!sl.isRegistered<DeletePackage>()) {
+    sl.registerLazySingleton<DeletePackage>(() => DeletePackage(sl<MembershipsRepository>()));
+  }
+
+  if (!sl.isRegistered<RenewSubscription>()) {
+    sl.registerLazySingleton<RenewSubscription>(() => RenewSubscription(sl<MembershipsRepository>()));
+  }
+
+  if (!sl.isRegistered<PauseSubscription>()) {
+    sl.registerLazySingleton<PauseSubscription>(() => PauseSubscription(sl<MembershipsRepository>()));
+  }
+
+  if (!sl.isRegistered<ResumeSubscription>()) {
+    sl.registerLazySingleton<ResumeSubscription>(() => ResumeSubscription(sl<MembershipsRepository>()));
+  }
+
+  if (!sl.isRegistered<GetMemberSubscriptions>()) {
+    sl.registerLazySingleton<GetMemberSubscriptions>(() => GetMemberSubscriptions(sl<MembershipsRepository>()));
+  }
+
+  if (!sl.isRegistered<GetExpiringSubscriptions>()) {
+    sl.registerLazySingleton<GetExpiringSubscriptions>(() => GetExpiringSubscriptions(sl<MembershipsRepository>()));
+  }
+
+  // Memberships Cubits (Factory)
+  if (!sl.isRegistered<PackagesCubit>()) {
+    sl.registerFactory<PackagesCubit>(
+      () => PackagesCubit(
+        getPackages: sl<GetPackages>(),
+        togglePackageActive: sl<TogglePackageActive>(),
+        deletePackage: sl<DeletePackage>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<PackageFormCubit>()) {
+    sl.registerFactory<PackageFormCubit>(
+      () => PackageFormCubit(
+        savePackage: sl<SavePackage>(),
+        getPackages: sl<GetPackages>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<RenewCubit>()) {
+    sl.registerFactory<RenewCubit>(
+      () => RenewCubit(
+        renewSubscription: sl<RenewSubscription>(),
+        getPackages: sl<GetPackages>(),
+        getMemberSubscriptions: sl<GetMemberSubscriptions>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<PauseCubit>()) {
+    sl.registerFactory<PauseCubit>(
+      () => PauseCubit(
+        pauseSubscription: sl<PauseSubscription>(),
+        resumeSubscription: sl<ResumeSubscription>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<MemberSubscriptionCubit>()) {
+    sl.registerFactory<MemberSubscriptionCubit>(
+      () => MemberSubscriptionCubit(
+        getMemberSubscriptions: sl<GetMemberSubscriptions>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<ExpiringCubit>()) {
+    sl.registerFactory<ExpiringCubit>(
+      () => ExpiringCubit(
+        getExpiringSubscriptions: sl<GetExpiringSubscriptions>(),
       ),
     );
   }
