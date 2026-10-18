@@ -15,3 +15,7 @@ class DatabaseFailure extends Failure {
 class ServerFailure extends Failure {
   const ServerFailure([super.message = 'Server failure occurred']);
 }
+
+class NotificationFailure extends Failure {
+  const NotificationFailure([super.message = 'Notification operation failed']);
+}
