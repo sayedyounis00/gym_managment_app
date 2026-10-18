@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../domain/entities/backup_info.dart';
 
@@ -407,15 +408,16 @@ class BackupSourceImpl implements BackupSource {
       await notificationService.cancelAll();
       final now = DateTime.now();
 
-      final activeSubs = await (db.select(db.subscriptions)
+      final targetDb = sl.isRegistered<AppDatabase>() ? sl<AppDatabase>() : db;
+      final activeSubs = await (targetDb.select(targetDb.subscriptions)
             ..where((s) => s.endDate.isBiggerThanValue(now) & s.status.equals('active')))
           .join([
-        innerJoin(db.members, db.members.id.equalsExp(db.subscriptions.memberId)),
+        innerJoin(targetDb.members, targetDb.members.id.equalsExp(targetDb.subscriptions.memberId)),
       ]).get();
 
       for (final row in activeSubs) {
-        final sub = row.readTable(db.subscriptions);
-        final member = row.readTable(db.members);
+        final sub = row.readTable(targetDb.subscriptions);
+        final member = row.readTable(targetDb.members);
         if (sub.status == 'active' && !member.isSuspended) {
           await notificationService.scheduleSubscriptionExpiry(
             subscriptionId: sub.id,
