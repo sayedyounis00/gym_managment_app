@@ -7,6 +7,7 @@ import 'package:gym_managment_app/core/errors/failures.dart';
 import 'package:gym_managment_app/core/services/image_storage_service.dart';
 import 'package:gym_managment_app/core/utils/arabic_search_utils.dart';
 import 'package:gym_managment_app/core/widgets/status_chip.dart';
+import 'package:gym_managment_app/features/members/domain/entities/gender.dart' as domain;
 import 'package:gym_managment_app/features/members/domain/entities/member.dart' as domain;
 import 'package:gym_managment_app/features/members/domain/entities/member_summary.dart';
 import 'package:gym_managment_app/features/members/domain/entities/subscription_history_item.dart';
@@ -36,11 +37,17 @@ class MembersRepositoryImpl implements MembersRepository {
     )
         .map((list) {
       return list.map((item) {
+        final domain.Gender? gender = item.member.gender != null
+            ? (item.member.gender == 'female'
+                ? domain.Gender.female
+                : domain.Gender.male)
+            : null;
         return MemberSummary(
           id: item.member.id,
           name: item.member.name,
           phone: item.member.phone,
           photoPath: item.member.photoPath,
+          gender: gender,
           isSuspended: item.member.isSuspended,
           packageName: item.package?.name,
           subscriptionEndDate: item.subscription?.endDate,
@@ -74,6 +81,7 @@ class MembersRepositoryImpl implements MembersRepository {
     required String name,
     required String phone,
     String? photoPath,
+    domain.Gender? gender,
     int? age,
     double? weightKg,
     double? heightCm,
@@ -88,6 +96,7 @@ class MembersRepositoryImpl implements MembersRepository {
         name: name.trim(),
         phone: normalizedPhone,
         photoPath: Value(photoPath),
+        gender: Value(gender?.name),
         age: Value(age),
         weightKg: Value(weightKg),
         heightCm: Value(heightCm),
@@ -125,6 +134,7 @@ class MembersRepositoryImpl implements MembersRepository {
         name: Value(member.name.trim()),
         phone: Value(normalizedPhone),
         photoPath: Value(member.photoPath),
+        gender: Value(member.gender?.name),
         age: Value(member.age),
         weightKg: Value(member.weightKg),
         heightCm: Value(member.heightCm),
@@ -158,15 +168,6 @@ class MembersRepositoryImpl implements MembersRepository {
   @override
   Future<Either<Failure, Unit>> deleteMember(int id) async {
     try {
-      final hasPay = await membersDao.hasPayments(id);
-      if (hasPay) {
-        return const Left(
-          DatabaseFailure(
-            'لا يمكن حذف المشترك لوجود سجلات مالية مسجلة له. يمكنك إيقافه مؤقتاً.',
-          ),
-        );
-      }
-
       final member = await membersDao.getMemberById(id);
       if (member?.photoPath != null) {
         await imageStorageService.deletePhoto(member!.photoPath!);
@@ -287,11 +288,18 @@ class MembersRepositoryImpl implements MembersRepository {
   }
 
   domain.Member _mapToDomainMember(Member row) {
+    final domain.Gender? gender = row.gender != null
+        ? (row.gender == 'female'
+            ? domain.Gender.female
+            : domain.Gender.male)
+        : null;
+
     return domain.Member(
       id: row.id,
       name: row.name,
       phone: row.phone,
       photoPath: row.photoPath,
+      gender: gender,
       age: row.age,
       weightKg: row.weightKg,
       heightCm: row.heightCm,

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:gym_managment_app/core/services/image_storage_service.dart';
 import 'package:gym_managment_app/core/utils/arabic_search_utils.dart';
 import 'package:gym_managment_app/core/utils/validators.dart';
+import 'package:gym_managment_app/features/members/domain/entities/gender.dart';
 import 'package:gym_managment_app/features/members/domain/entities/member.dart';
 import 'package:gym_managment_app/features/members/domain/repositories/members_repository.dart';
 import 'package:gym_managment_app/features/members/domain/usecases/add_member.dart';
@@ -37,6 +38,7 @@ class MemberFormCubit extends Cubit<MemberFormState> {
             memberId: member.id,
             name: member.name,
             phone: member.phone,
+            gender: member.gender,
             existingPhotoPath: member.photoPath,
             age: member.age,
             weightKg: member.weightKg,
@@ -60,6 +62,13 @@ class MemberFormCubit extends Cubit<MemberFormState> {
     if (s is! MemberFormEditing) return;
     final errors = Map<String, String>.from(s.errors)..remove('phone');
     emit(s.copyWith(phone: phone, errors: errors, isDirty: true));
+  }
+
+  void updateGender(Gender gender) {
+    final s = state;
+    if (s is! MemberFormEditing) return;
+    final errors = Map<String, String>.from(s.errors)..remove('gender');
+    emit(s.copyWith(gender: gender, errors: errors, isDirty: true));
   }
 
   void updateAge(String? ageStr) {
@@ -129,6 +138,10 @@ class MemberFormCubit extends Cubit<MemberFormState> {
     final phoneErr = FormValidators.validatePhone(s.phone);
     if (phoneErr != null) errors['phone'] = phoneErr;
 
+    if (!s.isEditMode && s.gender == null) {
+      errors['gender'] = 'يرجى تحديد الجنس';
+    }
+
     if (s.age != null) {
       final ageErr = FormValidators.validateAge(s.age.toString());
       if (ageErr != null) errors['age'] = ageErr;
@@ -172,6 +185,7 @@ class MemberFormCubit extends Cubit<MemberFormState> {
           name: s.name.trim(),
           phone: s.phone.trim(),
           photoPath: photoPath,
+          gender: s.gender,
           age: s.age,
           weightKg: s.weightKg,
           heightCm: s.heightCm,
@@ -191,6 +205,7 @@ class MemberFormCubit extends Cubit<MemberFormState> {
             name: s.name.trim(),
             phone: s.phone.trim(),
             photoPath: null, // Will update with photo if present after ID generation
+            gender: s.gender,
             age: s.age,
             weightKg: s.weightKg,
             heightCm: s.heightCm,

@@ -253,4 +253,85 @@ class MembershipsDao extends DatabaseAccessor<AppDatabase> with _$MembershipsDao
       return updatedSubs;
     });
   }
+
+  Future<void> deleteSubscription(int subscriptionId) {
+    return transaction(() async {
+      final sub = await (select(subscriptions)..where((s) => s.id.equals(subscriptionId))).getSingleOrNull();
+      if (sub == null) return;
+      final memberId = sub.memberId;
+
+      // Find periods and installments of this subscription
+      final periods = await (select(db.subscriptionPeriods)..where((p) => p.subscriptionId.equals(subscriptionId))).get();
+      final periodIds = periods.map((p) => p.id).toList();
+
+      List<int> installmentIds = [];
+      if (periodIds.isNotEmpty) {
+        final insts = await (select(db.installments)..where((i) => i.periodId.isIn(periodIds))).get();
+        installmentIds = insts.map((i) => i.id).toList();
+      }
+
+      // 1. Delete payments linked to this subscription, its periods, or its installments
+      Expression<bool> paymentsPredicate = payments.subscriptionId.equals(subscriptionId);
+      if (periodIds.isNotEmpty) {
+        paymentsPredicate = paymentsPredicate | payments.periodId.isIn(periodIds);
+      }
+      if (installmentIds.isNotEmpty) {
+        paymentsPredicate = paymentsPredicate | payments.installmentId.isIn(installmentIds);
+      }
+      await (delete(payments)..where((p) => paymentsPredicate)).go();
+
+      // 2. Delete installments of periods for this subscription
+      if (periodIds.isNotEmpty) {
+        await (delete(db.installments)..where((i) => i.periodId.isIn(periodIds))).go();
+      }
+
+      // 3. Delete subscription periods
+      await (delete(db.subscriptionPeriods)..where((p) => p.subscriptionId.equals(subscriptionId))).go();
+
+      // 4. Delete subscription
+      await (delete(subscriptions)..where((s) => s.id.equals(subscriptionId))).go();
+
+      // 5. Check remaining subscriptions for member and update status
+      final remainingSubs = await (select(subscriptions)
+            ..where((s) => s.memberId.equals(memberId))
+            ..orderBy([(s) => OrderingTerm.desc(s.endDate)]))
+          .get();
+
+      final now = DateTime.now();
+      final today = AppDateUtils.startOfDay(now);
+
+      if (remainingSubs.isNotEmpty) {
+        final latestSub = remainingSubs.first;
+        final isStillValidDate = !latestSub.endDate.isBefore(today);
+
+        // Reactivate previous subscription if valid date and was marked expired
+        if (isStillValidDate && latestSub.status == 'expired') {
+          await (update(subscriptions)..where((s) => s.id.equals(latestSub.id))).write(
+            const SubscriptionsCompanion(status: Value('active')),
+          );
+        }
+
+        final memberRow = await (select(members)..where((m) => m.id.equals(memberId))).getSingleOrNull();
+        final isSuspended = memberRow?.isSuspended ?? false;
+
+        final newStatus = isSuspended
+            ? 'paused'
+            : (isStillValidDate ? 'active' : 'expired');
+
+        await (update(members)..where((m) => m.id.equals(memberId))).write(
+          MembersCompanion(
+            status: Value(newStatus),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+      } else {
+        await (update(members)..where((m) => m.id.equals(memberId))).write(
+          MembersCompanion(
+            status: const Value('expired'),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
+      }
+    });
+  }
 }

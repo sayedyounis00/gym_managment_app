@@ -3,6 +3,8 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'tables/members_table.dart';
 import 'tables/packages_table.dart';
 import 'tables/subscriptions_table.dart';
+import 'tables/subscription_periods_table.dart';
+import 'tables/installments_table.dart';
 import 'tables/payments_table.dart';
 import 'tables/expenses_table.dart';
 import 'tables/member_notes_table.dart';
@@ -18,6 +20,8 @@ part 'app_database.g.dart';
     Members,
     Packages,
     Subscriptions,
+    SubscriptionPeriods,
+    Installments,
     Payments,
     Expenses,
     MemberNotes,
@@ -34,7 +38,7 @@ class AppDatabase extends _$AppDatabase {
       : super(e ?? driftDatabase(name: 'gym_management_app'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -62,17 +66,94 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(subscriptions, subscriptions.totalPausedDays);
             await m.addColumn(subscriptions, subscriptions.amountPaid);
           }
+          if (from < 4) {
+            await m.createTable(subscriptionPeriods);
+            await m.createTable(installments);
+            await m.addColumn(payments, payments.periodId);
+            await m.addColumn(payments, payments.installmentId);
+
+            final existingSubs = await select(subscriptions).get();
+            for (final sub in existingSubs) {
+              final subPayments = await (select(payments)
+                    ..where((p) => p.subscriptionId.equals(sub.id)))
+                  .get();
+
+              final totalPaid =
+                  subPayments.fold<double>(0.0, (sum, p) => sum + p.amount);
+              final due = sub.priceSnapshot ?? totalPaid;
+              final isPaid = totalPaid >= due && due > 0;
+              final status =
+                  isPaid ? 'paid' : (totalPaid > 0 ? 'partial' : 'unpaid');
+
+              final periodId = await into(subscriptionPeriods).insert(
+                SubscriptionPeriodsCompanion.insert(
+                  subscriptionId: sub.id,
+                  periodNumber: const Value(1),
+                  startDate: sub.startDate,
+                  endDate: sub.endDate,
+                  amountDue: due,
+                  paymentStatus: Value(status),
+                  isFullyPaid: Value(isPaid),
+                  fullyPaidAt: Value(
+                    isPaid && subPayments.isNotEmpty
+                        ? subPayments.last.paidAt
+                        : null,
+                  ),
+                ),
+              );
+
+              final instId = await into(installments).insert(
+                InstallmentsCompanion.insert(
+                  periodId: periodId,
+                  installmentNumber: const Value(1),
+                  amount: due,
+                  paidAmount: Value(totalPaid),
+                  dueDate: sub.startDate,
+                  status: Value(isPaid ? 'paid' : 'pending'),
+                  paidAt: Value(
+                    isPaid && subPayments.isNotEmpty
+                        ? subPayments.last.paidAt
+                        : null,
+                  ),
+                  paymentMethod: Value(
+                    subPayments.isNotEmpty
+                        ? subPayments.first.paymentMethod
+                        : 'cash',
+                  ),
+                ),
+              );
+
+              await (update(payments)
+                    ..where((p) => p.subscriptionId.equals(sub.id)))
+                  .write(
+                PaymentsCompanion(
+                  periodId: Value(periodId),
+                  installmentId: Value(instId),
+                ),
+              );
+            }
+          }
+          if (from < 5) {
+            await customStatement('DROP TABLE IF EXISTS attendance;');
+          }
+          if (from < 6) {
+            await m.addColumn(members, members.gender);
+          }
         },
         beforeOpen: (details) async {
+          await customStatement('DROP TABLE IF EXISTS attendance;');
           await customStatement('PRAGMA foreign_keys = ON;');
         },
       );
 
   /// Deletes all data from all tables, leaving the database completely clean.
   Future<void> clearAllData() async {
+    await customStatement('DROP TABLE IF EXISTS attendance;');
     await customStatement('PRAGMA foreign_keys = OFF;');
     await delete(memberNotes).go();
     await delete(payments).go();
+    await delete(installments).go();
+    await delete(subscriptionPeriods).go();
     await delete(subscriptions).go();
     await delete(expenses).go();
     await delete(members).go();

@@ -12,8 +12,9 @@ void main() {
   late MembersDao membersDao;
   late NotesDao notesDao;
 
-  setUp(() {
+  setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement('PRAGMA foreign_keys = ON;');
     membersDao = MembersDao(db);
     notesDao = NotesDao(db);
   });
@@ -166,6 +167,82 @@ void main() {
 
       final remainingNotes = await notesDao.watchNotes(id).first;
       expect(remainingNotes.isEmpty, isTrue);
+    });
+
+    test('deleteMember unconditionally cascades subscriptions, periods, installments, and payments', () async {
+      final id = await membersDao.insertMember(
+        MembersCompanion.insert(name: 'هشام', phone: '01099998888'),
+      );
+
+      final subId = await db.into(db.subscriptions).insert(
+        SubscriptionsCompanion.insert(
+          memberId: id,
+          startDate: DateTime(2026, 1, 1),
+          endDate: DateTime(2026, 2, 1),
+        ),
+      );
+
+      final periodId = await db.into(db.subscriptionPeriods).insert(
+        SubscriptionPeriodsCompanion.insert(
+          subscriptionId: subId,
+          startDate: DateTime(2026, 1, 1),
+          endDate: DateTime(2026, 2, 1),
+          amountDue: 500.0,
+        ),
+      );
+
+      final instId = await db.into(db.installments).insert(
+        InstallmentsCompanion.insert(
+          periodId: periodId,
+          amount: 500.0,
+          dueDate: DateTime(2026, 1, 1),
+        ),
+      );
+
+      await db.into(db.payments).insert(
+        PaymentsCompanion.insert(
+          memberId: id,
+          subscriptionId: Value(subId),
+          periodId: Value(periodId),
+          installmentId: Value(instId),
+          amount: 500.0,
+        ),
+      );
+
+      await notesDao.insertNote(id, 'ملاحظة مهمة');
+
+      // Unconditional deletion of member
+      await membersDao.deleteMember(id);
+
+      expect(await membersDao.getMemberById(id), isNull);
+      final remainingSubs = await (db.select(db.subscriptions)..where((s) => s.memberId.equals(id))).get();
+      expect(remainingSubs.isEmpty, isTrue);
+      final remainingPeriods = await (db.select(db.subscriptionPeriods)..where((p) => p.subscriptionId.equals(subId))).get();
+      expect(remainingPeriods.isEmpty, isTrue);
+      final remainingPayments = await (db.select(db.payments)..where((p) => p.memberId.equals(id))).get();
+      expect(remainingPayments.isEmpty, isTrue);
+      final remainingNotes = await notesDao.watchNotes(id).first;
+      expect(remainingNotes.isEmpty, isTrue);
+    });
+
+    test('Unconditional deletion of member succeeds even if legacy attendance table has records', () async {
+      final id = await membersDao.insertMember(
+        MembersCompanion.insert(name: 'عضو قديم', phone: '01099998888'),
+      );
+
+      // Create legacy attendance table as it existed in earlier schema without ON DELETE CASCADE
+      await db.customStatement(
+        'CREATE TABLE IF NOT EXISTS attendance (id INTEGER PRIMARY KEY AUTOINCREMENT, member_id INTEGER NOT NULL REFERENCES members (id), check_in_time INTEGER NOT NULL);',
+      );
+      await db.customStatement(
+        'INSERT INTO attendance (member_id, check_in_time) VALUES (?, ?);',
+        [id, DateTime.now().millisecondsSinceEpoch],
+      );
+
+      // Delete member unconditionally
+      await membersDao.deleteMember(id);
+
+      expect(await membersDao.getMemberById(id), isNull);
     });
   });
 

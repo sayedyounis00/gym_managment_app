@@ -40,6 +40,7 @@ import '../../features/memberships/domain/usecases/renew_subscription.dart';
 import '../../features/memberships/domain/usecases/pause_subscription.dart';
 import '../../features/memberships/domain/usecases/resume_subscription.dart';
 import '../../features/memberships/domain/usecases/get_member_subscriptions.dart';
+import '../../features/memberships/domain/usecases/delete_subscription.dart';
 import '../../features/memberships/domain/usecases/schedule_expiry_notifications.dart';
 import '../../features/memberships/presentation/cubit/packages/packages_cubit.dart';
 import '../../features/memberships/presentation/cubit/package_form/package_form_cubit.dart';
@@ -206,6 +207,7 @@ Future<void> initDependencies({
         toggleMemberSuspension: sl<ToggleMemberSuspension>(),
         deleteMember: sl<DeleteMember>(),
         recordPaymentUseCase: sl<RecordPayment>(),
+        deleteSubscriptionUseCase: sl<DeleteSubscription>(),
       ),
     );
   }
@@ -265,6 +267,10 @@ Future<void> initDependencies({
 
   if (!sl.isRegistered<GetMemberSubscriptions>()) {
     sl.registerLazySingleton<GetMemberSubscriptions>(() => GetMemberSubscriptions(sl<MembershipsRepository>()));
+  }
+
+  if (!sl.isRegistered<DeleteSubscription>()) {
+    sl.registerLazySingleton<DeleteSubscription>(() => DeleteSubscription(sl<MembershipsRepository>()));
   }
 
   if (!sl.isRegistered<GetExpiringSubscriptions>()) {

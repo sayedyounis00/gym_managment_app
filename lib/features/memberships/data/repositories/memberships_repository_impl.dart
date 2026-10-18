@@ -219,4 +219,14 @@ class MembershipsRepositoryImpl implements MembershipsRepository {
       return Left(DatabaseFailure('فشل تحديث الاشتراكات المنتهية: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, Unit>> deleteSubscription(int subscriptionId) async {
+    try {
+      await localDataSource.deleteSubscription(subscriptionId);
+      return const Right(unit);
+    } catch (e) {
+      return Left(DatabaseFailure('فشل حذف الاشتراك: $e'));
+    }
+  }
 }
