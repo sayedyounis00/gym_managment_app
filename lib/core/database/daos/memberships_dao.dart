@@ -271,11 +271,14 @@ class MembershipsDao extends DatabaseAccessor<AppDatabase> with _$MembershipsDao
       }
 
       // 1. Delete payments linked to this subscription, its periods, or its installments
-      await (delete(payments)..where((p) =>
-        p.subscriptionId.equals(subscriptionId) |
-        p.periodId.isIn(periodIds) |
-        p.installmentId.isIn(installmentIds)
-      )).go();
+      Expression<bool> paymentsPredicate = payments.subscriptionId.equals(subscriptionId);
+      if (periodIds.isNotEmpty) {
+        paymentsPredicate = paymentsPredicate | payments.periodId.isIn(periodIds);
+      }
+      if (installmentIds.isNotEmpty) {
+        paymentsPredicate = paymentsPredicate | payments.installmentId.isIn(installmentIds);
+      }
+      await (delete(payments)..where((p) => paymentsPredicate)).go();
 
       // 2. Delete installments of periods for this subscription
       if (periodIds.isNotEmpty) {
