@@ -31,7 +31,7 @@ void main() {
     );
 
     // Insert 2 payments
-    final p1 = await paymentsDao.insertPayment(
+    await paymentsDao.insertPayment(
       PaymentsCompanion.insert(
         memberId: m1,
         amount: 200.0,
@@ -50,7 +50,7 @@ void main() {
     );
 
     // Insert 2 expenses
-    final e1 = await expensesDao.insertExpense(
+    await expensesDao.insertExpense(
       ExpensesCompanion.insert(
         title: 'فاتورة الكهرباء',
         category: const Value('electricity'),

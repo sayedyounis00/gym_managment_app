@@ -1,20 +1,20 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:gym_managment_app/core/errors/failures.dart';
-import 'package:gym_managment_app/features/finance/domain/entities/expense.dart';
 import 'package:gym_managment_app/features/finance/domain/entities/finance_enums.dart';
-import 'package:gym_managment_app/features/finance/domain/entities/payment.dart';
 import 'package:gym_managment_app/features/finance/domain/repositories/expense_repository.dart';
 import 'package:gym_managment_app/features/finance/domain/repositories/payment_repository.dart';
 import 'package:gym_managment_app/features/finance/domain/usecases/add_expense.dart';
 import 'package:gym_managment_app/features/finance/domain/usecases/add_payment.dart';
-import 'package:gym_managment_app/features/finance/domain/usecases/update_expense.dart';
 import 'package:gym_managment_app/features/finance/domain/usecases/void_expense.dart';
 import 'package:gym_managment_app/features/finance/domain/usecases/void_payment.dart';
 
 class FakePaymentRepository implements PaymentRepository {
   final List<Map<String, dynamic>> payments = [];
   int nextId = 1;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 
   @override
   Future<Either<Failure, int>> addPayment({
@@ -48,31 +48,14 @@ class FakePaymentRepository implements PaymentRepository {
     payment['voidReason'] = reason;
     return const Right(unit);
   }
-
-  @override
-  Stream<List<Payment>> watchMemberPayments(int memberId) {
-    return Stream.value([]);
-  }
-
-  @override
-  Stream<List<Payment>> watchPeriodPayments(int periodId) {
-    return Stream.value([]);
-  }
-
-  @override
-  Future<Either<Failure, List<Payment>>> getMemberPayments(int memberId) async {
-    return const Right([]);
-  }
-
-  @override
-  Future<Either<Failure, double>> sumPaymentsBetween(DateTime from, DateTime to) async {
-    return const Right(0.0);
-  }
 }
 
 class FakeExpenseRepository implements ExpenseRepository {
   final List<Map<String, dynamic>> expenses = [];
   int nextId = 1;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 
   @override
   Future<Either<Failure, int>> addExpense({
@@ -121,26 +104,6 @@ class FakeExpenseRepository implements ExpenseRepository {
     if (expense.isEmpty) return const Left(DatabaseFailure('المصروف غير موجود'));
     expense['voidedAt'] = DateTime.now();
     return const Right(unit);
-  }
-
-  @override
-  Future<Either<Failure, List<Expense>>> getExpenses({DateTime? from, DateTime? to}) async {
-    return const Right([]);
-  }
-
-  @override
-  Stream<List<Expense>> watchExpenses({DateTime? from, DateTime? to}) {
-    return Stream.value([]);
-  }
-
-  @override
-  Stream<List<Expense>> watchExpensesBetween(DateTime from, DateTime to) {
-    return Stream.value([]);
-  }
-
-  @override
-  Future<Either<Failure, double>> sumExpensesBetween(DateTime from, DateTime to) async {
-    return const Right(0.0);
   }
 }
 
