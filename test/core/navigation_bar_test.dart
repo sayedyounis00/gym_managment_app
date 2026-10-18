@@ -9,6 +9,7 @@ import 'package:gym_managment_app/core/router/app_router.dart';
 import 'package:gym_managment_app/core/router/routes.dart';
 import 'package:gym_managment_app/features/members/presentation/pages/members_page.dart';
 import 'package:gym_managment_app/features/memberships/presentation/pages/packages_page.dart';
+import 'package:gym_managment_app/features/finance/presentation/pages/finance_page.dart';
 
 void main() {
   late AppDatabase testDb;
@@ -54,7 +55,7 @@ void main() {
     // Navigate to Finance
     await tester.tap(find.text('الحسابات').last);
     await tester.pumpAndSettle();
-    expect(find.text('الإيرادات، المصروفات والأرباح'), findsOneWidget);
+    expect(find.byType(FinancePage), findsOneWidget);
 
     // Cleanly unmount widget tree before tearDown
     await tester.pumpWidget(const SizedBox());
@@ -91,7 +92,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify navigated to Finance section and nav bar updated to index 3 (الحسابات)
-    expect(find.text('الإيرادات، المصروفات والأرباح'), findsOneWidget);
+    expect(find.byType(FinancePage), findsOneWidget);
     navBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(navBar.selectedIndex, 3);
 
