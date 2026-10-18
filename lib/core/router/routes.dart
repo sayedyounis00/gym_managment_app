@@ -8,6 +8,9 @@ class AppRoutes {
   static const String addPackage = '/memberships/package/new';
   static const String editPackage = '/memberships/package/:id/edit';
   static const String finance = '/finance';
+  static const String addExpense = '/finance/expense/new';
+  static const String addPayment = '/finance/payment/new';
+  static const String financeReports = '/finance/reports';
   static const String settings = '/settings';
   static const String backup = '/settings/backup';
 

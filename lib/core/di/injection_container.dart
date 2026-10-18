@@ -64,6 +64,34 @@ import '../../features/memberships/presentation/cubit/pause/pause_cubit.dart';
 import '../../features/memberships/presentation/cubit/member_subscription/member_subscription_cubit.dart';
 import '../../features/memberships/presentation/cubit/expiring/expiring_cubit.dart';
 
+import '../database/daos/payments_dao.dart';
+import '../database/daos/expenses_dao.dart';
+import '../database/daos/finance_dao.dart';
+import '../../features/finance/data/datasources/finance_local_datasource.dart';
+import '../../features/finance/data/repositories/finance_repository_impl.dart';
+import '../../features/finance/data/repositories/payment_repository_impl.dart';
+import '../../features/finance/data/repositories/expense_repository_impl.dart';
+import '../../features/finance/domain/repositories/finance_repository.dart';
+import '../../features/finance/domain/repositories/payment_repository.dart';
+import '../../features/finance/domain/repositories/expense_repository.dart';
+import '../../features/finance/domain/usecases/add_payment.dart';
+import '../../features/finance/domain/usecases/void_payment.dart';
+import '../../features/finance/domain/usecases/add_expense.dart';
+import '../../features/finance/domain/usecases/update_expense.dart';
+import '../../features/finance/domain/usecases/void_expense.dart';
+import '../../features/finance/domain/usecases/get_finance_summary.dart';
+import '../../features/finance/domain/usecases/watch_ledger.dart';
+import '../../features/finance/domain/usecases/get_daily_totals.dart';
+import '../../features/finance/domain/usecases/get_members_with_balance.dart';
+import '../../features/finance/domain/usecases/get_member_balance.dart';
+import '../../features/finance/domain/usecases/export_finance_report.dart';
+import '../../features/finance/presentation/cubit/finance_overview/finance_overview_cubit.dart';
+import '../../features/finance/presentation/cubit/ledger/ledger_cubit.dart';
+import '../../features/finance/presentation/cubit/add_payment/add_payment_cubit.dart';
+import '../../features/finance/presentation/cubit/add_expense/add_expense_cubit.dart';
+import '../../features/finance/presentation/cubit/balances/balances_cubit.dart';
+import '../../features/finance/presentation/cubit/reports/reports_cubit.dart';
+
 final sl = GetIt.instance;
 
 Future<void> initDependencies({
@@ -95,6 +123,18 @@ Future<void> initDependencies({
 
   if (!sl.isRegistered<MembershipsDao>()) {
     sl.registerSingleton<MembershipsDao>(MembershipsDao(sl<AppDatabase>()));
+  }
+
+  if (!sl.isRegistered<PaymentsDao>()) {
+    sl.registerSingleton<PaymentsDao>(PaymentsDao(sl<AppDatabase>()));
+  }
+
+  if (!sl.isRegistered<ExpensesDao>()) {
+    sl.registerSingleton<ExpensesDao>(ExpensesDao(sl<AppDatabase>()));
+  }
+
+  if (!sl.isRegistered<FinanceDao>()) {
+    sl.registerSingleton<FinanceDao>(FinanceDao(sl<AppDatabase>()));
   }
 
   // Services
@@ -443,6 +483,136 @@ Future<void> initDependencies({
       () => ExportCubit(
         exportMembersCsv: sl<ExportMembersCsv>(),
         exportMembersPdf: sl<ExportMembersPdf>(),
+      ),
+    );
+  }
+
+  // Finance Data Sources & Repositories
+  if (!sl.isRegistered<FinanceLocalDataSource>()) {
+    sl.registerLazySingleton<FinanceLocalDataSource>(
+      () => FinanceLocalDataSourceImpl(
+        financeDao: sl<FinanceDao>(),
+        paymentsDao: sl<PaymentsDao>(),
+        expensesDao: sl<ExpensesDao>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<PaymentRepository>()) {
+    sl.registerLazySingleton<PaymentRepository>(
+      () => PaymentRepositoryImpl(
+        paymentsDao: sl<PaymentsDao>(),
+        membersDao: sl<MembersDao>(),
+        db: sl<AppDatabase>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<ExpenseRepository>()) {
+    sl.registerLazySingleton<ExpenseRepository>(
+      () => ExpenseRepositoryImpl(expensesDao: sl<ExpensesDao>()),
+    );
+  }
+
+  if (!sl.isRegistered<FinanceRepository>()) {
+    sl.registerLazySingleton<FinanceRepository>(
+      () => FinanceRepositoryImpl(financeDao: sl<FinanceDao>()),
+    );
+  }
+
+  // Finance Use Cases
+  if (!sl.isRegistered<AddPayment>()) {
+    sl.registerLazySingleton<AddPayment>(() => AddPayment(sl<PaymentRepository>()));
+  }
+
+  if (!sl.isRegistered<VoidPayment>()) {
+    sl.registerLazySingleton<VoidPayment>(() => VoidPayment(sl<PaymentRepository>()));
+  }
+
+  if (!sl.isRegistered<AddExpense>()) {
+    sl.registerLazySingleton<AddExpense>(() => AddExpense(sl<ExpenseRepository>()));
+  }
+
+  if (!sl.isRegistered<UpdateExpense>()) {
+    sl.registerLazySingleton<UpdateExpense>(() => UpdateExpense(sl<ExpenseRepository>()));
+  }
+
+  if (!sl.isRegistered<VoidExpense>()) {
+    sl.registerLazySingleton<VoidExpense>(() => VoidExpense(sl<ExpenseRepository>()));
+  }
+
+  if (!sl.isRegistered<GetFinanceSummary>()) {
+    sl.registerLazySingleton<GetFinanceSummary>(() => GetFinanceSummary(sl<FinanceRepository>()));
+  }
+
+  if (!sl.isRegistered<WatchLedger>()) {
+    sl.registerLazySingleton<WatchLedger>(() => WatchLedger(sl<FinanceRepository>()));
+  }
+
+  if (!sl.isRegistered<GetDailyTotals>()) {
+    sl.registerLazySingleton<GetDailyTotals>(() => GetDailyTotals(sl<FinanceRepository>()));
+  }
+
+  if (!sl.isRegistered<GetMembersWithBalance>()) {
+    sl.registerLazySingleton<GetMembersWithBalance>(() => GetMembersWithBalance(sl<FinanceRepository>()));
+  }
+
+  if (!sl.isRegistered<GetMemberBalance>()) {
+    sl.registerLazySingleton<GetMemberBalance>(() => GetMemberBalance(sl<FinanceRepository>()));
+  }
+
+  if (!sl.isRegistered<ExportFinanceReport>()) {
+    sl.registerLazySingleton<ExportFinanceReport>(() => ExportFinanceReport(sl<FinanceRepository>()));
+  }
+
+  // Finance Cubits
+  if (!sl.isRegistered<FinanceOverviewCubit>()) {
+    sl.registerFactory<FinanceOverviewCubit>(
+      () => FinanceOverviewCubit(getFinanceSummary: sl<GetFinanceSummary>()),
+    );
+  }
+
+  if (!sl.isRegistered<LedgerCubit>()) {
+    sl.registerFactory<LedgerCubit>(
+      () => LedgerCubit(
+        watchLedger: sl<WatchLedger>(),
+        voidPaymentUseCase: sl<VoidPayment>(),
+        voidExpenseUseCase: sl<VoidExpense>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<AddPaymentCubit>()) {
+    sl.registerFactory<AddPaymentCubit>(
+      () => AddPaymentCubit(
+        addPaymentUseCase: sl<AddPayment>(),
+        membersDao: sl<MembersDao>(),
+        db: sl<AppDatabase>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<AddExpenseCubit>()) {
+    sl.registerFactory<AddExpenseCubit>(
+      () => AddExpenseCubit(
+        addExpenseUseCase: sl<AddExpense>(),
+        updateExpenseUseCase: sl<UpdateExpense>(),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<BalancesCubit>()) {
+    sl.registerFactory<BalancesCubit>(
+      () => BalancesCubit(getMembersWithBalanceUseCase: sl<GetMembersWithBalance>()),
+    );
+  }
+
+  if (!sl.isRegistered<ReportsCubit>()) {
+    sl.registerFactory<ReportsCubit>(
+      () => ReportsCubit(
+        getFinanceSummary: sl<GetFinanceSummary>(),
+        getDailyTotals: sl<GetDailyTotals>(),
+        exportFinanceReport: sl<ExportFinanceReport>(),
       ),
     );
   }
