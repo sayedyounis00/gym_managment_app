@@ -262,6 +262,30 @@ class MembersRepositoryImpl implements MembersRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, Unit>> recordPayment({
+    required int memberId,
+    required double amount,
+    required String paymentMethod,
+    required DateTime paidAt,
+    int? subscriptionId,
+    String? notes,
+  }) async {
+    try {
+      await membersDao.recordMemberPayment(
+        memberId: memberId,
+        amount: amount,
+        paymentMethod: paymentMethod,
+        paidAt: paidAt,
+        subscriptionId: subscriptionId,
+        notes: notes,
+      );
+      return const Right(unit);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
   domain.Member _mapToDomainMember(Member row) {
     return domain.Member(
       id: row.id,

@@ -10,12 +10,6 @@ enum MemberStatusType {
   paused,
 }
 
-enum PaymentStatusType {
-  paid,
-  partiallyPaid,
-  unpaid,
-}
-
 class StatusChip extends StatelessWidget {
   final String label;
   final IconData icon;
@@ -59,32 +53,6 @@ class StatusChip extends StatelessWidget {
           icon: Icons.pause_circle_rounded,
           color: AppColors.paused,
           backgroundColor: AppColors.pausedTint,
-        );
-    }
-  }
-
-  factory StatusChip.paymentStatus(PaymentStatusType status) {
-    switch (status) {
-      case PaymentStatusType.paid:
-        return const StatusChip(
-          label: 'مدفوع',
-          icon: Icons.check_circle_rounded,
-          color: AppColors.success,
-          backgroundColor: AppColors.successTint,
-        );
-      case PaymentStatusType.partiallyPaid:
-        return const StatusChip(
-          label: 'مدفوع جزئياً',
-          icon: Icons.schedule_rounded,
-          color: AppColors.warning,
-          backgroundColor: AppColors.warningTint,
-        );
-      case PaymentStatusType.unpaid:
-        return const StatusChip(
-          label: 'غير مدفوع',
-          icon: Icons.cancel_rounded,
-          color: AppColors.error,
-          backgroundColor: AppColors.errorTint,
         );
     }
   }

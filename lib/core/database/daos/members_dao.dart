@@ -4,7 +4,6 @@ import '../../utils/date_utils.dart';
 import '../../widgets/status_chip.dart';
 import '../../../features/members/domain/enums/member_status.dart';
 import '../app_database.dart';
-import '../tables/attendance_table.dart';
 import '../tables/member_notes_table.dart';
 import '../tables/members_table.dart';
 import '../tables/packages_table.dart';
@@ -34,7 +33,6 @@ class MemberWithSubscriptionData {
   Packages,
   Subscriptions,
   Payments,
-  Attendance,
   MemberNotes,
 ])
 class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
@@ -166,7 +164,6 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
 
   Future<void> deleteMember(int id) {
     return transaction(() async {
-      await (delete(attendance)..where((a) => a.memberId.equals(id))).go();
       await (delete(memberNotes)..where((n) => n.memberId.equals(id))).go();
       await (delete(members)..where((m) => m.id.equals(id))).go();
     });
@@ -185,5 +182,43 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
           ..where((p) => p.memberId.equals(memberId))
           ..orderBy([(p) => OrderingTerm.desc(p.paidAt)]))
         .get();
+  }
+
+  Future<int> recordMemberPayment({
+    required int memberId,
+    required double amount,
+    required String paymentMethod,
+    required DateTime paidAt,
+    int? subscriptionId,
+    String? notes,
+  }) {
+    return transaction(() async {
+      final paymentId = await into(payments).insert(
+        PaymentsCompanion.insert(
+          memberId: memberId,
+          amount: amount,
+          paymentMethod: Value(paymentMethod),
+          paidAt: Value(paidAt),
+          subscriptionId: Value(subscriptionId),
+          notes: Value(notes),
+        ),
+      );
+
+      if (subscriptionId != null) {
+        final sub = await (select(subscriptions)
+              ..where((s) => s.id.equals(subscriptionId)))
+            .getSingleOrNull();
+        if (sub != null) {
+          final newPaid = sub.amountPaid + amount;
+          await (update(subscriptions)
+                ..where((s) => s.id.equals(subscriptionId)))
+              .write(
+            SubscriptionsCompanion(amountPaid: Value(newPaid)),
+          );
+        }
+      }
+
+      return paymentId;
+    });
   }
 }

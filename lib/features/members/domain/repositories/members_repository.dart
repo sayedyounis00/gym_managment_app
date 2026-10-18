@@ -36,4 +36,13 @@ abstract class MembersRepository {
   Future<Either<Failure, List<SubscriptionHistoryItem>>> getMemberSubscriptions(int memberId);
 
   Future<Either<Failure, List<PaymentHistoryItem>>> getMemberPayments(int memberId);
+
+  Future<Either<Failure, Unit>> recordPayment({
+    required int memberId,
+    required double amount,
+    required String paymentMethod,
+    required DateTime paidAt,
+    int? subscriptionId,
+    String? notes,
+  });
 }

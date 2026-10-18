@@ -42,17 +42,6 @@ class Subscription extends Equatable {
   /// Remaining unpaid balance.
   double get remainingAmount => (priceSnapshot - amountPaid).clamp(0.0, double.infinity);
 
-  /// Derived payment status.
-  PaymentStatusType get paymentStatus {
-    if (amountPaid >= priceSnapshot && priceSnapshot > 0) {
-      return PaymentStatusType.paid;
-    } else if (amountPaid > 0) {
-      return PaymentStatusType.partiallyPaid;
-    } else {
-      return PaymentStatusType.unpaid;
-    }
-  }
-
   /// Remaining calendar days until expiration.
   int remainingDays([DateTime? now]) {
     final current = now ?? DateTime.now();

@@ -28,16 +28,6 @@ class SubscriptionHistoryItem extends Equatable {
 
   double get remainingAmount => (price - paidAmount).clamp(0, double.infinity);
 
-  PaymentStatusType get paymentStatus {
-    if (paidAmount >= price && price > 0) {
-      return PaymentStatusType.paid;
-    } else if (paidAmount > 0) {
-      return PaymentStatusType.partiallyPaid;
-    } else {
-      return PaymentStatusType.unpaid;
-    }
-  }
-
   @override
   List<Object?> get props => [
         id,
