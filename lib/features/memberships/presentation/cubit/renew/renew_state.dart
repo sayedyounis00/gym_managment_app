@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:gym_managment_app/core/widgets/status_chip.dart';
 import '../../../domain/entities/membership_package.dart';
 
 class RenewState extends Equatable {
@@ -37,16 +36,6 @@ class RenewState extends Equatable {
 
   double get packagePrice => selectedPackage?.price ?? 0.0;
   double get remainingAmount => (packagePrice - amountPaid).clamp(0.0, double.infinity);
-
-  PaymentStatusType get paymentStatus {
-    if (amountPaid >= packagePrice && packagePrice > 0) {
-      return PaymentStatusType.paid;
-    } else if (amountPaid > 0) {
-      return PaymentStatusType.partiallyPaid;
-    } else {
-      return PaymentStatusType.unpaid;
-    }
-  }
 
   RenewState copyWith({
     int? memberId,

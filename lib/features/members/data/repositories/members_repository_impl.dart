@@ -215,6 +215,10 @@ class MembersRepositoryImpl implements MembersRepository {
           now: now,
         );
 
+        final paymentMethod = relatedPayments.isNotEmpty
+            ? relatedPayments.first.paymentMethod
+            : (sub.amountPaid > 0 ? 'cash' : null);
+
         return SubscriptionHistoryItem(
           id: sub.id,
           memberId: sub.memberId,
@@ -225,6 +229,7 @@ class MembersRepositoryImpl implements MembersRepository {
           paidAmount: totalPaid,
           status: status,
           isRenewal: sub.isRenewal,
+          paymentMethod: paymentMethod,
         );
       }).toList();
 
@@ -252,6 +257,30 @@ class MembersRepositoryImpl implements MembersRepository {
         );
       }).toList();
       return Right(list);
+    } catch (e) {
+      return Left(DatabaseFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> recordPayment({
+    required int memberId,
+    required double amount,
+    required String paymentMethod,
+    required DateTime paidAt,
+    int? subscriptionId,
+    String? notes,
+  }) async {
+    try {
+      await membersDao.recordMemberPayment(
+        memberId: memberId,
+        amount: amount,
+        paymentMethod: paymentMethod,
+        paidAt: paidAt,
+        subscriptionId: subscriptionId,
+        notes: notes,
+      );
+      return const Right(unit);
     } catch (e) {
       return Left(DatabaseFailure(e.toString()));
     }

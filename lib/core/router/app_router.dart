@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
-import '../../features/members/presentation/cubit/attendance/attendance_cubit.dart';
 import '../../features/members/presentation/cubit/member_details/member_details_cubit.dart';
 import '../../features/members/presentation/cubit/member_form/member_form_cubit.dart';
 import '../../features/members/presentation/cubit/member_notes/member_notes_cubit.dart';
@@ -104,7 +103,6 @@ final GoRouter appRouter = GoRouter(
             providers: [
               BlocProvider(create: (_) => sl<MemberDetailsCubit>()),
               BlocProvider(create: (_) => sl<MemberNotesCubit>()),
-              BlocProvider(create: (_) => sl<AttendanceCubit>()),
             ],
             child: MemberDetailsPage(memberId: id),
           ),

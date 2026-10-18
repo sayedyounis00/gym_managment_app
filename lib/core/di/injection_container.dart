@@ -3,7 +3,6 @@ import '../database/app_database.dart';
 import '../database/daos/dashboard_dao.dart';
 import '../database/daos/members_dao.dart';
 import '../database/daos/notes_dao.dart';
-import '../database/daos/attendance_dao.dart';
 import '../services/image_storage_service.dart';
 import '../services/notification_service.dart';
 
@@ -15,24 +14,20 @@ import '../../features/dashboard/presentation/cubit/dashboard_cubit.dart';
 
 import '../../features/members/data/repositories/members_repository_impl.dart';
 import '../../features/members/data/repositories/notes_repository_impl.dart';
-import '../../features/members/data/repositories/attendance_repository_impl.dart';
 import '../../features/members/domain/repositories/members_repository.dart';
 import '../../features/members/domain/repositories/notes_repository.dart';
-import '../../features/members/domain/repositories/attendance_repository.dart';
 import '../../features/members/domain/usecases/get_members.dart';
 import '../../features/members/domain/usecases/get_member_details.dart';
 import '../../features/members/domain/usecases/add_member.dart';
 import '../../features/members/domain/usecases/update_member.dart';
 import '../../features/members/domain/usecases/delete_member.dart';
 import '../../features/members/domain/usecases/toggle_member_suspension.dart';
+import '../../features/members/domain/usecases/record_payment.dart';
 import '../../features/members/domain/usecases/notes_usecases.dart';
-import '../../features/members/domain/usecases/record_attendance.dart';
-import '../../features/members/domain/usecases/get_member_attendance.dart';
 import '../../features/members/presentation/cubit/members_list/members_list_cubit.dart';
 import '../../features/members/presentation/cubit/member_form/member_form_cubit.dart';
 import '../../features/members/presentation/cubit/member_details/member_details_cubit.dart';
 import '../../features/members/presentation/cubit/member_notes/member_notes_cubit.dart';
-import '../../features/members/presentation/cubit/attendance/attendance_cubit.dart';
 
 import '../database/daos/memberships_dao.dart';
 import '../../features/memberships/data/datasources/memberships_local_datasource.dart';
@@ -80,10 +75,6 @@ Future<void> initDependencies({
 
   if (!sl.isRegistered<NotesDao>()) {
     sl.registerSingleton<NotesDao>(NotesDao(sl<AppDatabase>()));
-  }
-
-  if (!sl.isRegistered<AttendanceDao>()) {
-    sl.registerSingleton<AttendanceDao>(AttendanceDao(sl<AppDatabase>()));
   }
 
   if (!sl.isRegistered<MembershipsDao>()) {
@@ -141,12 +132,6 @@ Future<void> initDependencies({
     );
   }
 
-  if (!sl.isRegistered<AttendanceRepository>()) {
-    sl.registerLazySingleton<AttendanceRepository>(
-      () => AttendanceRepositoryImpl(attendanceDao: sl<AttendanceDao>()),
-    );
-  }
-
   // Members Use Cases
   if (!sl.isRegistered<GetMembers>()) {
     sl.registerLazySingleton<GetMembers>(() => GetMembers(sl<MembersRepository>()));
@@ -174,6 +159,12 @@ Future<void> initDependencies({
     );
   }
 
+  if (!sl.isRegistered<RecordPayment>()) {
+    sl.registerLazySingleton<RecordPayment>(
+      () => RecordPayment(sl<MembersRepository>()),
+    );
+  }
+
   if (!sl.isRegistered<GetMemberNotes>()) {
     sl.registerLazySingleton<GetMemberNotes>(() => GetMemberNotes(sl<NotesRepository>()));
   }
@@ -188,18 +179,6 @@ Future<void> initDependencies({
 
   if (!sl.isRegistered<DeleteNote>()) {
     sl.registerLazySingleton<DeleteNote>(() => DeleteNote(sl<NotesRepository>()));
-  }
-
-  if (!sl.isRegistered<RecordAttendance>()) {
-    sl.registerLazySingleton<RecordAttendance>(
-      () => RecordAttendance(sl<AttendanceRepository>()),
-    );
-  }
-
-  if (!sl.isRegistered<GetMemberAttendance>()) {
-    sl.registerLazySingleton<GetMemberAttendance>(
-      () => GetMemberAttendance(sl<AttendanceRepository>()),
-    );
   }
 
   // Members Cubits (Factory)
@@ -226,6 +205,7 @@ Future<void> initDependencies({
         getMemberDetails: sl<GetMemberDetails>(),
         toggleMemberSuspension: sl<ToggleMemberSuspension>(),
         deleteMember: sl<DeleteMember>(),
+        recordPaymentUseCase: sl<RecordPayment>(),
       ),
     );
   }
@@ -237,16 +217,6 @@ Future<void> initDependencies({
         addNote: sl<AddNote>(),
         updateNote: sl<UpdateNote>(),
         deleteNote: sl<DeleteNote>(),
-      ),
-    );
-  }
-
-  if (!sl.isRegistered<AttendanceCubit>()) {
-    sl.registerFactory<AttendanceCubit>(
-      () => AttendanceCubit(
-        getMemberAttendance: sl<GetMemberAttendance>(),
-        recordAttendance: sl<RecordAttendance>(),
-        attendanceRepository: sl<AttendanceRepository>(),
       ),
     );
   }

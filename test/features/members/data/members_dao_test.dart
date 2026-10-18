@@ -2,7 +2,6 @@ import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_managment_app/core/database/app_database.dart';
-import 'package:gym_managment_app/core/database/daos/attendance_dao.dart';
 import 'package:gym_managment_app/core/database/daos/members_dao.dart';
 import 'package:gym_managment_app/core/database/daos/notes_dao.dart';
 import 'package:gym_managment_app/core/utils/arabic_search_utils.dart';
@@ -12,13 +11,11 @@ void main() {
   late AppDatabase db;
   late MembersDao membersDao;
   late NotesDao notesDao;
-  late AttendanceDao attendanceDao;
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
     membersDao = MembersDao(db);
     notesDao = NotesDao(db);
-    attendanceDao = AttendanceDao(db);
   });
 
   tearDown(() async {
@@ -152,13 +149,12 @@ void main() {
       expect(m2!.isSuspended, isFalse);
     });
 
-    test('deleteMember cascades attendance and notes', () async {
+    test('deleteMember cascades notes', () async {
       final id = await membersDao.insertMember(
         MembersCompanion.insert(name: 'كريم', phone: '01555555555'),
       );
 
       await notesDao.insertNote(id, 'ملاحظة خاصة');
-      await attendanceDao.recordAttendance(id);
 
       final hasNotes = await notesDao.watchNotes(id).first;
       expect(hasNotes.length, equals(1));
@@ -173,7 +169,7 @@ void main() {
     });
   });
 
-  group('NotesDao & AttendanceDao tests', () {
+  group('NotesDao tests', () {
     test('Notes CRUD operations', () async {
       final mId = await membersDao.insertMember(
         MembersCompanion.insert(name: 'سارة', phone: '01111111111'),
@@ -193,23 +189,6 @@ void main() {
       await notesDao.deleteNote(noteId);
       list = await notesDao.watchNotes(mId).first;
       expect(list.isEmpty, isTrue);
-    });
-
-    test('AttendanceDao records check-in and detects today attendance', () async {
-      final mId = await membersDao.insertMember(
-        MembersCompanion.insert(name: 'عمر', phone: '01234567899'),
-      );
-
-      expect(await attendanceDao.hasCheckedInToday(mId), isFalse);
-
-      await attendanceDao.recordAttendance(mId);
-
-      expect(await attendanceDao.hasCheckedInToday(mId), isTrue);
-      expect(await attendanceDao.countTodayAttendance(), equals(1));
-
-      final now = DateTime.now();
-      final monthRecords = await attendanceDao.watchAttendance(mId, now).first;
-      expect(monthRecords.length, equals(1));
     });
   });
 }

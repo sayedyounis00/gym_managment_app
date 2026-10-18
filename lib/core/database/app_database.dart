@@ -5,12 +5,10 @@ import 'tables/packages_table.dart';
 import 'tables/subscriptions_table.dart';
 import 'tables/payments_table.dart';
 import 'tables/expenses_table.dart';
-import 'tables/attendance_table.dart';
 import 'tables/member_notes_table.dart';
 import 'daos/dashboard_dao.dart';
 import 'daos/members_dao.dart';
 import 'daos/notes_dao.dart';
-import 'daos/attendance_dao.dart';
 import 'daos/memberships_dao.dart';
 
 part 'app_database.g.dart';
@@ -22,14 +20,12 @@ part 'app_database.g.dart';
     Subscriptions,
     Payments,
     Expenses,
-    Attendance,
     MemberNotes,
   ],
   daos: [
     DashboardDao,
     MembersDao,
     NotesDao,
-    AttendanceDao,
     MembershipsDao,
   ],
 )
@@ -75,7 +71,6 @@ class AppDatabase extends _$AppDatabase {
   /// Deletes all data from all tables, leaving the database completely clean.
   Future<void> clearAllData() async {
     await customStatement('PRAGMA foreign_keys = OFF;');
-    await delete(attendance).go();
     await delete(memberNotes).go();
     await delete(payments).go();
     await delete(subscriptions).go();

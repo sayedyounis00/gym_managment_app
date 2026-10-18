@@ -20,11 +20,6 @@ class PaymentMethodChips extends StatelessWidget {
       'icon': Icons.payments_rounded,
     },
     {
-      'id': 'transfer',
-      'label': 'تحويل',
-      'icon': Icons.swap_horiz_rounded,
-    },
-    {
       'id': 'wallet',
       'label': 'محفظة إلكترونية',
       'icon': Icons.account_balance_wallet_rounded,

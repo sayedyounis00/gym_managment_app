@@ -147,7 +147,7 @@ class _MembersPageState extends State<MembersPage> {
                       return EmptyState(
                         icon: Icons.group_add_rounded,
                         title: 'لا يوجد مشتركين بعد',
-                        message: 'ابدأ بإضافة أول مشترك في الجيم لمتابعة الاشتراكات والحضور.',
+                        message: 'ابدأ بإضافة أول مشترك في الجيم لمتابعة الاشتراكات والمدفوعات.',
                         actionLabel: 'إضافة أول مشترك',
                         onAction: () => context.push('/members/new'),
                       );

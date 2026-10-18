@@ -2889,263 +2889,6 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }
 }
 
-class $AttendanceTable extends Attendance
-    with TableInfo<$AttendanceTable, AttendanceData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $AttendanceTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-    'id',
-    aliasedName,
-    false,
-    hasAutoIncrement: true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'PRIMARY KEY AUTOINCREMENT',
-    ),
-  );
-  static const VerificationMeta _memberIdMeta = const VerificationMeta(
-    'memberId',
-  );
-  @override
-  late final GeneratedColumn<int> memberId = GeneratedColumn<int>(
-    'member_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-    defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES members (id) ON DELETE CASCADE',
-    ),
-  );
-  static const VerificationMeta _checkInTimeMeta = const VerificationMeta(
-    'checkInTime',
-  );
-  @override
-  late final GeneratedColumn<DateTime> checkInTime = GeneratedColumn<DateTime>(
-    'check_in_time',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [id, memberId, checkInTime];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'attendance';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<AttendanceData> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('member_id')) {
-      context.handle(
-        _memberIdMeta,
-        memberId.isAcceptableOrUnknown(data['member_id']!, _memberIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_memberIdMeta);
-    }
-    if (data.containsKey('check_in_time')) {
-      context.handle(
-        _checkInTimeMeta,
-        checkInTime.isAcceptableOrUnknown(
-          data['check_in_time']!,
-          _checkInTimeMeta,
-        ),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  AttendanceData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return AttendanceData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}id'],
-      )!,
-      memberId: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}member_id'],
-      )!,
-      checkInTime: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}check_in_time'],
-      )!,
-    );
-  }
-
-  @override
-  $AttendanceTable createAlias(String alias) {
-    return $AttendanceTable(attachedDatabase, alias);
-  }
-}
-
-class AttendanceData extends DataClass implements Insertable<AttendanceData> {
-  final int id;
-  final int memberId;
-  final DateTime checkInTime;
-  const AttendanceData({
-    required this.id,
-    required this.memberId,
-    required this.checkInTime,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['member_id'] = Variable<int>(memberId);
-    map['check_in_time'] = Variable<DateTime>(checkInTime);
-    return map;
-  }
-
-  AttendanceCompanion toCompanion(bool nullToAbsent) {
-    return AttendanceCompanion(
-      id: Value(id),
-      memberId: Value(memberId),
-      checkInTime: Value(checkInTime),
-    );
-  }
-
-  factory AttendanceData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return AttendanceData(
-      id: serializer.fromJson<int>(json['id']),
-      memberId: serializer.fromJson<int>(json['memberId']),
-      checkInTime: serializer.fromJson<DateTime>(json['checkInTime']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'memberId': serializer.toJson<int>(memberId),
-      'checkInTime': serializer.toJson<DateTime>(checkInTime),
-    };
-  }
-
-  AttendanceData copyWith({int? id, int? memberId, DateTime? checkInTime}) =>
-      AttendanceData(
-        id: id ?? this.id,
-        memberId: memberId ?? this.memberId,
-        checkInTime: checkInTime ?? this.checkInTime,
-      );
-  AttendanceData copyWithCompanion(AttendanceCompanion data) {
-    return AttendanceData(
-      id: data.id.present ? data.id.value : this.id,
-      memberId: data.memberId.present ? data.memberId.value : this.memberId,
-      checkInTime: data.checkInTime.present
-          ? data.checkInTime.value
-          : this.checkInTime,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('AttendanceData(')
-          ..write('id: $id, ')
-          ..write('memberId: $memberId, ')
-          ..write('checkInTime: $checkInTime')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, memberId, checkInTime);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is AttendanceData &&
-          other.id == this.id &&
-          other.memberId == this.memberId &&
-          other.checkInTime == this.checkInTime);
-}
-
-class AttendanceCompanion extends UpdateCompanion<AttendanceData> {
-  final Value<int> id;
-  final Value<int> memberId;
-  final Value<DateTime> checkInTime;
-  const AttendanceCompanion({
-    this.id = const Value.absent(),
-    this.memberId = const Value.absent(),
-    this.checkInTime = const Value.absent(),
-  });
-  AttendanceCompanion.insert({
-    this.id = const Value.absent(),
-    required int memberId,
-    this.checkInTime = const Value.absent(),
-  }) : memberId = Value(memberId);
-  static Insertable<AttendanceData> custom({
-    Expression<int>? id,
-    Expression<int>? memberId,
-    Expression<DateTime>? checkInTime,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (memberId != null) 'member_id': memberId,
-      if (checkInTime != null) 'check_in_time': checkInTime,
-    });
-  }
-
-  AttendanceCompanion copyWith({
-    Value<int>? id,
-    Value<int>? memberId,
-    Value<DateTime>? checkInTime,
-  }) {
-    return AttendanceCompanion(
-      id: id ?? this.id,
-      memberId: memberId ?? this.memberId,
-      checkInTime: checkInTime ?? this.checkInTime,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
-    }
-    if (memberId.present) {
-      map['member_id'] = Variable<int>(memberId.value);
-    }
-    if (checkInTime.present) {
-      map['check_in_time'] = Variable<DateTime>(checkInTime.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('AttendanceCompanion(')
-          ..write('id: $id, ')
-          ..write('memberId: $memberId, ')
-          ..write('checkInTime: $checkInTime')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class $MemberNotesTable extends MemberNotes
     with TableInfo<$MemberNotesTable, MemberNote> {
   @override
@@ -3503,7 +3246,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SubscriptionsTable subscriptions = $SubscriptionsTable(this);
   late final $PaymentsTable payments = $PaymentsTable(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
-  late final $AttendanceTable attendance = $AttendanceTable(this);
   late final $MemberNotesTable memberNotes = $MemberNotesTable(this);
   late final Index idxMembersName = Index(
     'idx_members_name',
@@ -3541,10 +3283,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_expenses_date',
     'CREATE INDEX idx_expenses_date ON expenses (date)',
   );
-  late final Index idxAttendanceMemberTime = Index(
-    'idx_attendance_member_time',
-    'CREATE INDEX idx_attendance_member_time ON attendance (member_id, check_in_time)',
-  );
   late final Index idxMemberNotesMemberId = Index(
     'idx_member_notes_member_id',
     'CREATE INDEX idx_member_notes_member_id ON member_notes (member_id)',
@@ -3552,7 +3290,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final DashboardDao dashboardDao = DashboardDao(this as AppDatabase);
   late final MembersDao membersDao = MembersDao(this as AppDatabase);
   late final NotesDao notesDao = NotesDao(this as AppDatabase);
-  late final AttendanceDao attendanceDao = AttendanceDao(this as AppDatabase);
   late final MembershipsDao membershipsDao = MembershipsDao(
     this as AppDatabase,
   );
@@ -3566,7 +3303,6 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     subscriptions,
     payments,
     expenses,
-    attendance,
     memberNotes,
     idxMembersName,
     idxMembersPhone,
@@ -3577,18 +3313,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxSubscriptionsMemberId,
     idxPaymentsPaidAt,
     idxExpensesDate,
-    idxAttendanceMemberTime,
     idxMemberNotesMemberId,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
-    WritePropagation(
-      on: TableUpdateQuery.onTableName(
-        'members',
-        limitUpdateKind: UpdateKind.delete,
-      ),
-      result: [TableUpdate('attendance', kind: UpdateKind.delete)],
-    ),
     WritePropagation(
       on: TableUpdateQuery.onTableName(
         'members',
@@ -3664,24 +3392,6 @@ final class $$MembersTableReferences
     ).filter((f) => f.memberId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_paymentsRefsTable($_db));
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: cache),
-    );
-  }
-
-  static MultiTypedResultKey<$AttendanceTable, List<AttendanceData>>
-  _attendanceRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-    db.attendance,
-    aliasName: 'members__id__attendance__member_id',
-  );
-
-  $$AttendanceTableProcessedTableManager get attendanceRefs {
-    final manager = $$AttendanceTableTableManager(
-      $_db,
-      $_db.attendance,
-    ).filter((f) => f.memberId.id.sqlEquals($_itemColumn<int>('id')!));
-
-    final cache = $_typedResult.readTableOrNull(_attendanceRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -3816,31 +3526,6 @@ class $$MembersTableFilterComposer
           }) => $$PaymentsTableFilterComposer(
             $db: $db,
             $table: $db.payments,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
-  Expression<bool> attendanceRefs(
-    Expression<bool> Function($$AttendanceTableFilterComposer f) f,
-  ) {
-    final $$AttendanceTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.attendance,
-      getReferencedColumn: (t) => t.memberId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$AttendanceTableFilterComposer(
-            $db: $db,
-            $table: $db.attendance,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -4045,31 +3730,6 @@ class $$MembersTableAnnotationComposer
     return f(composer);
   }
 
-  Expression<T> attendanceRefs<T extends Object>(
-    Expression<T> Function($$AttendanceTableAnnotationComposer a) f,
-  ) {
-    final $$AttendanceTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.id,
-      referencedTable: $db.attendance,
-      getReferencedColumn: (t) => t.memberId,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$AttendanceTableAnnotationComposer(
-            $db: $db,
-            $table: $db.attendance,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return f(composer);
-  }
-
   Expression<T> memberNotesRefs<T extends Object>(
     Expression<T> Function($$MemberNotesTableAnnotationComposer a) f,
   ) {
@@ -4112,7 +3772,6 @@ class $$MembersTableTableManager
           PrefetchHooks Function({
             bool subscriptionsRefs,
             bool paymentsRefs,
-            bool attendanceRefs,
             bool memberNotesRefs,
           })
         > {
@@ -4195,7 +3854,6 @@ class $$MembersTableTableManager
               ({
                 subscriptionsRefs = false,
                 paymentsRefs = false,
-                attendanceRefs = false,
                 memberNotesRefs = false,
               }) {
                 return PrefetchHooks(
@@ -4203,7 +3861,6 @@ class $$MembersTableTableManager
                   explicitlyWatchedTables: [
                     if (subscriptionsRefs) db.subscriptions,
                     if (paymentsRefs) db.payments,
-                    if (attendanceRefs) db.attendance,
                     if (memberNotesRefs) db.memberNotes,
                   ],
                   addJoins: null,
@@ -4245,27 +3902,6 @@ class $$MembersTableTableManager
                                 table,
                                 p0,
                               ).paymentsRefs,
-                          referencedItemsForCurrentItem:
-                              (item, referencedItems) => referencedItems.where(
-                                (e) => e.memberId == item.id,
-                              ),
-                          typedResults: items,
-                        ),
-                      if (attendanceRefs)
-                        await $_getPrefetchedData<
-                          Member,
-                          $MembersTable,
-                          AttendanceData
-                        >(
-                          currentTable: table,
-                          referencedTable: $$MembersTableReferences
-                              ._attendanceRefsTable(db),
-                          managerFromTypedResult: (p0) =>
-                              $$MembersTableReferences(
-                                db,
-                                table,
-                                p0,
-                              ).attendanceRefs,
                           referencedItemsForCurrentItem:
                               (item, referencedItems) => referencedItems.where(
                                 (e) => e.memberId == item.id,
@@ -4316,7 +3952,6 @@ typedef $$MembersTableProcessedTableManager =
       PrefetchHooks Function({
         bool subscriptionsRefs,
         bool paymentsRefs,
-        bool attendanceRefs,
         bool memberNotesRefs,
       })
     >;
@@ -5997,277 +5632,6 @@ typedef $$ExpensesTableProcessedTableManager =
       Expense,
       PrefetchHooks Function()
     >;
-typedef $$AttendanceTableCreateCompanionBuilder = AttendanceCompanion Function({
-  Value<int> id,
-  required int memberId,
-  Value<DateTime> checkInTime,
-});
-typedef $$AttendanceTableUpdateCompanionBuilder = AttendanceCompanion Function({
-  Value<int> id,
-  Value<int> memberId,
-  Value<DateTime> checkInTime,
-});
-
-final class $$AttendanceTableReferences
-    extends BaseReferences<_$AppDatabase, $AttendanceTable, AttendanceData> {
-  $$AttendanceTableReferences(super.$_db, super.$_table, super.$_typedResult);
-
-  static $MembersTable _memberIdTable(_$AppDatabase db) =>
-      db.members.createAlias('attendance__member_id__members__id');
-
-  $$MembersTableProcessedTableManager get memberId {
-    final $_column = $_itemColumn<int>('member_id')!;
-
-    final manager = $$MembersTableTableManager(
-      $_db,
-      $_db.members,
-    ).filter((f) => f.id.sqlEquals($_column));
-    final item = $_typedResult.readTableOrNull(_memberIdTable($_db));
-    if (item == null) return manager;
-    return ProcessedTableManager(
-      manager.$state.copyWith(prefetchedData: [item]),
-    );
-  }
-}
-
-class $$AttendanceTableFilterComposer
-    extends Composer<_$AppDatabase, $AttendanceTable> {
-  $$AttendanceTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get checkInTime => $composableBuilder(
-    column: $table.checkInTime,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  $$MembersTableFilterComposer get memberId {
-    final $$MembersTableFilterComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.memberId,
-      referencedTable: $db.members,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MembersTableFilterComposer(
-            $db: $db,
-            $table: $db.members,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$AttendanceTableOrderingComposer
-    extends Composer<_$AppDatabase, $AttendanceTable> {
-  $$AttendanceTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<int> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get checkInTime => $composableBuilder(
-    column: $table.checkInTime,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  $$MembersTableOrderingComposer get memberId {
-    final $$MembersTableOrderingComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.memberId,
-      referencedTable: $db.members,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MembersTableOrderingComposer(
-            $db: $db,
-            $table: $db.members,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$AttendanceTableAnnotationComposer
-    extends Composer<_$AppDatabase, $AttendanceTable> {
-  $$AttendanceTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get checkInTime => $composableBuilder(
-    column: $table.checkInTime,
-    builder: (column) => column,
-  );
-
-  $$MembersTableAnnotationComposer get memberId {
-    final $$MembersTableAnnotationComposer composer = $composerBuilder(
-      composer: this,
-      getCurrentColumn: (t) => t.memberId,
-      referencedTable: $db.members,
-      getReferencedColumn: (t) => t.id,
-      builder:
-          (
-            joinBuilder, {
-            $addJoinBuilderToRootComposer,
-            $removeJoinBuilderFromRootComposer,
-          }) => $$MembersTableAnnotationComposer(
-            $db: $db,
-            $table: $db.members,
-            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
-            joinBuilder: joinBuilder,
-            $removeJoinBuilderFromRootComposer:
-                $removeJoinBuilderFromRootComposer,
-          ),
-    );
-    return composer;
-  }
-}
-
-class $$AttendanceTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $AttendanceTable,
-          AttendanceData,
-          $$AttendanceTableFilterComposer,
-          $$AttendanceTableOrderingComposer,
-          $$AttendanceTableAnnotationComposer,
-          $$AttendanceTableCreateCompanionBuilder,
-          $$AttendanceTableUpdateCompanionBuilder,
-          (AttendanceData, $$AttendanceTableReferences),
-          AttendanceData,
-          PrefetchHooks Function({bool memberId})
-        > {
-  $$AttendanceTableTableManager(_$AppDatabase db, $AttendanceTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$AttendanceTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$AttendanceTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$AttendanceTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                Value<int> memberId = const Value.absent(),
-                Value<DateTime> checkInTime = const Value.absent(),
-              }) => AttendanceCompanion(
-                id: id,
-                memberId: memberId,
-                checkInTime: checkInTime,
-              ),
-          createCompanionCallback:
-              ({
-                Value<int> id = const Value.absent(),
-                required int memberId,
-                Value<DateTime> checkInTime = const Value.absent(),
-              }) => AttendanceCompanion.insert(
-                id: id,
-                memberId: memberId,
-                checkInTime: checkInTime,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map(
-                (e) => (
-                  e.readTable<$AttendanceTable, AttendanceData>(table),
-                  $$AttendanceTableReferences(db, table, e),
-                ),
-              )
-              .toList(),
-          prefetchHooksCallback: ({memberId = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (memberId) {
-                      state = state.withJoin(
-                        currentTable: table,
-                        currentColumn: table.memberId,
-                        referencedTable: $$AttendanceTableReferences
-                            ._memberIdTable(db),
-                        referencedColumn: $$AttendanceTableReferences
-                            ._memberIdTable(db)
-                            .id,
-                      ) as T;
-                    }
-
-                    return state;
-                  },
-              getPrefetchedDataCallback: (items) async {
-                return [];
-              },
-            );
-          },
-        ),
-      );
-}
-
-typedef $$AttendanceTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $AttendanceTable,
-      AttendanceData,
-      $$AttendanceTableFilterComposer,
-      $$AttendanceTableOrderingComposer,
-      $$AttendanceTableAnnotationComposer,
-      $$AttendanceTableCreateCompanionBuilder,
-      $$AttendanceTableUpdateCompanionBuilder,
-      (AttendanceData, $$AttendanceTableReferences),
-      AttendanceData,
-      PrefetchHooks Function({bool memberId})
-    >;
 typedef $$MemberNotesTableCreateCompanionBuilder =
     MemberNotesCompanion Function({
       Value<int> id,
@@ -6591,8 +5955,6 @@ class $AppDatabaseManager {
       $$PaymentsTableTableManager(_db, _db.payments);
   $$ExpensesTableTableManager get expenses =>
       $$ExpensesTableTableManager(_db, _db.expenses);
-  $$AttendanceTableTableManager get attendance =>
-      $$AttendanceTableTableManager(_db, _db.attendance);
   $$MemberNotesTableTableManager get memberNotes =>
       $$MemberNotesTableTableManager(_db, _db.memberNotes);
 }
