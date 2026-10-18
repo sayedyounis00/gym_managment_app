@@ -129,7 +129,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('MemberDetails TabBar renders all 4 tabs fully without overflow on narrow 320dp screen', (tester) async {
+    testWidgets('MemberDetails TabBar renders all 3 tabs fully without overflow on narrow 320dp screen', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Directionality(
@@ -141,7 +141,7 @@ void main() {
               ),
               child: Scaffold(
                 body: DefaultTabController(
-                  length: 4,
+                  length: 3,
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
@@ -152,7 +152,6 @@ void main() {
                       labelPadding: EdgeInsets.symmetric(horizontal: 2),
                       tabs: [
                         Tab(child: FittedBox(fit: BoxFit.scaleDown, child: Text('الاشتراكات', maxLines: 1))),
-                        Tab(child: FittedBox(fit: BoxFit.scaleDown, child: Text('الحضور', maxLines: 1))),
                         Tab(child: FittedBox(fit: BoxFit.scaleDown, child: Text('المدفوعات', maxLines: 1))),
                         Tab(child: FittedBox(fit: BoxFit.scaleDown, child: Text('الملاحظات', maxLines: 1))),
                       ],
@@ -166,7 +165,6 @@ void main() {
       );
 
       expect(find.text('الاشتراكات'), findsOneWidget);
-      expect(find.text('الحضور'), findsOneWidget);
       expect(find.text('المدفوعات'), findsOneWidget);
       expect(find.text('الملاحظات'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -204,7 +202,7 @@ void main() {
       expect(find.byType(ImagePreviewDialog), findsNothing);
     });
 
-    testWidgets('Subscription item renders packageName, paymentStatus chip, and paymentMethod chip', (tester) async {
+    testWidgets('Subscription item renders packageName and paymentMethod chip', (tester) async {
       final now = DateTime.now();
       final sub = SubscriptionHistoryItem(
         id: 1,
@@ -234,7 +232,6 @@ void main() {
                           runSpacing: AppSpacing.xs,
                           children: [
                             Text(sub.packageName, style: AppTextStyles.titleMedium),
-                            StatusChip.paymentStatus(sub.paymentStatus),
                             if (sub.paymentMethod != null)
                               StatusChip.paymentMethod(sub.paymentMethod!),
                           ],
@@ -250,7 +247,6 @@ void main() {
       );
 
       expect(find.text('باقة شهرية ذهبية'), findsOneWidget);
-      expect(find.text('مدفوع'), findsOneWidget);
       expect(find.text('نقدي'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });

@@ -207,7 +207,6 @@ void main() {
       expect(activeSub.remainingDays(now), 2);
       expect(activeSub.isExpiringSoon(now, 3), isTrue);
       expect(activeSub.displayStatus(now, 3), MemberStatusType.expiringSoon);
-      expect(activeSub.paymentStatus, PaymentStatusType.paid);
       expect(activeSub.remainingAmount, 0.0);
     });
 
@@ -226,7 +225,6 @@ void main() {
       );
 
       expect(pausedSub.displayStatus(now), MemberStatusType.paused);
-      expect(pausedSub.paymentStatus, PaymentStatusType.partiallyPaid);
       expect(pausedSub.remainingAmount, 200.0);
     });
 
@@ -244,7 +242,6 @@ void main() {
       );
 
       expect(expiredSub.displayStatus(now), MemberStatusType.expired);
-      expect(expiredSub.paymentStatus, PaymentStatusType.unpaid);
       expect(expiredSub.remainingAmount, 500.0);
     });
   });

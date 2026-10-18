@@ -79,15 +79,6 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('AttendanceSkeleton renders calendar day cells and header', (tester) async {
-      await tester.pumpWidget(
-        testWrapper(const AttendanceSkeleton()),
-      );
-
-      expect(find.byType(AttendanceSkeleton), findsOneWidget);
-      expect(find.byWidgetPredicate((w) => w is Bone), findsWidgets);
-      expect(tester.takeException(), isNull);
-    });
 
     testWidgets('NotesSkeleton renders add action and note cards', (tester) async {
       await tester.pumpWidget(
