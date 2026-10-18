@@ -5,6 +5,7 @@ import '../database/daos/members_dao.dart';
 import '../database/daos/notes_dao.dart';
 import '../database/daos/attendance_dao.dart';
 import '../services/image_storage_service.dart';
+import '../services/notification_service.dart';
 
 import '../../features/dashboard/data/datasources/dashboard_local_datasource.dart';
 import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
@@ -44,6 +45,7 @@ import '../../features/memberships/domain/usecases/renew_subscription.dart';
 import '../../features/memberships/domain/usecases/pause_subscription.dart';
 import '../../features/memberships/domain/usecases/resume_subscription.dart';
 import '../../features/memberships/domain/usecases/get_member_subscriptions.dart';
+import '../../features/memberships/domain/usecases/schedule_expiry_notifications.dart';
 import '../../features/memberships/presentation/cubit/packages/packages_cubit.dart';
 import '../../features/memberships/presentation/cubit/package_form/package_form_cubit.dart';
 import '../../features/memberships/presentation/cubit/renew/renew_cubit.dart';
@@ -91,6 +93,10 @@ Future<void> initDependencies({
   // Services
   if (!sl.isRegistered<ImageStorageService>()) {
     sl.registerLazySingleton<ImageStorageService>(() => ImageStorageServiceImpl());
+  }
+
+  if (!sl.isRegistered<NotificationService>()) {
+    sl.registerLazySingleton<NotificationService>(() => NotificationServiceImpl());
   }
 
   // Dashboard Data sources & Repositories
@@ -295,6 +301,12 @@ Future<void> initDependencies({
     sl.registerLazySingleton<GetExpiringSubscriptions>(() => GetExpiringSubscriptions(sl<MembershipsRepository>()));
   }
 
+  if (!sl.isRegistered<ScheduleExpiryNotifications>()) {
+    sl.registerLazySingleton<ScheduleExpiryNotifications>(
+      () => ScheduleExpiryNotifications(sl<NotificationService>()),
+    );
+  }
+
   // Memberships Cubits (Factory)
   if (!sl.isRegistered<PackagesCubit>()) {
     sl.registerFactory<PackagesCubit>(
@@ -321,6 +333,7 @@ Future<void> initDependencies({
         renewSubscription: sl<RenewSubscription>(),
         getPackages: sl<GetPackages>(),
         getMemberSubscriptions: sl<GetMemberSubscriptions>(),
+        scheduleExpiryNotifications: sl<ScheduleExpiryNotifications>(),
       ),
     );
   }
@@ -330,6 +343,8 @@ Future<void> initDependencies({
       () => PauseCubit(
         pauseSubscription: sl<PauseSubscription>(),
         resumeSubscription: sl<ResumeSubscription>(),
+        scheduleExpiryNotifications: sl<ScheduleExpiryNotifications>(),
+        getMemberSubscriptions: sl<GetMemberSubscriptions>(),
       ),
     );
   }
