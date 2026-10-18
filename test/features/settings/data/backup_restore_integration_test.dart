@@ -6,6 +6,7 @@ import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:gym_managment_app/core/database/app_database.dart';
 import 'package:gym_managment_app/core/services/notification_service.dart';
 import 'package:gym_managment_app/features/settings/data/datasources/backup_source.dart';
@@ -31,7 +32,9 @@ class FakePathProviderPlatform extends Fake
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
 
+  final sl = GetIt.instance;
   late Directory tempDir;
   late MockNotificationService mockNotificationService;
   late AppDatabase db;
@@ -39,6 +42,7 @@ void main() {
 
   setUp(() async {
     FlutterSecureStorage.setMockInitialValues({});
+    await sl.reset();
     tempDir = await Directory.systemTemp.createTemp('gym_backup_test_');
     PathProviderPlatform.instance = FakePathProviderPlatform(tempDir.path);
 
@@ -53,23 +57,34 @@ void main() {
 
     final dbFile = File(p.join(tempDir.path, 'gym_management_app.sqlite'));
     db = AppDatabase(NativeDatabase(dbFile));
+    sl.registerSingleton<AppDatabase>(db);
 
     backupSource = BackupSourceImpl(
       db: db,
       secureStorage: const FlutterSecureStorage(),
       notificationService: mockNotificationService,
       onReinitializeDatabase: () async {
-        // Ping db to ensure it's reconnected
+        if (sl.isRegistered<AppDatabase>()) {
+          await sl.unregister<AppDatabase>();
+        }
         final reloadedDb = AppDatabase(NativeDatabase(dbFile));
+        sl.registerSingleton<AppDatabase>(reloadedDb);
         await reloadedDb.customSelect('SELECT 1').get();
       },
     );
   });
 
   tearDown(() async {
-    try {
-      await db.close();
-    } catch (_) {}
+    if (sl.isRegistered<AppDatabase>()) {
+      try {
+        await sl<AppDatabase>().close();
+      } catch (_) {}
+    } else {
+      try {
+        await db.close();
+      } catch (_) {}
+    }
+    await sl.reset();
     if (await tempDir.exists()) {
       await tempDir.delete(recursive: true);
     }
