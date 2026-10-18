@@ -50,12 +50,13 @@ ExtractedZipData _decodeZipIsolate(List<int> zipBytes) {
 
   for (final file in archive) {
     if (!file.isFile) continue;
-    if (file.name == 'manifest.json') {
+    final baseName = p.basename(file.name);
+    if (file.name == 'manifest.json' || baseName == 'manifest.json') {
       manifestJson = utf8.decode(file.content as List<int>);
-    } else if (file.name == 'database.sqlite') {
+    } else if (file.name == 'database.sqlite' || baseName == 'database.sqlite') {
       dbBytes = file.content as List<int>;
-    } else if (file.name.startsWith('photos/')) {
-      photos.add(BackupZipEntry(file.name, file.content as List<int>));
+    } else if (file.name.contains('photos/')) {
+      photos.add(BackupZipEntry('photos/$baseName', file.content as List<int>));
     }
   }
 
@@ -237,6 +238,95 @@ class BackupSourceImpl implements BackupSource {
     } catch (_) {}
   }
 
+  Future<ExtractedZipData> _extractBackupData(String filePath) async {
+    final file = File(filePath);
+    if (!await file.exists()) {
+      throw const FileSystemException('ملف النسخة الاحتياطية غير موجود.');
+    }
+
+    final bytes = await file.readAsBytes();
+    final fileName = p.basename(filePath).toLowerCase();
+
+    // 1. Check if file is a zip archive (Magic bytes PK\x03\x04 or PK\x05\x06 or PK\x07\x08)
+    final isZipArchive = bytes.length >= 4 &&
+        bytes[0] == 0x50 &&
+        bytes[1] == 0x4B &&
+        (bytes[2] == 0x03 || bytes[2] == 0x05 || bytes[2] == 0x07);
+
+    if (isZipArchive) {
+      return await compute(_decodeZipIsolate, bytes);
+    }
+
+    // 2. Check if user picked manifest.json from an extracted folder
+    if (fileName == 'manifest.json') {
+      final manifestJson = utf8.decode(bytes);
+      final parentDir = file.parent;
+      final dbFile = File(p.join(parentDir.path, 'database.sqlite'));
+      if (!await dbFile.exists()) {
+        throw const FormatException('ملف قاعدة البيانات (database.sqlite) غير موجود بجانب ملف البيان (manifest.json).');
+      }
+      final dbBytes = await dbFile.readAsBytes();
+      final photos = <BackupZipEntry>[];
+      final photosDir = Directory(p.join(parentDir.path, 'photos'));
+      if (await photosDir.exists()) {
+        for (final pFile in photosDir.listSync().whereType<File>()) {
+          photos.add(BackupZipEntry('photos/${p.basename(pFile.path)}', await pFile.readAsBytes()));
+        }
+      }
+      return ExtractedZipData(
+        manifestJson: manifestJson,
+        dbBytes: dbBytes,
+        photos: photos,
+      );
+    }
+
+    // 3. Check if user picked database.sqlite or an uncompressed SQLite file
+    final isSqlite = bytes.length >= 16 &&
+        utf8.decode(bytes.sublist(0, 15), allowMalformed: true) == 'SQLite format 3';
+
+    if (isSqlite || fileName == 'database.sqlite' || fileName.endsWith('.sqlite') || fileName.endsWith('.db')) {
+      final parentDir = file.parent;
+      final manifestFile = File(p.join(parentDir.path, 'manifest.json'));
+      String manifestJson;
+
+      if (await manifestFile.exists()) {
+        manifestJson = await manifestFile.readAsString();
+      } else {
+        int schemaVer = db.schemaVersion;
+        if (bytes.length >= 64) {
+          schemaVer = (bytes[60] << 24) | (bytes[61] << 16) | (bytes[62] << 8) | bytes[63];
+        }
+        final dbChecksum = sha256.convert(bytes).toString();
+        final now = await file.lastModified();
+
+        manifestJson = jsonEncode({
+          'app_version': '1.0.0+1',
+          'schema_version': schemaVer > 0 ? schemaVer : db.schemaVersion,
+          'created_at': now.toUtc().toIso8601String(),
+          'member_count': 0,
+          'checksum': dbChecksum,
+        });
+      }
+
+      final photos = <BackupZipEntry>[];
+      final photosDir = Directory(p.join(parentDir.path, 'photos'));
+      if (await photosDir.exists()) {
+        for (final pFile in photosDir.listSync().whereType<File>()) {
+          photos.add(BackupZipEntry('photos/${p.basename(pFile.path)}', await pFile.readAsBytes()));
+        }
+      }
+
+      return ExtractedZipData(
+        manifestJson: manifestJson,
+        dbBytes: bytes,
+        photos: photos,
+      );
+    }
+
+    // 4. Default: attempt zip decoding which throws standard FormatException if corrupt
+    return await compute(_decodeZipIsolate, bytes);
+  }
+
   @override
   Future<BackupInfo> validateBackupFile(String filePath) async {
     final file = File(filePath);
@@ -244,8 +334,7 @@ class BackupSourceImpl implements BackupSource {
       throw const FileSystemException('ملف النسخة الاحتياطية غير موجود.');
     }
 
-    final bytes = await file.readAsBytes();
-    final extracted = await compute(_decodeZipIsolate, bytes);
+    final extracted = await _extractBackupData(filePath);
 
     final Map<String, dynamic> manifest;
     try {
@@ -271,7 +360,7 @@ class BackupSourceImpl implements BackupSource {
       manifest: manifest,
       filePath: filePath,
       fileName: p.basename(filePath),
-      fileSizeBytes: bytes.length,
+      fileSizeBytes: await file.length(),
     );
   }
 
@@ -283,14 +372,13 @@ class BackupSourceImpl implements BackupSource {
       throw const FileSystemException('ملف النسخة الاحتياطية غير موجود.');
     }
 
-    final bytes = await backupFile.readAsBytes();
-    final extracted = await compute(_decodeZipIsolate, bytes);
+    final extracted = await _extractBackupData(filePath);
 
     final Map<String, dynamic> manifest =
         jsonDecode(extracted.manifestJson) as Map<String, dynamic>;
     final manifestChecksum = manifest['checksum'] as String? ?? '';
     final actualChecksum = sha256.convert(extracted.dbBytes).toString();
-    if (manifestChecksum != actualChecksum) {
+    if (manifestChecksum.isEmpty || manifestChecksum != actualChecksum) {
       throw const FormatException('فشل التحقق من صحة النسخة الاحتياطية: البصمة الإلكترونية غير متطابقة.');
     }
 

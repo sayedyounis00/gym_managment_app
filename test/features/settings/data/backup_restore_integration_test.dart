@@ -43,6 +43,7 @@ void main() {
     final dbFile = File(p.join(tempDir.path, 'gym_management_app.sqlite'));
     db = AppDatabase(NativeDatabase(dbFile));
     sl.registerSingleton<AppDatabase>(db);
+    await db.customSelect('SELECT 1').get();
 
     backupSource = BackupSourceImpl(
       db: db,
@@ -233,6 +234,92 @@ void main() {
             e is FormatException &&
             e.message.contains('البصمة الإلكترونية غير متطابقة'))),
       );
+    });
+
+    test('Restores successfully when user selects extracted database.sqlite from unzipped folder', () async {
+      // Create extracted folder structure like in user's image
+      final extractedDir = Directory(p.join(tempDir.path, 'extracted_folder'));
+      await extractedDir.create(recursive: true);
+
+      // Create a dummy sqlite db with header
+      final extractedDbFile = File(p.join(extractedDir.path, 'database.sqlite'));
+      final realDbFile = File(p.join(tempDir.path, 'gym_management_app.sqlite'));
+      await realDbFile.copy(extractedDbFile.path);
+
+      final extractedDbBytes = await extractedDbFile.readAsBytes();
+      final checksum = sha256.convert(extractedDbBytes).toString();
+
+      final manifestFile = File(p.join(extractedDir.path, 'manifest.json'));
+      await manifestFile.writeAsString(jsonEncode({
+        'app_version': '1.0.0+1',
+        'schema_version': db.schemaVersion,
+        'created_at': DateTime.now().toUtc().toIso8601String(),
+        'member_count': 5,
+        'checksum': checksum,
+      }));
+
+      // Validate selecting database.sqlite directly
+      final validated = await backupSource.validateBackupFile(extractedDbFile.path);
+      expect(validated.memberCount, 5);
+      expect(validated.databaseChecksum, checksum);
+
+      // Restore selecting database.sqlite directly
+      await backupSource.restoreBackup(extractedDbFile.path);
+      expect(realDbFile.existsSync(), isTrue);
+    });
+
+    test('Restores successfully when user selects extracted manifest.json from unzipped folder', () async {
+      final extractedDir = Directory(p.join(tempDir.path, 'extracted_manifest_folder'));
+      await extractedDir.create(recursive: true);
+
+      final extractedDbFile = File(p.join(extractedDir.path, 'database.sqlite'));
+      final realDbFile = File(p.join(tempDir.path, 'gym_management_app.sqlite'));
+      await realDbFile.copy(extractedDbFile.path);
+
+      final checksum = sha256.convert(await extractedDbFile.readAsBytes()).toString();
+      final manifestFile = File(p.join(extractedDir.path, 'manifest.json'));
+      await manifestFile.writeAsString(jsonEncode({
+        'app_version': '1.0.0+1',
+        'schema_version': db.schemaVersion,
+        'created_at': DateTime.now().toUtc().toIso8601String(),
+        'member_count': 8,
+        'checksum': checksum,
+      }));
+
+      final validated = await backupSource.validateBackupFile(manifestFile.path);
+      expect(validated.memberCount, 8);
+
+      await backupSource.restoreBackup(manifestFile.path);
+      expect(realDbFile.existsSync(), isTrue);
+    });
+
+    test('Restores successfully when zip archive wraps files in a subfolder', () async {
+      final realDbFile = File(p.join(tempDir.path, 'gym_management_app.sqlite'));
+      final dbBytes = await realDbFile.readAsBytes();
+      final checksum = sha256.convert(dbBytes).toString();
+
+      final manifestJson = jsonEncode({
+        'app_version': '1.0.0+1',
+        'schema_version': db.schemaVersion,
+        'created_at': DateTime.now().toUtc().toIso8601String(),
+        'member_count': 12,
+        'checksum': checksum,
+      });
+
+      final archive = Archive();
+      // Add files with a folder prefix, e.g. "gym_backup_20261018/manifest.json"
+      archive.addFile(ArchiveFile('gym_backup_20261018/manifest.json', manifestJson.length, utf8.encode(manifestJson)));
+      archive.addFile(ArchiveFile('gym_backup_20261018/database.sqlite', dbBytes.length, dbBytes));
+
+      final zipBytes = ZipEncoder().encode(archive);
+      final nestedZipFile = File(p.join(tempDir.path, 'nested_folder_backup.gymbak'));
+      await nestedZipFile.writeAsBytes(zipBytes);
+
+      final validated = await backupSource.validateBackupFile(nestedZipFile.path);
+      expect(validated.memberCount, 12);
+
+      await backupSource.restoreBackup(nestedZipFile.path);
+      expect(realDbFile.existsSync(), isTrue);
     });
   });
 }

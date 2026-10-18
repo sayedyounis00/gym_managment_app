@@ -35,8 +35,8 @@ class _BackupView extends StatelessWidget {
   Future<void> _handleRestore(BuildContext context) async {
     try {
       final pickedFile = await FilePicker.pickFile(
-        type: FileType.custom,
-        allowedExtensions: ['gymbak', 'zip'],
+        type: FileType.any,
+        dialogTitle: 'اختر ملف النسخة الاحتياطية',
       );
 
       if (pickedFile == null || pickedFile.path == null) {
