@@ -13,8 +13,9 @@ void main() {
   late MembershipsDao dao;
   late MembershipsRepository repository;
 
-  setUp(() {
+  setUp(() async {
     db = AppDatabase(NativeDatabase.memory());
+    await db.customStatement('PRAGMA foreign_keys = ON;');
     dao = MembershipsDao(db);
     final ds = MembershipsLocalDataSourceImpl(dao: dao);
     repository = MembershipsRepositoryImpl(localDataSource: ds);
@@ -289,6 +290,114 @@ void main() {
       member = await (db.select(db.members)..where((m) => m.id.equals(memberId))).getSingle();
       expect(member.isSuspended, isFalse);
       expect(member.status, 'active');
+    });
+  });
+
+  group('Delete Subscription', () {
+    test('deleteSubscription removes mistaken subscription, payments, and updates member status to expired if none left', () async {
+      final memberId = await db.into(db.members).insert(
+        MembersCompanion.insert(name: 'يوسف جمال', phone: '01077778888'),
+      );
+
+      final pkgId = await db.into(db.packages).insert(
+        PackagesCompanion.insert(name: 'باقة شهرية', price: 400, durationInDays: 30),
+      );
+
+      // Subscription added by mistake
+      final renewResult = await repository.renewSubscription(
+        RenewParams(
+          memberId: memberId,
+          packageId: pkgId,
+          packageName: 'باقة شهرية',
+          price: 400,
+          startDate: DateTime.now(),
+          endDate: DateTime.now().add(const Duration(days: 30)),
+          amountPaid: 400,
+          paymentMethod: 'cash',
+        ),
+      );
+      final subId = renewResult.getOrElse((_) => 0);
+      expect(subId, isPositive);
+
+      // Verify payment was recorded
+      final paymentsBefore = await (db.select(db.payments)..where((p) => p.subscriptionId.equals(subId))).get();
+      expect(paymentsBefore.length, 1);
+
+      // Delete subscription (added by mistake)
+      final deleteResult = await repository.deleteSubscription(subId);
+      expect(deleteResult.isRight(), isTrue);
+
+      // Verify subscription is deleted
+      final remainingSubs = await (db.select(db.subscriptions)..where((s) => s.id.equals(subId))).get();
+      expect(remainingSubs.isEmpty, isTrue);
+
+      // Verify associated payments are deleted
+      final paymentsAfter = await (db.select(db.payments)..where((p) => p.subscriptionId.equals(subId))).get();
+      expect(paymentsAfter.isEmpty, isTrue);
+
+      // Verify member status is now expired
+      final member = await (db.select(db.members)..where((m) => m.id.equals(memberId))).getSingle();
+      expect(member.status, 'expired');
+    });
+
+    test('deleteSubscription restores previous active subscription when mistaken renewal is removed', () async {
+      final memberId = await db.into(db.members).insert(
+        MembersCompanion.insert(name: 'أميرة', phone: '01088889999'),
+      );
+
+      final pkgId = await db.into(db.packages).insert(
+        PackagesCompanion.insert(name: 'باقة سنوية', price: 2000, durationInDays: 365),
+      );
+
+      final now = DateTime.now();
+
+      // 1. Initial valid subscription
+      final sub1Result = await repository.renewSubscription(
+        RenewParams(
+          memberId: memberId,
+          packageId: pkgId,
+          packageName: 'باقة سنوية',
+          price: 2000,
+          startDate: now.subtract(const Duration(days: 30)),
+          endDate: now.add(const Duration(days: 335)),
+          amountPaid: 2000,
+          paymentMethod: 'card',
+        ),
+      );
+      final sub1Id = sub1Result.getOrElse((_) => 0);
+
+      // 2. Mistaken renewal added
+      final sub2Result = await repository.renewSubscription(
+        RenewParams(
+          memberId: memberId,
+          packageId: pkgId,
+          packageName: 'باقة شهرية بالخطأ',
+          price: 500,
+          startDate: now.add(const Duration(days: 335)),
+          endDate: now.add(const Duration(days: 365)),
+          amountPaid: 500,
+          paymentMethod: 'cash',
+          previousSubscriptionId: sub1Id,
+        ),
+      );
+      final sub2Id = sub2Result.getOrElse((_) => 0);
+
+      // sub1 was marked expired by the renewal
+      var sub1 = await (db.select(db.subscriptions)..where((s) => s.id.equals(sub1Id))).getSingle();
+      expect(sub1.status, 'expired');
+
+      // 3. User removes mistaken subscription sub2
+      final deleteResult = await repository.deleteSubscription(sub2Id);
+      expect(deleteResult.isRight(), isTrue);
+
+      // sub1 should be restored to active!
+      sub1 = await (db.select(db.subscriptions)..where((s) => s.id.equals(sub1Id))).getSingle();
+      expect(sub1.status, 'active');
+
+      // Member should still be active
+      final member = await (db.select(db.members)..where((m) => m.id.equals(memberId))).getSingle();
+      expect(member.status, 'active');
+      expect(member.isSuspended, isFalse);
     });
   });
 }
