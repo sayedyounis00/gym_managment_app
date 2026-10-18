@@ -8,7 +8,9 @@ import 'package:gym_managment_app/core/utils/responsive_utils.dart';
 import 'package:gym_managment_app/core/widgets/app_button.dart';
 import 'package:gym_managment_app/core/widgets/app_text_field.dart';
 import 'package:gym_managment_app/core/widgets/confirm_dialog.dart';
+import 'package:gym_managment_app/core/widgets/segmented_selector.dart';
 import 'package:gym_managment_app/core/widgets/skeletons/skeletons.dart';
+import '../../domain/entities/gender.dart';
 import '../cubit/member_form/member_form_cubit.dart';
 import '../cubit/member_form/member_form_state.dart';
 import '../widgets/member_photo_picker.dart';
@@ -242,6 +244,46 @@ class _AddEditMemberPageState extends State<AddEditMemberPage> {
                                       },
                                     ),
                                   ),
+                                  const SizedBox(height: AppSpacing.md),
+
+                                  // Gender Selector
+                                  Text(
+                                    'الجنس *',
+                                    style: AppTextStyles.labelMedium.copyWith(
+                                      color: AppColors.textSecondary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.xs),
+                                  SegmentedSelector<Gender?>(
+                                    segments: const [
+                                      SegmentItem(
+                                        value: Gender.male,
+                                        label: 'ذكر',
+                                        icon: Icons.male_rounded,
+                                      ),
+                                      SegmentItem(
+                                        value: Gender.female,
+                                        label: 'أنثى',
+                                        icon: Icons.female_rounded,
+                                      ),
+                                    ],
+                                    selectedValue: state.gender,
+                                    onSelected: (val) {
+                                      if (val != null) {
+                                        context.read<MemberFormCubit>().updateGender(val);
+                                      }
+                                    },
+                                  ),
+                                  if (state.errors.containsKey('gender')) ...[
+                                    const SizedBox(height: AppSpacing.xs),
+                                    Text(
+                                      state.errors['gender']!,
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: AppColors.error,
+                                      ),
+                                    ),
+                                  ],
                                   const SizedBox(height: AppSpacing.xl),
 
                                   // Body Info Section

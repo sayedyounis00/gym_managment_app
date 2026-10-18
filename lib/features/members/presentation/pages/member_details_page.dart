@@ -17,10 +17,12 @@ import 'package:gym_managment_app/core/widgets/skeletons/skeletons.dart';
 import 'package:gym_managment_app/core/widgets/status_chip.dart';
 import 'package:gym_managment_app/features/members/domain/entities/subscription_history_item.dart';
 
+import '../../domain/entities/gender.dart';
 import '../cubit/member_details/member_details_cubit.dart';
 import '../cubit/member_details/member_details_state.dart';
 import '../cubit/member_notes/member_notes_cubit.dart';
 import '../cubit/member_notes/member_notes_state.dart';
+import '../widgets/bmi_card.dart';
 import '../widgets/body_stats_card.dart';
 import '../widgets/current_membership_card.dart';
 import '../widgets/member_avatar.dart';
@@ -697,12 +699,55 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                                           ],
                                         ),
                                         const SizedBox(height: 4),
-                                        Text(
-                                          member.phone,
-                                          style: AppTextStyles.bodyMedium
-                                              .copyWith(
-                                                color: AppColors.textSecondary,
+                                        Row(
+                                          children: [
+                                            Text(
+                                              member.phone,
+                                              style: AppTextStyles.bodyMedium
+                                                  .copyWith(
+                                                    color: AppColors.textSecondary,
+                                                  ),
+                                            ),
+                                            if (member.gender != null) ...[
+                                              const SizedBox(width: AppSpacing.sm),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8,
+                                                  vertical: 2,
+                                                ),
+                                                decoration: BoxDecoration(
+                                                  color: AppColors.surfaceVariant,
+                                                  borderRadius: BorderRadius.circular(
+                                                    AppRadius.full,
+                                                  ),
+                                                  border: Border.all(
+                                                    color: AppColors.border,
+                                                    width: 0.5,
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      member.gender == Gender.male
+                                                          ? Icons.male_rounded
+                                                          : Icons.female_rounded,
+                                                      size: 13,
+                                                      color: AppColors.textSecondary,
+                                                    ),
+                                                    const SizedBox(width: 3),
+                                                    Text(
+                                                      member.gender!.label,
+                                                      style: AppTextStyles.labelSmall.copyWith(
+                                                        color: AppColors.textSecondary,
+                                                        fontWeight: FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
+                                            ],
+                                          ],
                                         ),
                                         const SizedBox(height: 8),
                                         Row(
@@ -875,6 +920,10 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                           weightKg: member.weightKg,
                           heightCm: member.heightCm,
                         ),
+                        const SizedBox(height: AppSpacing.md),
+
+                        // BMI card
+                        BmiCard(bmi: member.bmi),
                         const SizedBox(height: AppSpacing.md),
 
                         // Current membership card

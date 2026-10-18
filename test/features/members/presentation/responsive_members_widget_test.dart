@@ -12,6 +12,8 @@ import 'package:gym_managment_app/core/theme/app_text_styles.dart';
 import 'package:gym_managment_app/features/members/presentation/widgets/member_avatar.dart';
 import 'package:gym_managment_app/features/members/presentation/widgets/member_card.dart';
 import 'package:gym_managment_app/features/members/presentation/widgets/member_photo_picker.dart';
+import 'package:gym_managment_app/features/members/domain/entities/bmi_result.dart';
+import 'package:gym_managment_app/features/members/presentation/widgets/bmi_card.dart';
 
 void main() {
   Widget wrapWidget(Widget child, {double width = 360, double height = 640}) {
@@ -74,6 +76,39 @@ void main() {
       expect(find.text('82.5'), findsOneWidget);
       expect(find.text('الطول'), findsOneWidget);
       expect(find.text('184'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('BmiCard renders calculated BMI, category badge, and disclaimer without overflow', (tester) async {
+      final bmi = BmiCalculator.calculate(weightKg: 75.0, heightCm: 175.0);
+
+      await tester.pumpWidget(
+        wrapWidget(
+          BmiCard(bmi: bmi),
+          width: 340,
+        ),
+      );
+
+      expect(find.text('مؤشر كتلة الجسم (BMI)'), findsOneWidget);
+      expect(find.text('24.5'), findsOneWidget);
+      expect(find.text('كجم/م²'), findsOneWidget);
+      expect(find.text('وزن طبيعي'), findsOneWidget);
+      expect(find.text('مؤشر كتلة الجسم هو تقدير تقريبي وقد لا يعكس الكتلة العضلية.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('BmiCard renders fallback empty state without overflow when bmi is null', (tester) async {
+      await tester.pumpWidget(
+        wrapWidget(
+          const BmiCard(bmi: null),
+          width: 320,
+        ),
+      );
+
+      expect(find.text('مؤشر كتلة الجسم (BMI)'), findsOneWidget);
+      expect(find.text('—'), findsOneWidget);
+      expect(find.text('غير متوفر'), findsOneWidget);
+      expect(find.text('أدخل الوزن والطول في بيانات المشترك لحساب مؤشر كتلة الجسم تلقائياً.'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
