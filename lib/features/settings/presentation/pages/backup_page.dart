@@ -1,12 +1,11 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../../../app.dart';
 import '../../../../core/di/injection_container.dart';
-import '../../../../core/router/routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -102,26 +101,9 @@ class _BackupView extends StatelessWidget {
             ),
           );
         } else if (state.status == BackupStatus.restoreSuccess) {
-          // Navigate to dashboard and show success banner
-          context.go(AppRoutes.dashboard);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: AppColors.success,
-              behavior: SnackBarBehavior.floating,
-              duration: const Duration(seconds: 4),
-              content: Row(
-                children: [
-                  const Icon(Icons.check_circle_rounded, color: Colors.white, size: 22),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      'تمت استعادة البيانات بنجاح، وجرى تحديث الاشتراكات والتنبيهات.',
-                      style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          GymApp.restartApp(
+            context,
+            snackBarMessage: 'تمت استعادة البيانات بنجاح، وجرى تحديث الاشتراكات والتنبيهات.',
           );
         } else if (state.status == BackupStatus.failure && state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
