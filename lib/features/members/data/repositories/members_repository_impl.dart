@@ -255,6 +255,8 @@ class MembersRepositoryImpl implements MembersRepository {
           paidAt: p.paidAt,
           paymentMethod: p.paymentMethod,
           notes: p.notes,
+          voidedAt: p.voidedAt,
+          voidReason: p.voidReason,
         );
       }).toList();
       return Right(list);
