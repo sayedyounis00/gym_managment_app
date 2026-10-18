@@ -12,6 +12,9 @@ import 'daos/dashboard_dao.dart';
 import 'daos/members_dao.dart';
 import 'daos/notes_dao.dart';
 import 'daos/memberships_dao.dart';
+import 'daos/payments_dao.dart';
+import 'daos/expenses_dao.dart';
+import 'daos/finance_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -31,6 +34,9 @@ part 'app_database.g.dart';
     MembersDao,
     NotesDao,
     MembershipsDao,
+    PaymentsDao,
+    ExpensesDao,
+    FinanceDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -38,7 +44,7 @@ class AppDatabase extends _$AppDatabase {
       : super(e ?? driftDatabase(name: 'gym_management_app'));
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -138,6 +144,18 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 6) {
             await m.addColumn(members, members.gender);
+          }
+          if (from < 7) {
+            await customStatement('ALTER TABLE payments ADD COLUMN member_name_snapshot TEXT;');
+            await customStatement('ALTER TABLE payments ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0;');
+            await customStatement('ALTER TABLE payments ADD COLUMN voided_at INTEGER;');
+            await customStatement('ALTER TABLE payments ADD COLUMN void_reason TEXT;');
+            await customStatement('ALTER TABLE expenses ADD COLUMN custom_label TEXT;');
+            await customStatement('ALTER TABLE expenses ADD COLUMN payment_method TEXT;');
+            try {
+              await customStatement('ALTER TABLE expenses ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0;');
+            } catch (_) {}
+            await customStatement('ALTER TABLE expenses ADD COLUMN voided_at INTEGER;');
           }
         },
         beforeOpen: (details) async {
