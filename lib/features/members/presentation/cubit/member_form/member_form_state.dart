@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:equatable/equatable.dart';
+import 'package:gym_managment_app/features/members/domain/entities/gender.dart';
 
 sealed class MemberFormState extends Equatable {
   const MemberFormState();
@@ -16,6 +17,7 @@ class MemberFormEditing extends MemberFormState {
   final int? memberId;
   final String name;
   final String phone;
+  final Gender? gender;
   final String? existingPhotoPath;
   final File? newPhotoFile;
   final bool removeExistingPhoto;
@@ -31,6 +33,7 @@ class MemberFormEditing extends MemberFormState {
     this.memberId,
     this.name = '',
     this.phone = '',
+    this.gender,
     this.existingPhotoPath,
     this.newPhotoFile,
     this.removeExistingPhoto = false,
@@ -49,6 +52,7 @@ class MemberFormEditing extends MemberFormState {
     int? memberId,
     String? name,
     String? phone,
+    Gender? gender,
     String? existingPhotoPath,
     File? newPhotoFile,
     bool? removeExistingPhoto,
@@ -64,6 +68,7 @@ class MemberFormEditing extends MemberFormState {
       memberId: memberId ?? this.memberId,
       name: name ?? this.name,
       phone: phone ?? this.phone,
+      gender: gender ?? this.gender,
       existingPhotoPath: existingPhotoPath ?? this.existingPhotoPath,
       newPhotoFile: newPhotoFile ?? this.newPhotoFile,
       removeExistingPhoto: removeExistingPhoto ?? this.removeExistingPhoto,
@@ -82,6 +87,7 @@ class MemberFormEditing extends MemberFormState {
         memberId,
         name,
         phone,
+        gender,
         existingPhotoPath,
         newPhotoFile,
         removeExistingPhoto,
