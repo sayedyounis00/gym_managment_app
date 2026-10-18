@@ -50,6 +50,8 @@ class PaymentHistoryItem extends Equatable {
   final DateTime paidAt;
   final String paymentMethod;
   final String? notes;
+  final DateTime? voidedAt;
+  final String? voidReason;
 
   const PaymentHistoryItem({
     required this.id,
@@ -58,8 +60,21 @@ class PaymentHistoryItem extends Equatable {
     required this.paidAt,
     required this.paymentMethod,
     this.notes,
+    this.voidedAt,
+    this.voidReason,
   });
 
+  bool get isVoided => voidedAt != null;
+
   @override
-  List<Object?> get props => [id, memberId, amount, paidAt, paymentMethod, notes];
+  List<Object?> get props => [
+        id,
+        memberId,
+        amount,
+        paidAt,
+        paymentMethod,
+        notes,
+        voidedAt,
+        voidReason,
+      ];
 }

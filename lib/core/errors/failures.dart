@@ -19,3 +19,11 @@ class ServerFailure extends Failure {
 class NotificationFailure extends Failure {
   const NotificationFailure([super.message = 'Notification operation failed']);
 }
+
+class ValidationFailure extends Failure {
+  const ValidationFailure([super.message = 'Validation failed']);
+}
+
+class ExportFailure extends Failure {
+  const ExportFailure([super.message = 'Export failed']);
+}
