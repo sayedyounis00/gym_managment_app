@@ -88,6 +88,7 @@ class BackupSourceImpl implements BackupSource {
   final FlutterSecureStorage secureStorage;
   final NotificationService notificationService;
   final Future<void> Function()? onReinitializeDatabase;
+  final Future<Directory> Function()? getDocumentsDirectory;
 
   static const String keyLastBackupAt = 'last_backup_at';
 
@@ -96,10 +97,18 @@ class BackupSourceImpl implements BackupSource {
     required this.secureStorage,
     required this.notificationService,
     this.onReinitializeDatabase,
+    this.getDocumentsDirectory,
   });
 
+  Future<Directory> _getDocsDirectory() async {
+    if (getDocumentsDirectory != null) {
+      return getDocumentsDirectory!();
+    }
+    return getApplicationDocumentsDirectory();
+  }
+
   Future<Directory> _getBackupsDirectory() async {
-    final docsDir = await getApplicationDocumentsDirectory();
+    final docsDir = await _getDocsDirectory();
     final backupsDir = Directory(p.join(docsDir.path, 'backups'));
     if (!await backupsDir.exists()) {
       await backupsDir.create(recursive: true);
@@ -108,12 +117,12 @@ class BackupSourceImpl implements BackupSource {
   }
 
   Future<File> _getDatabaseFile() async {
-    final docsDir = await getApplicationDocumentsDirectory();
+    final docsDir = await _getDocsDirectory();
     return File(p.join(docsDir.path, 'gym_management_app.sqlite'));
   }
 
   Future<Directory> _getPhotosDirectory() async {
-    final docsDir = await getApplicationDocumentsDirectory();
+    final docsDir = await _getDocsDirectory();
     return Directory(p.join(docsDir.path, 'member_photos'));
   }
 
