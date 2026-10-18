@@ -7,6 +7,8 @@ import 'package:gym_managment_app/features/members/domain/entities/subscription_
 import 'package:gym_managment_app/features/members/presentation/widgets/body_stats_card.dart';
 import 'package:gym_managment_app/features/members/presentation/widgets/current_membership_card.dart';
 import 'package:gym_managment_app/core/widgets/image_preview_dialog.dart';
+import 'package:gym_managment_app/core/theme/app_spacing.dart';
+import 'package:gym_managment_app/core/theme/app_text_styles.dart';
 import 'package:gym_managment_app/features/members/presentation/widgets/member_avatar.dart';
 import 'package:gym_managment_app/features/members/presentation/widgets/member_card.dart';
 import 'package:gym_managment_app/features/members/presentation/widgets/member_photo_picker.dart';
@@ -200,6 +202,57 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ImagePreviewDialog), findsNothing);
+    });
+
+    testWidgets('Subscription item renders packageName, paymentStatus chip, and paymentMethod chip', (tester) async {
+      final now = DateTime.now();
+      final sub = SubscriptionHistoryItem(
+        id: 1,
+        memberId: 1,
+        packageName: 'باقة شهرية ذهبية',
+        startDate: now.subtract(const Duration(days: 10)),
+        endDate: now.add(const Duration(days: 20)),
+        price: 350.0,
+        paidAmount: 350.0,
+        status: MemberStatusType.active,
+        paymentMethod: 'cash',
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Directionality(
+            textDirection: TextDirection.rtl,
+            child: Scaffold(
+              body: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: AppSpacing.xs + 2,
+                          runSpacing: AppSpacing.xs,
+                          children: [
+                            Text(sub.packageName, style: AppTextStyles.titleMedium),
+                            StatusChip.paymentStatus(sub.paymentStatus),
+                            if (sub.paymentMethod != null)
+                              StatusChip.paymentMethod(sub.paymentMethod!),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('باقة شهرية ذهبية'), findsOneWidget);
+      expect(find.text('مدفوع'), findsOneWidget);
+      expect(find.text('نقدي'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 }
