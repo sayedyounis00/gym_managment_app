@@ -13,6 +13,7 @@ import '../cubit/members_list/members_list_state.dart';
 import '../widgets/member_card.dart';
 import '../widgets/member_filter_bar.dart';
 import '../widgets/member_search_bar.dart';
+import '../../../settings/presentation/pages/export_sheet.dart';
 
 class MembersPage extends StatefulWidget {
   final String? initialStatusFilter;
@@ -48,6 +49,17 @@ class _MembersPageState extends State<MembersPage> {
         backgroundColor: AppColors.surface,
         elevation: 0,
         scrolledUnderElevation: 2,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.ios_share_rounded),
+            tooltip: 'تصدير المشتركين',
+            onPressed: () {
+              final state = context.read<MembersListCubit>().state;
+              final currentFilter = state is MembersListLoaded ? state.filter : null;
+              ExportSheet.show(context, initialStatusFilter: currentFilter);
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         heroTag: 'add_member_fab',

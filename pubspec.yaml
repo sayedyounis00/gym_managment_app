@@ -35,6 +35,7 @@ dependencies:
   json_annotation: ^4.12.0
   local_auth: ^3.0.2
   material_symbols_icons: ^4.2960.0
+  path: ^1.9.1
   path_provider: ^2.1.6
   pdf: ^3.13.1
   permission_handler: ^13.0.2

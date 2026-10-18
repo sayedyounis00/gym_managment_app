@@ -16,6 +16,7 @@ import '../cubit/dashboard_state.dart';
 import '../widgets/expiring_list.dart';
 import '../widgets/finance_summary.dart';
 import '../widgets/stat_card.dart';
+import '../widgets/backup_reminder_banner.dart';
 import 'package:gym_managment_app/features/memberships/presentation/widgets/renew_bottom_sheet.dart';
 
 class DashboardPage extends StatefulWidget {
@@ -247,6 +248,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            const BackupReminderBanner(),
                             // Date Banner
                             Container(
                               width: double.infinity,
