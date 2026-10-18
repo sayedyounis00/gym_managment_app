@@ -224,6 +224,26 @@ void main() {
       final remainingNotes = await notesDao.watchNotes(id).first;
       expect(remainingNotes.isEmpty, isTrue);
     });
+
+    test('Unconditional deletion of member succeeds even if legacy attendance table has records', () async {
+      final id = await membersDao.insertMember(
+        MembersCompanion.insert(name: 'عضو قديم', phone: '01099998888'),
+      );
+
+      // Create legacy attendance table as it existed in earlier schema without ON DELETE CASCADE
+      await db.customStatement(
+        'CREATE TABLE IF NOT EXISTS attendance (id INTEGER PRIMARY KEY AUTOINCREMENT, member_id INTEGER NOT NULL REFERENCES members (id), check_in_time INTEGER NOT NULL);',
+      );
+      await db.customStatement(
+        'INSERT INTO attendance (member_id, check_in_time) VALUES (?, ?);',
+        [id, DateTime.now().millisecondsSinceEpoch],
+      );
+
+      // Delete member unconditionally
+      await membersDao.deleteMember(id);
+
+      expect(await membersDao.getMemberById(id), isNull);
+    });
   });
 
   group('NotesDao tests', () {

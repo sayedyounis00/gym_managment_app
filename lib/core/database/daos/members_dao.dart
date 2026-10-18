@@ -162,7 +162,10 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
     return (result ?? 0) > 0;
   }
 
-  Future<void> deleteMember(int id) {
+  Future<void> deleteMember(int id) async {
+    // Defensively ensure any legacy attendance table is dropped
+    await customStatement('DROP TABLE IF EXISTS attendance;');
+
     return transaction(() async {
       final memberSubs = await (select(subscriptions)..where((s) => s.memberId.equals(id))).get();
       final subIds = memberSubs.map((s) => s.id).toList();
@@ -181,12 +184,17 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
       }
 
       // 1. Delete payments first (payments reference member, subscriptions, periods, and installments)
-      await (delete(payments)..where((p) =>
-        p.memberId.equals(id) |
-        p.subscriptionId.isIn(subIds) |
-        p.periodId.isIn(periodIds) |
-        p.installmentId.isIn(installmentIds)
-      )).go();
+      Expression<bool> paymentsPredicate = payments.memberId.equals(id);
+      if (subIds.isNotEmpty) {
+        paymentsPredicate = paymentsPredicate | payments.subscriptionId.isIn(subIds);
+      }
+      if (periodIds.isNotEmpty) {
+        paymentsPredicate = paymentsPredicate | payments.periodId.isIn(periodIds);
+      }
+      if (installmentIds.isNotEmpty) {
+        paymentsPredicate = paymentsPredicate | payments.installmentId.isIn(installmentIds);
+      }
+      await (delete(payments)..where((p) => paymentsPredicate)).go();
 
       // 2. Delete installments (installments reference subscriptionPeriods)
       if (periodIds.isNotEmpty) {
