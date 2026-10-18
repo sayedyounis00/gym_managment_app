@@ -131,6 +131,7 @@ void main() {
         PackagesCompanion.insert(
           name: 'باقة اللياقة',
           price: 600,
+          durationInDays: 30,
           durationValue: const drift.Value(30),
           durationUnit: const drift.Value('days'),
         ),
@@ -184,7 +185,7 @@ void main() {
       );
 
       final pkgId = await db.into(db.packages).insert(
-        PackagesCompanion.insert(name: 'باقة شهرية', price: 300),
+        PackagesCompanion.insert(name: 'باقة شهرية', price: 300, durationInDays: 30),
       );
 
       // First subscription
@@ -235,7 +236,7 @@ void main() {
       );
 
       final pkgId = await db.into(db.packages).insert(
-        PackagesCompanion.insert(name: 'باقة شهرية', price: 500),
+        PackagesCompanion.insert(name: 'باقة شهرية', price: 500, durationInDays: 30),
       );
 
       final start = DateTime(2026, 5, 1);
