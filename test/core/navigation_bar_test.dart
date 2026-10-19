@@ -100,5 +100,30 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();
   });
+
+  testWidgets('navigating to Finance and then to Packages does not cause Hero tag collisions',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const GymApp());
+    await tester.pump();
+
+    // Navigate to Finance first (tab index 3)
+    await tester.tap(find.text('الحسابات').last);
+    await tester.pumpAndSettle();
+    expect(find.byType(FinancePage), findsOneWidget);
+
+    // Navigate to Packages (tab index 2)
+    await tester.tap(find.text('الباقات'));
+    await tester.pumpAndSettle();
+    expect(find.byType(PackagesPage), findsOneWidget);
+
+    // Navigate to Members (tab index 1)
+    await tester.tap(find.text('المشتركين'));
+    await tester.pumpAndSettle();
+    expect(find.byType(MembersPage), findsOneWidget);
+
+    // Cleanly unmount widget tree before tearDown
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+  });
 }
 
