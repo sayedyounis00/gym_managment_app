@@ -55,54 +55,60 @@ class _ReportsView extends StatelessWidget {
                   style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(AppRadius.md),
+                Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryLight,
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      child: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.primary),
                     ),
-                    child: const Icon(Icons.picture_as_pdf_rounded, color: AppColors.primary),
+                    title: const Text('تقرير PDF منسق للطباعة والمشاركة'),
+                    subtitle: const Text('يتضمن ملخص الشهر وجدول المعاملات'),
+                    onTap: () async {
+                      Navigator.of(ctx).pop();
+                      final path = await cubit.exportPdf();
+                      if (path != null) {
+                        await SharePlus.instance.share(
+                          ShareParams(
+                            files: [XFile(path)],
+                            text: 'التقرير المالي',
+                          ),
+                        );
+                      }
+                    },
                   ),
-                  title: const Text('تقرير PDF منسق للطباعة والمشاركة'),
-                  subtitle: const Text('يتضمن ملخص الشهر وجدول المعاملات'),
-                  onTap: () async {
-                    Navigator.of(ctx).pop();
-                    final path = await cubit.exportPdf();
-                    if (path != null) {
-                      await SharePlus.instance.share(
-                        ShareParams(
-                          files: [XFile(path)],
-                          text: 'التقرير المالي',
-                        ),
-                      );
-                    }
-                  },
                 ),
                 const Divider(),
-                ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.successTint,
-                      borderRadius: BorderRadius.circular(AppRadius.md),
+                Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.successTint,
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      child: const Icon(Icons.table_chart_rounded, color: AppColors.success),
                     ),
-                    child: const Icon(Icons.table_chart_rounded, color: AppColors.success),
+                    title: const Text('ملف بيانات CSV (إكسل)'),
+                    subtitle: const Text('لتصدير المعاملات والتحليل الخارجي'),
+                    onTap: () async {
+                      Navigator.of(ctx).pop();
+                      final path = await cubit.exportCsv();
+                      if (path != null) {
+                        await SharePlus.instance.share(
+                          ShareParams(
+                            files: [XFile(path)],
+                            text: 'ملف الحسابات CSV',
+                          ),
+                        );
+                      }
+                    },
                   ),
-                  title: const Text('ملف بيانات CSV (إكسل)'),
-                  subtitle: const Text('لتصدير المعاملات والتحليل الخارجي'),
-                  onTap: () async {
-                    Navigator.of(ctx).pop();
-                    final path = await cubit.exportCsv();
-                    if (path != null) {
-                      await SharePlus.instance.share(
-                        ShareParams(
-                          files: [XFile(path)],
-                          text: 'ملف الحسابات CSV',
-                        ),
-                      );
-                    }
-                  },
                 ),
               ],
             ),

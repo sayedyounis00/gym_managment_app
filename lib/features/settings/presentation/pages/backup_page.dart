@@ -223,15 +223,14 @@ class _BackupView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
+                      Material(
+                        color: AppColors.surface,
+                        clipBehavior: Clip.antiAlias,
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(AppRadius.lg),
-                          border: Border.all(color: AppColors.border, width: 1),
+                          side: const BorderSide(color: AppColors.border, width: 1),
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppRadius.lg),
-                          child: ListView.separated(
+                        child: ListView.separated(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             padding: EdgeInsets.zero,
@@ -318,8 +317,7 @@ class _BackupView extends StatelessWidget {
                             },
                           ),
                         ),
-                      ),
-                    ],
+                      ],
                   ],
                 ),
               ),
