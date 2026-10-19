@@ -17,6 +17,11 @@ class LedgerCubit extends Cubit<LedgerState> {
   DateTime _selectedMonth;
   LedgerType _currentFilter;
 
+  static const int pageSize = 10;
+  int _visibleCount = pageSize;
+  List<LedgerEntry> _allEntries = [];
+  bool _isLoadingMore = false;
+
   LedgerCubit({
     required this.watchLedger,
     required this.voidPaymentUseCase,
@@ -31,22 +36,83 @@ class LedgerCubit extends Cubit<LedgerState> {
   void init({DateTime? month, LedgerType? filter}) {
     _selectedMonth = month ?? DateTime(DateTime.now().year, DateTime.now().month, 1);
     _currentFilter = filter ?? LedgerType.all;
+    _visibleCount = pageSize;
     _listenToLedger();
   }
 
   void setFilter(LedgerType filter) {
     if (_currentFilter == filter) return;
     _currentFilter = filter;
+    _visibleCount = pageSize;
     _listenToLedger();
   }
 
   void setMonth(DateTime month) {
     _selectedMonth = DateTime(month.year, month.month, 1);
+    _visibleCount = pageSize;
     _listenToMonth();
   }
 
   void _listenToMonth() {
     _listenToLedger();
+  }
+
+  Future<void> loadMore() async {
+    if (_isLoadingMore) return;
+    if (_visibleCount >= _allEntries.length) return;
+
+    _isLoadingMore = true;
+    _emitLoaded();
+
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    _visibleCount += pageSize;
+    _isLoadingMore = false;
+    _emitLoaded();
+  }
+
+  void _emitLoaded() {
+    if (_allEntries.isEmpty) {
+      emit(LedgerEmpty(filter: _currentFilter, selectedMonth: _selectedMonth));
+      return;
+    }
+
+    final visibleEntries = _allEntries.take(_visibleCount).toList();
+    final Map<DateTime, List<LedgerEntry>> grouped = {};
+    final Map<DateTime, DailyTotal> dailyTotals = {};
+
+    for (final entry in visibleEntries) {
+      final dayKey = DateTime(entry.date.year, entry.date.month, entry.date.day);
+      grouped.putIfAbsent(dayKey, () => []).add(entry);
+
+      final currentDaily = dailyTotals[dayKey] ??
+          DailyTotal(date: dayKey, revenue: 0, expenses: 0, net: 0);
+
+      if (!entry.isVoided) {
+        final isInc = entry.type == LedgerType.income;
+        final newRev = isInc ? currentDaily.revenue + entry.amount : currentDaily.revenue;
+        final newExp = !isInc ? currentDaily.expenses + entry.amount : currentDaily.expenses;
+        dailyTotals[dayKey] = DailyTotal(
+          date: dayKey,
+          revenue: newRev,
+          expenses: newExp,
+          net: newRev - newExp,
+        );
+      } else {
+        dailyTotals[dayKey] = currentDaily;
+      }
+    }
+
+    emit(LedgerLoaded(
+      entries: visibleEntries,
+      groupedByDay: grouped,
+      dailyTotals: dailyTotals,
+      filter: _currentFilter,
+      selectedMonth: _selectedMonth,
+      hasMore: _visibleCount < _allEntries.length,
+      isLoadingMore: _isLoadingMore,
+      totalCount: _allEntries.length,
+    ));
   }
 
   void _listenToLedger() {
@@ -62,43 +128,9 @@ class LedgerCubit extends Cubit<LedgerState> {
       filter: _currentFilter == LedgerType.all ? null : _currentFilter,
     ).listen(
       (entries) {
-        if (entries.isEmpty) {
-          emit(LedgerEmpty(filter: _currentFilter, selectedMonth: _selectedMonth));
-          return;
-        }
-
-        final Map<DateTime, List<LedgerEntry>> grouped = {};
-        final Map<DateTime, DailyTotal> dailyTotals = {};
-
-        for (final entry in entries) {
-          final dayKey = DateTime(entry.date.year, entry.date.month, entry.date.day);
-          grouped.putIfAbsent(dayKey, () => []).add(entry);
-
-          final currentDaily = dailyTotals[dayKey] ??
-              DailyTotal(date: dayKey, revenue: 0, expenses: 0, net: 0);
-
-          if (!entry.isVoided) {
-            final isInc = entry.type == LedgerType.income;
-            final newRev = isInc ? currentDaily.revenue + entry.amount : currentDaily.revenue;
-            final newExp = !isInc ? currentDaily.expenses + entry.amount : currentDaily.expenses;
-            dailyTotals[dayKey] = DailyTotal(
-              date: dayKey,
-              revenue: newRev,
-              expenses: newExp,
-              net: newRev - newExp,
-            );
-          } else {
-            dailyTotals[dayKey] = currentDaily;
-          }
-        }
-
-        emit(LedgerLoaded(
-          entries: entries,
-          groupedByDay: grouped,
-          dailyTotals: dailyTotals,
-          filter: _currentFilter,
-          selectedMonth: _selectedMonth,
-        ));
+        _allEntries = entries;
+        _isLoadingMore = false;
+        _emitLoaded();
       },
       onError: (err) {
         emit(LedgerError(
