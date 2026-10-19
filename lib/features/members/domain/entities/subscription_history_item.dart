@@ -11,6 +11,7 @@ class SubscriptionHistoryItem extends Equatable {
   final double paidAmount;
   final MemberStatusType status;
   final bool isRenewal;
+  final bool trackAttendance;
   final String? paymentMethod;
 
   const SubscriptionHistoryItem({
@@ -23,6 +24,7 @@ class SubscriptionHistoryItem extends Equatable {
     required this.paidAmount,
     required this.status,
     this.isRenewal = false,
+    this.trackAttendance = false,
     this.paymentMethod,
   });
 
@@ -39,6 +41,7 @@ class SubscriptionHistoryItem extends Equatable {
         paidAmount,
         status,
         isRenewal,
+        trackAttendance,
         paymentMethod,
       ];
 }

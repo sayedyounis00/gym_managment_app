@@ -8,5 +8,6 @@ class Packages extends Table {
   TextColumn get durationUnit => text().withDefault(const Constant('days'))(); // 'days' | 'months'
   IntColumn get durationInDays => integer()(); // backwards compatibility
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+  BoolColumn get trackAttendance => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }

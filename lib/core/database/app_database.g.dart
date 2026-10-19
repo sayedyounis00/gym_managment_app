@@ -838,6 +838,21 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _trackAttendanceMeta = const VerificationMeta(
+    'trackAttendance',
+  );
+  @override
+  late final GeneratedColumn<bool> trackAttendance = GeneratedColumn<bool>(
+    'track_attendance',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("track_attendance" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -859,6 +874,7 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
     durationUnit,
     durationInDays,
     isActive,
+    trackAttendance,
     createdAt,
   ];
   @override
@@ -927,6 +943,15 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
         isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
       );
     }
+    if (data.containsKey('track_attendance')) {
+      context.handle(
+        _trackAttendanceMeta,
+        trackAttendance.isAcceptableOrUnknown(
+          data['track_attendance']!,
+          _trackAttendanceMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -970,6 +995,10 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
         DriftSqlType.bool,
         data['${effectivePrefix}is_active'],
       )!,
+      trackAttendance: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}track_attendance'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -991,6 +1020,7 @@ class Package extends DataClass implements Insertable<Package> {
   final String durationUnit;
   final int durationInDays;
   final bool isActive;
+  final bool trackAttendance;
   final DateTime createdAt;
   const Package({
     required this.id,
@@ -1000,6 +1030,7 @@ class Package extends DataClass implements Insertable<Package> {
     required this.durationUnit,
     required this.durationInDays,
     required this.isActive,
+    required this.trackAttendance,
     required this.createdAt,
   });
   @override
@@ -1012,6 +1043,7 @@ class Package extends DataClass implements Insertable<Package> {
     map['duration_unit'] = Variable<String>(durationUnit);
     map['duration_in_days'] = Variable<int>(durationInDays);
     map['is_active'] = Variable<bool>(isActive);
+    map['track_attendance'] = Variable<bool>(trackAttendance);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -1025,6 +1057,7 @@ class Package extends DataClass implements Insertable<Package> {
       durationUnit: Value(durationUnit),
       durationInDays: Value(durationInDays),
       isActive: Value(isActive),
+      trackAttendance: Value(trackAttendance),
       createdAt: Value(createdAt),
     );
   }
@@ -1042,6 +1075,7 @@ class Package extends DataClass implements Insertable<Package> {
       durationUnit: serializer.fromJson<String>(json['durationUnit']),
       durationInDays: serializer.fromJson<int>(json['durationInDays']),
       isActive: serializer.fromJson<bool>(json['isActive']),
+      trackAttendance: serializer.fromJson<bool>(json['trackAttendance']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -1056,6 +1090,7 @@ class Package extends DataClass implements Insertable<Package> {
       'durationUnit': serializer.toJson<String>(durationUnit),
       'durationInDays': serializer.toJson<int>(durationInDays),
       'isActive': serializer.toJson<bool>(isActive),
+      'trackAttendance': serializer.toJson<bool>(trackAttendance),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -1068,6 +1103,7 @@ class Package extends DataClass implements Insertable<Package> {
     String? durationUnit,
     int? durationInDays,
     bool? isActive,
+    bool? trackAttendance,
     DateTime? createdAt,
   }) => Package(
     id: id ?? this.id,
@@ -1077,6 +1113,7 @@ class Package extends DataClass implements Insertable<Package> {
     durationUnit: durationUnit ?? this.durationUnit,
     durationInDays: durationInDays ?? this.durationInDays,
     isActive: isActive ?? this.isActive,
+    trackAttendance: trackAttendance ?? this.trackAttendance,
     createdAt: createdAt ?? this.createdAt,
   );
   Package copyWithCompanion(PackagesCompanion data) {
@@ -1094,6 +1131,9 @@ class Package extends DataClass implements Insertable<Package> {
           ? data.durationInDays.value
           : this.durationInDays,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      trackAttendance: data.trackAttendance.present
+          ? data.trackAttendance.value
+          : this.trackAttendance,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1108,6 +1148,7 @@ class Package extends DataClass implements Insertable<Package> {
           ..write('durationUnit: $durationUnit, ')
           ..write('durationInDays: $durationInDays, ')
           ..write('isActive: $isActive, ')
+          ..write('trackAttendance: $trackAttendance, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1122,6 +1163,7 @@ class Package extends DataClass implements Insertable<Package> {
     durationUnit,
     durationInDays,
     isActive,
+    trackAttendance,
     createdAt,
   );
   @override
@@ -1135,6 +1177,7 @@ class Package extends DataClass implements Insertable<Package> {
           other.durationUnit == this.durationUnit &&
           other.durationInDays == this.durationInDays &&
           other.isActive == this.isActive &&
+          other.trackAttendance == this.trackAttendance &&
           other.createdAt == this.createdAt);
 }
 
@@ -1146,6 +1189,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
   final Value<String> durationUnit;
   final Value<int> durationInDays;
   final Value<bool> isActive;
+  final Value<bool> trackAttendance;
   final Value<DateTime> createdAt;
   const PackagesCompanion({
     this.id = const Value.absent(),
@@ -1155,6 +1199,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     this.durationUnit = const Value.absent(),
     this.durationInDays = const Value.absent(),
     this.isActive = const Value.absent(),
+    this.trackAttendance = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   PackagesCompanion.insert({
@@ -1165,6 +1210,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     this.durationUnit = const Value.absent(),
     required int durationInDays,
     this.isActive = const Value.absent(),
+    this.trackAttendance = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : name = Value(name),
        price = Value(price),
@@ -1177,6 +1223,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     Expression<String>? durationUnit,
     Expression<int>? durationInDays,
     Expression<bool>? isActive,
+    Expression<bool>? trackAttendance,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
@@ -1187,6 +1234,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
       if (durationUnit != null) 'duration_unit': durationUnit,
       if (durationInDays != null) 'duration_in_days': durationInDays,
       if (isActive != null) 'is_active': isActive,
+      if (trackAttendance != null) 'track_attendance': trackAttendance,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -1199,6 +1247,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     Value<String>? durationUnit,
     Value<int>? durationInDays,
     Value<bool>? isActive,
+    Value<bool>? trackAttendance,
     Value<DateTime>? createdAt,
   }) {
     return PackagesCompanion(
@@ -1209,6 +1258,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
       durationUnit: durationUnit ?? this.durationUnit,
       durationInDays: durationInDays ?? this.durationInDays,
       isActive: isActive ?? this.isActive,
+      trackAttendance: trackAttendance ?? this.trackAttendance,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -1237,6 +1287,9 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
+    if (trackAttendance.present) {
+      map['track_attendance'] = Variable<bool>(trackAttendance.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1253,6 +1306,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
           ..write('durationUnit: $durationUnit, ')
           ..write('durationInDays: $durationInDays, ')
           ..write('isActive: $isActive, ')
+          ..write('trackAttendance: $trackAttendance, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1409,6 +1463,21 @@ class $SubscriptionsTable extends Subscriptions
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _trackAttendanceMeta = const VerificationMeta(
+    'trackAttendance',
+  );
+  @override
+  late final GeneratedColumn<bool> trackAttendance = GeneratedColumn<bool>(
+    'track_attendance',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("track_attendance" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _amountPaidMeta = const VerificationMeta(
     'amountPaid',
   );
@@ -1447,6 +1516,7 @@ class $SubscriptionsTable extends Subscriptions
     pausedAt,
     pauseReason,
     totalPausedDays,
+    trackAttendance,
     amountPaid,
     createdAt,
   ];
@@ -1549,6 +1619,15 @@ class $SubscriptionsTable extends Subscriptions
         ),
       );
     }
+    if (data.containsKey('track_attendance')) {
+      context.handle(
+        _trackAttendanceMeta,
+        trackAttendance.isAcceptableOrUnknown(
+          data['track_attendance']!,
+          _trackAttendanceMeta,
+        ),
+      );
+    }
     if (data.containsKey('amount_paid')) {
       context.handle(
         _amountPaidMeta,
@@ -1618,6 +1697,10 @@ class $SubscriptionsTable extends Subscriptions
         DriftSqlType.int,
         data['${effectivePrefix}total_paused_days'],
       )!,
+      trackAttendance: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}track_attendance'],
+      )!,
       amountPaid: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}amount_paid'],
@@ -1648,6 +1731,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
   final DateTime? pausedAt;
   final String? pauseReason;
   final int totalPausedDays;
+  final bool trackAttendance;
   final double amountPaid;
   final DateTime createdAt;
   const Subscription({
@@ -1663,6 +1747,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     this.pausedAt,
     this.pauseReason,
     required this.totalPausedDays,
+    required this.trackAttendance,
     required this.amountPaid,
     required this.createdAt,
   });
@@ -1691,6 +1776,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
       map['pause_reason'] = Variable<String>(pauseReason);
     }
     map['total_paused_days'] = Variable<int>(totalPausedDays);
+    map['track_attendance'] = Variable<bool>(trackAttendance);
     map['amount_paid'] = Variable<double>(amountPaid);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
@@ -1720,6 +1806,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
           ? const Value.absent()
           : Value(pauseReason),
       totalPausedDays: Value(totalPausedDays),
+      trackAttendance: Value(trackAttendance),
       amountPaid: Value(amountPaid),
       createdAt: Value(createdAt),
     );
@@ -1745,6 +1832,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
       pausedAt: serializer.fromJson<DateTime?>(json['pausedAt']),
       pauseReason: serializer.fromJson<String?>(json['pauseReason']),
       totalPausedDays: serializer.fromJson<int>(json['totalPausedDays']),
+      trackAttendance: serializer.fromJson<bool>(json['trackAttendance']),
       amountPaid: serializer.fromJson<double>(json['amountPaid']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
@@ -1765,6 +1853,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
       'pausedAt': serializer.toJson<DateTime?>(pausedAt),
       'pauseReason': serializer.toJson<String?>(pauseReason),
       'totalPausedDays': serializer.toJson<int>(totalPausedDays),
+      'trackAttendance': serializer.toJson<bool>(trackAttendance),
       'amountPaid': serializer.toJson<double>(amountPaid),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
@@ -1783,6 +1872,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     Value<DateTime?> pausedAt = const Value.absent(),
     Value<String?> pauseReason = const Value.absent(),
     int? totalPausedDays,
+    bool? trackAttendance,
     double? amountPaid,
     DateTime? createdAt,
   }) => Subscription(
@@ -1802,6 +1892,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     pausedAt: pausedAt.present ? pausedAt.value : this.pausedAt,
     pauseReason: pauseReason.present ? pauseReason.value : this.pauseReason,
     totalPausedDays: totalPausedDays ?? this.totalPausedDays,
+    trackAttendance: trackAttendance ?? this.trackAttendance,
     amountPaid: amountPaid ?? this.amountPaid,
     createdAt: createdAt ?? this.createdAt,
   );
@@ -1827,6 +1918,9 @@ class Subscription extends DataClass implements Insertable<Subscription> {
       totalPausedDays: data.totalPausedDays.present
           ? data.totalPausedDays.value
           : this.totalPausedDays,
+      trackAttendance: data.trackAttendance.present
+          ? data.trackAttendance.value
+          : this.trackAttendance,
       amountPaid: data.amountPaid.present
           ? data.amountPaid.value
           : this.amountPaid,
@@ -1849,6 +1943,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
           ..write('pausedAt: $pausedAt, ')
           ..write('pauseReason: $pauseReason, ')
           ..write('totalPausedDays: $totalPausedDays, ')
+          ..write('trackAttendance: $trackAttendance, ')
           ..write('amountPaid: $amountPaid, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -1869,6 +1964,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     pausedAt,
     pauseReason,
     totalPausedDays,
+    trackAttendance,
     amountPaid,
     createdAt,
   );
@@ -1888,6 +1984,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
           other.pausedAt == this.pausedAt &&
           other.pauseReason == this.pauseReason &&
           other.totalPausedDays == this.totalPausedDays &&
+          other.trackAttendance == this.trackAttendance &&
           other.amountPaid == this.amountPaid &&
           other.createdAt == this.createdAt);
 }
@@ -1905,6 +2002,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
   final Value<DateTime?> pausedAt;
   final Value<String?> pauseReason;
   final Value<int> totalPausedDays;
+  final Value<bool> trackAttendance;
   final Value<double> amountPaid;
   final Value<DateTime> createdAt;
   const SubscriptionsCompanion({
@@ -1920,6 +2018,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     this.pausedAt = const Value.absent(),
     this.pauseReason = const Value.absent(),
     this.totalPausedDays = const Value.absent(),
+    this.trackAttendance = const Value.absent(),
     this.amountPaid = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
@@ -1936,6 +2035,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     this.pausedAt = const Value.absent(),
     this.pauseReason = const Value.absent(),
     this.totalPausedDays = const Value.absent(),
+    this.trackAttendance = const Value.absent(),
     this.amountPaid = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : memberId = Value(memberId),
@@ -1954,6 +2054,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     Expression<DateTime>? pausedAt,
     Expression<String>? pauseReason,
     Expression<int>? totalPausedDays,
+    Expression<bool>? trackAttendance,
     Expression<double>? amountPaid,
     Expression<DateTime>? createdAt,
   }) {
@@ -1971,6 +2072,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
       if (pausedAt != null) 'paused_at': pausedAt,
       if (pauseReason != null) 'pause_reason': pauseReason,
       if (totalPausedDays != null) 'total_paused_days': totalPausedDays,
+      if (trackAttendance != null) 'track_attendance': trackAttendance,
       if (amountPaid != null) 'amount_paid': amountPaid,
       if (createdAt != null) 'created_at': createdAt,
     });
@@ -1989,6 +2091,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     Value<DateTime?>? pausedAt,
     Value<String?>? pauseReason,
     Value<int>? totalPausedDays,
+    Value<bool>? trackAttendance,
     Value<double>? amountPaid,
     Value<DateTime>? createdAt,
   }) {
@@ -2005,6 +2108,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
       pausedAt: pausedAt ?? this.pausedAt,
       pauseReason: pauseReason ?? this.pauseReason,
       totalPausedDays: totalPausedDays ?? this.totalPausedDays,
+      trackAttendance: trackAttendance ?? this.trackAttendance,
       amountPaid: amountPaid ?? this.amountPaid,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -2051,6 +2155,9 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     if (totalPausedDays.present) {
       map['total_paused_days'] = Variable<int>(totalPausedDays.value);
     }
+    if (trackAttendance.present) {
+      map['track_attendance'] = Variable<bool>(trackAttendance.value);
+    }
     if (amountPaid.present) {
       map['amount_paid'] = Variable<double>(amountPaid.value);
     }
@@ -2075,6 +2182,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
           ..write('pausedAt: $pausedAt, ')
           ..write('pauseReason: $pauseReason, ')
           ..write('totalPausedDays: $totalPausedDays, ')
+          ..write('trackAttendance: $trackAttendance, ')
           ..write('amountPaid: $amountPaid, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -5132,6 +5240,374 @@ class MemberNotesCompanion extends UpdateCompanion<MemberNote> {
   }
 }
 
+class $AttendanceLogsTable extends AttendanceLogs
+    with TableInfo<$AttendanceLogsTable, AttendanceLog> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AttendanceLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _memberIdMeta = const VerificationMeta(
+    'memberId',
+  );
+  @override
+  late final GeneratedColumn<int> memberId = GeneratedColumn<int>(
+    'member_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES members (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _subscriptionIdMeta = const VerificationMeta(
+    'subscriptionId',
+  );
+  @override
+  late final GeneratedColumn<int> subscriptionId = GeneratedColumn<int>(
+    'subscription_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES subscriptions (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _attendedOnMeta = const VerificationMeta(
+    'attendedOn',
+  );
+  @override
+  late final GeneratedColumn<DateTime> attendedOn = GeneratedColumn<DateTime>(
+    'attended_on',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    memberId,
+    subscriptionId,
+    attendedOn,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'attendance_logs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<AttendanceLog> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('member_id')) {
+      context.handle(
+        _memberIdMeta,
+        memberId.isAcceptableOrUnknown(data['member_id']!, _memberIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_memberIdMeta);
+    }
+    if (data.containsKey('subscription_id')) {
+      context.handle(
+        _subscriptionIdMeta,
+        subscriptionId.isAcceptableOrUnknown(
+          data['subscription_id']!,
+          _subscriptionIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_subscriptionIdMeta);
+    }
+    if (data.containsKey('attended_on')) {
+      context.handle(
+        _attendedOnMeta,
+        attendedOn.isAcceptableOrUnknown(data['attended_on']!, _attendedOnMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_attendedOnMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {subscriptionId, attendedOn},
+  ];
+  @override
+  AttendanceLog map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AttendanceLog(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      memberId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}member_id'],
+      )!,
+      subscriptionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}subscription_id'],
+      )!,
+      attendedOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}attended_on'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $AttendanceLogsTable createAlias(String alias) {
+    return $AttendanceLogsTable(attachedDatabase, alias);
+  }
+}
+
+class AttendanceLog extends DataClass implements Insertable<AttendanceLog> {
+  final int id;
+  final int memberId;
+  final int subscriptionId;
+  final DateTime attendedOn;
+  final DateTime createdAt;
+  const AttendanceLog({
+    required this.id,
+    required this.memberId,
+    required this.subscriptionId,
+    required this.attendedOn,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['member_id'] = Variable<int>(memberId);
+    map['subscription_id'] = Variable<int>(subscriptionId);
+    map['attended_on'] = Variable<DateTime>(attendedOn);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  AttendanceLogsCompanion toCompanion(bool nullToAbsent) {
+    return AttendanceLogsCompanion(
+      id: Value(id),
+      memberId: Value(memberId),
+      subscriptionId: Value(subscriptionId),
+      attendedOn: Value(attendedOn),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory AttendanceLog.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AttendanceLog(
+      id: serializer.fromJson<int>(json['id']),
+      memberId: serializer.fromJson<int>(json['memberId']),
+      subscriptionId: serializer.fromJson<int>(json['subscriptionId']),
+      attendedOn: serializer.fromJson<DateTime>(json['attendedOn']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'memberId': serializer.toJson<int>(memberId),
+      'subscriptionId': serializer.toJson<int>(subscriptionId),
+      'attendedOn': serializer.toJson<DateTime>(attendedOn),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  AttendanceLog copyWith({
+    int? id,
+    int? memberId,
+    int? subscriptionId,
+    DateTime? attendedOn,
+    DateTime? createdAt,
+  }) => AttendanceLog(
+    id: id ?? this.id,
+    memberId: memberId ?? this.memberId,
+    subscriptionId: subscriptionId ?? this.subscriptionId,
+    attendedOn: attendedOn ?? this.attendedOn,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  AttendanceLog copyWithCompanion(AttendanceLogsCompanion data) {
+    return AttendanceLog(
+      id: data.id.present ? data.id.value : this.id,
+      memberId: data.memberId.present ? data.memberId.value : this.memberId,
+      subscriptionId: data.subscriptionId.present
+          ? data.subscriptionId.value
+          : this.subscriptionId,
+      attendedOn: data.attendedOn.present
+          ? data.attendedOn.value
+          : this.attendedOn,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AttendanceLog(')
+          ..write('id: $id, ')
+          ..write('memberId: $memberId, ')
+          ..write('subscriptionId: $subscriptionId, ')
+          ..write('attendedOn: $attendedOn, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, memberId, subscriptionId, attendedOn, createdAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AttendanceLog &&
+          other.id == this.id &&
+          other.memberId == this.memberId &&
+          other.subscriptionId == this.subscriptionId &&
+          other.attendedOn == this.attendedOn &&
+          other.createdAt == this.createdAt);
+}
+
+class AttendanceLogsCompanion extends UpdateCompanion<AttendanceLog> {
+  final Value<int> id;
+  final Value<int> memberId;
+  final Value<int> subscriptionId;
+  final Value<DateTime> attendedOn;
+  final Value<DateTime> createdAt;
+  const AttendanceLogsCompanion({
+    this.id = const Value.absent(),
+    this.memberId = const Value.absent(),
+    this.subscriptionId = const Value.absent(),
+    this.attendedOn = const Value.absent(),
+    this.createdAt = const Value.absent(),
+  });
+  AttendanceLogsCompanion.insert({
+    this.id = const Value.absent(),
+    required int memberId,
+    required int subscriptionId,
+    required DateTime attendedOn,
+    this.createdAt = const Value.absent(),
+  }) : memberId = Value(memberId),
+       subscriptionId = Value(subscriptionId),
+       attendedOn = Value(attendedOn);
+  static Insertable<AttendanceLog> custom({
+    Expression<int>? id,
+    Expression<int>? memberId,
+    Expression<int>? subscriptionId,
+    Expression<DateTime>? attendedOn,
+    Expression<DateTime>? createdAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (memberId != null) 'member_id': memberId,
+      if (subscriptionId != null) 'subscription_id': subscriptionId,
+      if (attendedOn != null) 'attended_on': attendedOn,
+      if (createdAt != null) 'created_at': createdAt,
+    });
+  }
+
+  AttendanceLogsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? memberId,
+    Value<int>? subscriptionId,
+    Value<DateTime>? attendedOn,
+    Value<DateTime>? createdAt,
+  }) {
+    return AttendanceLogsCompanion(
+      id: id ?? this.id,
+      memberId: memberId ?? this.memberId,
+      subscriptionId: subscriptionId ?? this.subscriptionId,
+      attendedOn: attendedOn ?? this.attendedOn,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (memberId.present) {
+      map['member_id'] = Variable<int>(memberId.value);
+    }
+    if (subscriptionId.present) {
+      map['subscription_id'] = Variable<int>(subscriptionId.value);
+    }
+    if (attendedOn.present) {
+      map['attended_on'] = Variable<DateTime>(attendedOn.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AttendanceLogsCompanion(')
+          ..write('id: $id, ')
+          ..write('memberId: $memberId, ')
+          ..write('subscriptionId: $subscriptionId, ')
+          ..write('attendedOn: $attendedOn, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5144,6 +5620,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PaymentsTable payments = $PaymentsTable(this);
   late final $ExpensesTable expenses = $ExpensesTable(this);
   late final $MemberNotesTable memberNotes = $MemberNotesTable(this);
+  late final $AttendanceLogsTable attendanceLogs = $AttendanceLogsTable(this);
   late final Index idxMembersName = Index(
     'idx_members_name',
     'CREATE INDEX idx_members_name ON members (name)',
@@ -5228,6 +5705,18 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     'idx_member_notes_member_id',
     'CREATE INDEX idx_member_notes_member_id ON member_notes (member_id)',
   );
+  late final Index idxAttendanceLogsMemberId = Index(
+    'idx_attendance_logs_member_id',
+    'CREATE INDEX idx_attendance_logs_member_id ON attendance_logs (member_id)',
+  );
+  late final Index idxAttendanceLogsSubscriptionId = Index(
+    'idx_attendance_logs_subscription_id',
+    'CREATE INDEX idx_attendance_logs_subscription_id ON attendance_logs (subscription_id)',
+  );
+  late final Index idxAttendanceLogsAttendedOn = Index(
+    'idx_attendance_logs_attended_on',
+    'CREATE INDEX idx_attendance_logs_attended_on ON attendance_logs (attended_on)',
+  );
   late final DashboardDao dashboardDao = DashboardDao(this as AppDatabase);
   late final MembersDao membersDao = MembersDao(this as AppDatabase);
   late final NotesDao notesDao = NotesDao(this as AppDatabase);
@@ -5237,6 +5726,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final PaymentsDao paymentsDao = PaymentsDao(this as AppDatabase);
   late final ExpensesDao expensesDao = ExpensesDao(this as AppDatabase);
   late final FinanceDao financeDao = FinanceDao(this as AppDatabase);
+  late final AttendanceDao attendanceDao = AttendanceDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5250,6 +5740,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     payments,
     expenses,
     memberNotes,
+    attendanceLogs,
     idxMembersName,
     idxMembersPhone,
     idxMembersStatus,
@@ -5271,6 +5762,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     idxExpensesCategory,
     idxExpensesVoidedAt,
     idxMemberNotesMemberId,
+    idxAttendanceLogsMemberId,
+    idxAttendanceLogsSubscriptionId,
+    idxAttendanceLogsAttendedOn,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -5280,6 +5774,20 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('member_notes', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'members',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('attendance_logs', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'subscriptions',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('attendance_logs', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -5369,6 +5877,24 @@ final class $$MembersTableReferences
     ).filter((f) => f.memberId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_memberNotesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$AttendanceLogsTable, List<AttendanceLog>>
+  _attendanceLogsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.attendanceLogs,
+    aliasName: 'members__id__attendance_logs__member_id',
+  );
+
+  $$AttendanceLogsTableProcessedTableManager get attendanceLogsRefs {
+    final manager = $$AttendanceLogsTableTableManager(
+      $_db,
+      $_db.attendanceLogs,
+    ).filter((f) => f.memberId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_attendanceLogsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -5515,6 +6041,31 @@ class $$MembersTableFilterComposer
           }) => $$MemberNotesTableFilterComposer(
             $db: $db,
             $table: $db.memberNotes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> attendanceLogsRefs(
+    Expression<bool> Function($$AttendanceLogsTableFilterComposer f) f,
+  ) {
+    final $$AttendanceLogsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.attendanceLogs,
+      getReferencedColumn: (t) => t.memberId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AttendanceLogsTableFilterComposer(
+            $db: $db,
+            $table: $db.attendanceLogs,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -5726,6 +6277,31 @@ class $$MembersTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> attendanceLogsRefs<T extends Object>(
+    Expression<T> Function($$AttendanceLogsTableAnnotationComposer a) f,
+  ) {
+    final $$AttendanceLogsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.attendanceLogs,
+      getReferencedColumn: (t) => t.memberId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AttendanceLogsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.attendanceLogs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$MembersTableTableManager
@@ -5745,6 +6321,7 @@ class $$MembersTableTableManager
             bool subscriptionsRefs,
             bool paymentsRefs,
             bool memberNotesRefs,
+            bool attendanceLogsRefs,
           })
         > {
   $$MembersTableTableManager(_$AppDatabase db, $MembersTable table)
@@ -5831,6 +6408,7 @@ class $$MembersTableTableManager
                 subscriptionsRefs = false,
                 paymentsRefs = false,
                 memberNotesRefs = false,
+                attendanceLogsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
@@ -5838,6 +6416,7 @@ class $$MembersTableTableManager
                     if (subscriptionsRefs) db.subscriptions,
                     if (paymentsRefs) db.payments,
                     if (memberNotesRefs) db.memberNotes,
+                    if (attendanceLogsRefs) db.attendanceLogs,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -5905,6 +6484,27 @@ class $$MembersTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (attendanceLogsRefs)
+                        await $_getPrefetchedData<
+                          Member,
+                          $MembersTable,
+                          AttendanceLog
+                        >(
+                          currentTable: table,
+                          referencedTable: $$MembersTableReferences
+                              ._attendanceLogsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$MembersTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).attendanceLogsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.memberId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -5929,6 +6529,7 @@ typedef $$MembersTableProcessedTableManager =
         bool subscriptionsRefs,
         bool paymentsRefs,
         bool memberNotesRefs,
+        bool attendanceLogsRefs,
       })
     >;
 typedef $$PackagesTableCreateCompanionBuilder = PackagesCompanion Function({
@@ -5939,6 +6540,7 @@ typedef $$PackagesTableCreateCompanionBuilder = PackagesCompanion Function({
   Value<String> durationUnit,
   required int durationInDays,
   Value<bool> isActive,
+  Value<bool> trackAttendance,
   Value<DateTime> createdAt,
 });
 typedef $$PackagesTableUpdateCompanionBuilder = PackagesCompanion Function({
@@ -5949,6 +6551,7 @@ typedef $$PackagesTableUpdateCompanionBuilder = PackagesCompanion Function({
   Value<String> durationUnit,
   Value<int> durationInDays,
   Value<bool> isActive,
+  Value<bool> trackAttendance,
   Value<DateTime> createdAt,
 });
 
@@ -6016,6 +6619,11 @@ class $$PackagesTableFilterComposer
 
   ColumnFilters<bool> get isActive => $composableBuilder(
     column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get trackAttendance => $composableBuilder(
+    column: $table.trackAttendance,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6094,6 +6702,11 @@ class $$PackagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get trackAttendance => $composableBuilder(
+    column: $table.trackAttendance,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -6135,6 +6748,11 @@ class $$PackagesTableAnnotationComposer
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<bool> get trackAttendance => $composableBuilder(
+    column: $table.trackAttendance,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -6200,6 +6818,7 @@ class $$PackagesTableTableManager
                 Value<String> durationUnit = const Value.absent(),
                 Value<int> durationInDays = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> trackAttendance = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => PackagesCompanion(
                 id: id,
@@ -6209,6 +6828,7 @@ class $$PackagesTableTableManager
                 durationUnit: durationUnit,
                 durationInDays: durationInDays,
                 isActive: isActive,
+                trackAttendance: trackAttendance,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
@@ -6220,6 +6840,7 @@ class $$PackagesTableTableManager
                 Value<String> durationUnit = const Value.absent(),
                 required int durationInDays,
                 Value<bool> isActive = const Value.absent(),
+                Value<bool> trackAttendance = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => PackagesCompanion.insert(
                 id: id,
@@ -6229,6 +6850,7 @@ class $$PackagesTableTableManager
                 durationUnit: durationUnit,
                 durationInDays: durationInDays,
                 isActive: isActive,
+                trackAttendance: trackAttendance,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
@@ -6302,6 +6924,7 @@ typedef $$SubscriptionsTableCreateCompanionBuilder =
       Value<DateTime?> pausedAt,
       Value<String?> pauseReason,
       Value<int> totalPausedDays,
+      Value<bool> trackAttendance,
       Value<double> amountPaid,
       Value<DateTime> createdAt,
     });
@@ -6319,6 +6942,7 @@ typedef $$SubscriptionsTableUpdateCompanionBuilder =
       Value<DateTime?> pausedAt,
       Value<String?> pauseReason,
       Value<int> totalPausedDays,
+      Value<bool> trackAttendance,
       Value<double> amountPaid,
       Value<DateTime> createdAt,
     });
@@ -6407,6 +7031,24 @@ final class $$SubscriptionsTableReferences
       manager.$state.copyWith(prefetchedData: cache),
     );
   }
+
+  static MultiTypedResultKey<$AttendanceLogsTable, List<AttendanceLog>>
+  _attendanceLogsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.attendanceLogs,
+    aliasName: 'subscriptions__id__attendance_logs__subscription_id',
+  );
+
+  $$AttendanceLogsTableProcessedTableManager get attendanceLogsRefs {
+    final manager = $$AttendanceLogsTableTableManager(
+      $_db,
+      $_db.attendanceLogs,
+    ).filter((f) => f.subscriptionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_attendanceLogsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
 }
 
 class $$SubscriptionsTableFilterComposer
@@ -6465,6 +7107,11 @@ class $$SubscriptionsTableFilterComposer
 
   ColumnFilters<int> get totalPausedDays => $composableBuilder(
     column: $table.totalPausedDays,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get trackAttendance => $composableBuilder(
+    column: $table.trackAttendance,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6573,6 +7220,31 @@ class $$SubscriptionsTableFilterComposer
     );
     return f(composer);
   }
+
+  Expression<bool> attendanceLogsRefs(
+    Expression<bool> Function($$AttendanceLogsTableFilterComposer f) f,
+  ) {
+    final $$AttendanceLogsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.attendanceLogs,
+      getReferencedColumn: (t) => t.subscriptionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AttendanceLogsTableFilterComposer(
+            $db: $db,
+            $table: $db.attendanceLogs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$SubscriptionsTableOrderingComposer
@@ -6631,6 +7303,11 @@ class $$SubscriptionsTableOrderingComposer
 
   ColumnOrderings<int> get totalPausedDays => $composableBuilder(
     column: $table.totalPausedDays,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get trackAttendance => $composableBuilder(
+    column: $table.trackAttendance,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -6738,6 +7415,11 @@ class $$SubscriptionsTableAnnotationComposer
     builder: (column) => column,
   );
 
+  GeneratedColumn<bool> get trackAttendance => $composableBuilder(
+    column: $table.trackAttendance,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<double> get amountPaid => $composableBuilder(
     column: $table.amountPaid,
     builder: (column) => column,
@@ -6842,6 +7524,31 @@ class $$SubscriptionsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> attendanceLogsRefs<T extends Object>(
+    Expression<T> Function($$AttendanceLogsTableAnnotationComposer a) f,
+  ) {
+    final $$AttendanceLogsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.attendanceLogs,
+      getReferencedColumn: (t) => t.subscriptionId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AttendanceLogsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.attendanceLogs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$SubscriptionsTableTableManager
@@ -6862,6 +7569,7 @@ class $$SubscriptionsTableTableManager
             bool packageId,
             bool subscriptionPeriodsRefs,
             bool paymentsRefs,
+            bool attendanceLogsRefs,
           })
         > {
   $$SubscriptionsTableTableManager(_$AppDatabase db, $SubscriptionsTable table)
@@ -6889,6 +7597,7 @@ class $$SubscriptionsTableTableManager
                 Value<DateTime?> pausedAt = const Value.absent(),
                 Value<String?> pauseReason = const Value.absent(),
                 Value<int> totalPausedDays = const Value.absent(),
+                Value<bool> trackAttendance = const Value.absent(),
                 Value<double> amountPaid = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => SubscriptionsCompanion(
@@ -6904,6 +7613,7 @@ class $$SubscriptionsTableTableManager
                 pausedAt: pausedAt,
                 pauseReason: pauseReason,
                 totalPausedDays: totalPausedDays,
+                trackAttendance: trackAttendance,
                 amountPaid: amountPaid,
                 createdAt: createdAt,
               ),
@@ -6921,6 +7631,7 @@ class $$SubscriptionsTableTableManager
                 Value<DateTime?> pausedAt = const Value.absent(),
                 Value<String?> pauseReason = const Value.absent(),
                 Value<int> totalPausedDays = const Value.absent(),
+                Value<bool> trackAttendance = const Value.absent(),
                 Value<double> amountPaid = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => SubscriptionsCompanion.insert(
@@ -6936,6 +7647,7 @@ class $$SubscriptionsTableTableManager
                 pausedAt: pausedAt,
                 pauseReason: pauseReason,
                 totalPausedDays: totalPausedDays,
+                trackAttendance: trackAttendance,
                 amountPaid: amountPaid,
                 createdAt: createdAt,
               ),
@@ -6953,12 +7665,14 @@ class $$SubscriptionsTableTableManager
                 packageId = false,
                 subscriptionPeriodsRefs = false,
                 paymentsRefs = false,
+                attendanceLogsRefs = false,
               }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (subscriptionPeriodsRefs) db.subscriptionPeriods,
                     if (paymentsRefs) db.payments,
+                    if (attendanceLogsRefs) db.attendanceLogs,
                   ],
                   addJoins:
                       <
@@ -7045,6 +7759,27 @@ class $$SubscriptionsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (attendanceLogsRefs)
+                        await $_getPrefetchedData<
+                          Subscription,
+                          $SubscriptionsTable,
+                          AttendanceLog
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SubscriptionsTableReferences
+                              ._attendanceLogsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SubscriptionsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).attendanceLogsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.subscriptionId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -7070,6 +7805,7 @@ typedef $$SubscriptionsTableProcessedTableManager =
         bool packageId,
         bool subscriptionPeriodsRefs,
         bool paymentsRefs,
+        bool attendanceLogsRefs,
       })
     >;
 typedef $$SubscriptionPeriodsTableCreateCompanionBuilder =
@@ -9584,6 +10320,408 @@ typedef $$MemberNotesTableProcessedTableManager =
       MemberNote,
       PrefetchHooks Function({bool memberId})
     >;
+typedef $$AttendanceLogsTableCreateCompanionBuilder =
+    AttendanceLogsCompanion Function({
+      Value<int> id,
+      required int memberId,
+      required int subscriptionId,
+      required DateTime attendedOn,
+      Value<DateTime> createdAt,
+    });
+typedef $$AttendanceLogsTableUpdateCompanionBuilder =
+    AttendanceLogsCompanion Function({
+      Value<int> id,
+      Value<int> memberId,
+      Value<int> subscriptionId,
+      Value<DateTime> attendedOn,
+      Value<DateTime> createdAt,
+    });
+
+final class $$AttendanceLogsTableReferences
+    extends BaseReferences<_$AppDatabase, $AttendanceLogsTable, AttendanceLog> {
+  $$AttendanceLogsTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $MembersTable _memberIdTable(_$AppDatabase db) =>
+      db.members.createAlias('attendance_logs__member_id__members__id');
+
+  $$MembersTableProcessedTableManager get memberId {
+    final $_column = $_itemColumn<int>('member_id')!;
+
+    final manager = $$MembersTableTableManager(
+      $_db,
+      $_db.members,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_memberIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $SubscriptionsTable _subscriptionIdTable(_$AppDatabase db) => db
+      .subscriptions
+      .createAlias('attendance_logs__subscription_id__subscriptions__id');
+
+  $$SubscriptionsTableProcessedTableManager get subscriptionId {
+    final $_column = $_itemColumn<int>('subscription_id')!;
+
+    final manager = $$SubscriptionsTableTableManager(
+      $_db,
+      $_db.subscriptions,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_subscriptionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$AttendanceLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $AttendanceLogsTable> {
+  $$AttendanceLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get attendedOn => $composableBuilder(
+    column: $table.attendedOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$MembersTableFilterComposer get memberId {
+    final $$MembersTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.memberId,
+      referencedTable: $db.members,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MembersTableFilterComposer(
+            $db: $db,
+            $table: $db.members,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SubscriptionsTableFilterComposer get subscriptionId {
+    final $$SubscriptionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.subscriptionId,
+      referencedTable: $db.subscriptions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SubscriptionsTableFilterComposer(
+            $db: $db,
+            $table: $db.subscriptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AttendanceLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $AttendanceLogsTable> {
+  $$AttendanceLogsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get attendedOn => $composableBuilder(
+    column: $table.attendedOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$MembersTableOrderingComposer get memberId {
+    final $$MembersTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.memberId,
+      referencedTable: $db.members,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MembersTableOrderingComposer(
+            $db: $db,
+            $table: $db.members,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SubscriptionsTableOrderingComposer get subscriptionId {
+    final $$SubscriptionsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.subscriptionId,
+      referencedTable: $db.subscriptions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SubscriptionsTableOrderingComposer(
+            $db: $db,
+            $table: $db.subscriptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AttendanceLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AttendanceLogsTable> {
+  $$AttendanceLogsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get attendedOn => $composableBuilder(
+    column: $table.attendedOn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$MembersTableAnnotationComposer get memberId {
+    final $$MembersTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.memberId,
+      referencedTable: $db.members,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$MembersTableAnnotationComposer(
+            $db: $db,
+            $table: $db.members,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$SubscriptionsTableAnnotationComposer get subscriptionId {
+    final $$SubscriptionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.subscriptionId,
+      referencedTable: $db.subscriptions,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SubscriptionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.subscriptions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$AttendanceLogsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $AttendanceLogsTable,
+          AttendanceLog,
+          $$AttendanceLogsTableFilterComposer,
+          $$AttendanceLogsTableOrderingComposer,
+          $$AttendanceLogsTableAnnotationComposer,
+          $$AttendanceLogsTableCreateCompanionBuilder,
+          $$AttendanceLogsTableUpdateCompanionBuilder,
+          (AttendanceLog, $$AttendanceLogsTableReferences),
+          AttendanceLog,
+          PrefetchHooks Function({bool memberId, bool subscriptionId})
+        > {
+  $$AttendanceLogsTableTableManager(
+    _$AppDatabase db,
+    $AttendanceLogsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AttendanceLogsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AttendanceLogsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AttendanceLogsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> memberId = const Value.absent(),
+                Value<int> subscriptionId = const Value.absent(),
+                Value<DateTime> attendedOn = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => AttendanceLogsCompanion(
+                id: id,
+                memberId: memberId,
+                subscriptionId: subscriptionId,
+                attendedOn: attendedOn,
+                createdAt: createdAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int memberId,
+                required int subscriptionId,
+                required DateTime attendedOn,
+                Value<DateTime> createdAt = const Value.absent(),
+              }) => AttendanceLogsCompanion.insert(
+                id: id,
+                memberId: memberId,
+                subscriptionId: subscriptionId,
+                attendedOn: attendedOn,
+                createdAt: createdAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$AttendanceLogsTable, AttendanceLog>(table),
+                  $$AttendanceLogsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({memberId = false, subscriptionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (memberId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.memberId,
+                        referencedTable: $$AttendanceLogsTableReferences
+                            ._memberIdTable(db),
+                        referencedColumn: $$AttendanceLogsTableReferences
+                            ._memberIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+                    if (subscriptionId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.subscriptionId,
+                        referencedTable: $$AttendanceLogsTableReferences
+                            ._subscriptionIdTable(db),
+                        referencedColumn: $$AttendanceLogsTableReferences
+                            ._subscriptionIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$AttendanceLogsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $AttendanceLogsTable,
+      AttendanceLog,
+      $$AttendanceLogsTableFilterComposer,
+      $$AttendanceLogsTableOrderingComposer,
+      $$AttendanceLogsTableAnnotationComposer,
+      $$AttendanceLogsTableCreateCompanionBuilder,
+      $$AttendanceLogsTableUpdateCompanionBuilder,
+      (AttendanceLog, $$AttendanceLogsTableReferences),
+      AttendanceLog,
+      PrefetchHooks Function({bool memberId, bool subscriptionId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -9604,4 +10742,6 @@ class $AppDatabaseManager {
       $$ExpensesTableTableManager(_db, _db.expenses);
   $$MemberNotesTableTableManager get memberNotes =>
       $$MemberNotesTableTableManager(_db, _db.memberNotes);
+  $$AttendanceLogsTableTableManager get attendanceLogs =>
+      $$AttendanceLogsTableTableManager(_db, _db.attendanceLogs);
 }
