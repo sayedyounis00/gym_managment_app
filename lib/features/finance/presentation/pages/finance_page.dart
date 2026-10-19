@@ -91,6 +91,7 @@ class _FinanceView extends StatelessWidget {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'finance_fab',
         onPressed: () => _openAddChoice(context),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,

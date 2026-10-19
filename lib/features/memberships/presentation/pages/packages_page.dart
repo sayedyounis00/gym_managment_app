@@ -41,6 +41,7 @@ class _PackagesPageState extends State<PackagesPage> {
         title: const Text('الباقات'),
       ),
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'packages_fab',
         onPressed: _openCreatePackage,
         icon: const Icon(Icons.add_rounded),
         label: const Text('إنشاء باقة'),
