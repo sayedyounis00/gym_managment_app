@@ -21,6 +21,7 @@ import '../../features/finance/presentation/pages/add_expense_page.dart';
 import '../../features/finance/presentation/pages/add_payment_page.dart';
 import '../../features/finance/presentation/pages/reports_page.dart';
 import '../di/injection_container.dart';
+import '../widgets/app_exit_scope.dart';
 import '../widgets/main_shell_screen.dart';
 import 'routes.dart';
 
@@ -136,9 +137,11 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
       path: AppRoutes.addPackage,
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
-        child: BlocProvider(
-          create: (_) => sl<PackageFormCubit>(),
-          child: const AddEditPackagePage(),
+        child: AppExitScope(
+          child: BlocProvider(
+            create: (_) => sl<PackageFormCubit>(),
+            child: const AddEditPackagePage(),
+          ),
         ),
       ),
     ),
@@ -150,9 +153,11 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
         final id = int.tryParse(idStr) ?? 0;
         return MaterialPage(
           key: state.pageKey,
-          child: BlocProvider(
-            create: (_) => sl<PackageFormCubit>(),
-            child: AddEditPackagePage(packageId: id),
+          child: AppExitScope(
+            child: BlocProvider(
+              create: (_) => sl<PackageFormCubit>(),
+              child: AddEditPackagePage(packageId: id),
+            ),
           ),
         );
       },
@@ -162,7 +167,9 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
       path: AppRoutes.settings,
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
-        child: const SettingsPage(),
+        child: const AppExitScope(
+          child: SettingsPage(),
+        ),
       ),
     ),
     GoRoute(
@@ -170,7 +177,9 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
       path: AppRoutes.backup,
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
-        child: const BackupPage(),
+        child: const AppExitScope(
+          child: BackupPage(),
+        ),
       ),
     ),
     GoRoute(
@@ -178,7 +187,9 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
       path: AppRoutes.addExpense,
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
-        child: const AddExpensePage(),
+        child: const AppExitScope(
+          child: AddExpensePage(),
+        ),
       ),
     ),
     GoRoute(
@@ -189,7 +200,9 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
         final memberId = memberIdStr != null ? int.tryParse(memberIdStr) : null;
         return MaterialPage(
           key: state.pageKey,
-          child: AddPaymentPage(preselectedMemberId: memberId),
+          child: AppExitScope(
+            child: AddPaymentPage(preselectedMemberId: memberId),
+          ),
         );
       },
     ),
@@ -198,7 +211,9 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
       path: AppRoutes.financeReports,
       pageBuilder: (context, state) => MaterialPage(
         key: state.pageKey,
-        child: const ReportsPage(),
+        child: const AppExitScope(
+          child: ReportsPage(),
+        ),
       ),
     ),
   ],

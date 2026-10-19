@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_managment_app/core/theme/app_colors.dart';
 import 'package:gym_managment_app/core/theme/app_spacing.dart';
+import 'package:gym_managment_app/core/widgets/exit_confirmation_dialog.dart';
 import 'package:gym_managment_app/core/theme/app_text_styles.dart';
 import 'package:gym_managment_app/core/utils/responsive_utils.dart';
 import 'package:gym_managment_app/core/widgets/app_button.dart';
@@ -133,7 +135,14 @@ class _AddEditMemberPageState extends State<AddEditMemberPage> {
             if (didPop) return;
             final canExit = await _onWillPop(isDirty);
             if (canExit && context.mounted) {
-              Navigator.of(context).pop();
+              if (Navigator.of(context).canPop()) {
+                Navigator.of(context).pop();
+              } else {
+                final shouldExit = await showExitConfirmationDialog(context);
+                if (shouldExit == true) {
+                  await SystemNavigator.pop();
+                }
+              }
             }
           },
           child: Scaffold(
