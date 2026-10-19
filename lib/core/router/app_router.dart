@@ -55,8 +55,12 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
               builder: (context, state) {
                 final status = state.uri.queryParameters['status'];
                 return BlocProvider(
+                  key: ValueKey('members_${status ?? "all"}'),
                   create: (_) => sl<MembersListCubit>(),
-                  child: MembersPage(initialStatusFilter: status),
+                  child: MembersPage(
+                    key: ValueKey('members_page_${status ?? "all"}'),
+                    initialStatusFilter: status,
+                  ),
                 );
               },
             ),

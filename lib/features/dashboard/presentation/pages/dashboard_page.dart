@@ -226,6 +226,9 @@ class _DashboardPageState extends State<DashboardPage> {
                       key: _expiringKey,
                       child: ExpiringListSection(
                         expiringSoon: summary.expiringSoon,
+                        onViewAllTap: () {
+                          context.go(AppRoutes.membersExpiringSoon());
+                        },
                         onMemberTap: (item) {
                           context.go(AppRoutes.memberDetailsPath(item.memberId));
                         },

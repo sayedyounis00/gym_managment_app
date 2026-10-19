@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/router/routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -11,12 +13,14 @@ class ExpiringListSection extends StatelessWidget {
   final List<ExpiringSubscription> expiringSoon;
   final ValueChanged<ExpiringSubscription>? onMemberTap;
   final ValueChanged<ExpiringSubscription>? onRenewTap;
+  final VoidCallback? onViewAllTap;
 
   const ExpiringListSection({
     super.key,
     required this.expiringSoon,
     this.onMemberTap,
     this.onRenewTap,
+    this.onViewAllTap,
   });
 
   Future<void> _makeCall(BuildContext context, String phone) async {
@@ -56,6 +60,14 @@ class ExpiringListSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sortedList = List<ExpiringSubscription>.from(expiringSoon)
+      ..sort((a, b) {
+        final cmp = a.daysLeft.compareTo(b.daysLeft);
+        if (cmp != 0) return cmp;
+        return a.endDate.compareTo(b.endDate);
+      });
+    final displayedList = sortedList.take(3).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -92,28 +104,51 @@ class ExpiringListSection extends StatelessWidget {
               ),
             ),
             const SizedBox(width: AppSpacing.xs),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: expiringSoon.isEmpty
-                    ? AppColors.successTint
-                    : AppColors.warningTint,
-                borderRadius: BorderRadius.circular(AppRadius.full),
-              ),
-              child: Text(
-                '${expiringSoon.length} مشترك',
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: expiringSoon.isEmpty
-                      ? AppColors.success
-                      : AppColors.warning,
-                  fontWeight: FontWeight.w700,
+            if (expiringSoon.isNotEmpty)
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: onViewAllTap ??
+                      () => context.go(AppRoutes.membersExpiringSoon()),
+                  borderRadius: BorderRadius.circular(AppRadius.full),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight,
+                      borderRadius: BorderRadius.circular(AppRadius.full),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.25),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'عرض الكل',
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: AppColors.primaryDark,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 14,
+                          color: AppColors.primaryDark,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        if (expiringSoon.isEmpty)
+        if (displayedList.isEmpty)
           _buildEmptyState()
         else
           LayoutBuilder(
@@ -122,9 +157,13 @@ class ExpiringListSection extends StatelessWidget {
               return Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  for (int i = 0; i < expiringSoon.length; i++) ...[
+                  for (int i = 0; i < displayedList.length; i++) ...[
                     if (i > 0) const SizedBox(height: AppSpacing.sm + 2),
-                    _buildExpiringItem(context, expiringSoon[i], isNarrow: isNarrow),
+                    _buildExpiringItem(
+                      context,
+                      displayedList[i],
+                      isNarrow: isNarrow,
+                    ),
                   ],
                 ],
               );
