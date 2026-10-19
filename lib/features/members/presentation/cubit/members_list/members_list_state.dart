@@ -22,16 +22,45 @@ class MembersListLoaded extends MembersListState {
   final String query;
   final MemberStatusType? filter;
   final int totalCount;
+  final bool hasMore;
+  final bool isLoadingMore;
 
   const MembersListLoaded({
     required this.members,
     this.query = '',
     this.filter,
     required this.totalCount,
+    this.hasMore = false,
+    this.isLoadingMore = false,
   });
 
+  MembersListLoaded copyWith({
+    List<MemberSummary>? members,
+    String? query,
+    MemberStatusType? filter,
+    int? totalCount,
+    bool? hasMore,
+    bool? isLoadingMore,
+  }) {
+    return MembersListLoaded(
+      members: members ?? this.members,
+      query: query ?? this.query,
+      filter: filter ?? this.filter,
+      totalCount: totalCount ?? this.totalCount,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    );
+  }
+
   @override
-  List<Object?> get props => [members, query, filter, totalCount];
+  List<Object?> get props => [
+        members,
+        query,
+        filter,
+        totalCount,
+        hasMore,
+        isLoadingMore,
+      ];
 }
 
 class MembersListError extends MembersListState {
