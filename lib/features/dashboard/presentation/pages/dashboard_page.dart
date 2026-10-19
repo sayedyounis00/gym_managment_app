@@ -230,7 +230,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           context.go(AppRoutes.membersExpiringSoon());
                         },
                         onMemberTap: (item) {
-                          context.go(AppRoutes.memberDetailsPath(item.memberId));
+                          context.push(AppRoutes.memberDetailsPath(item.memberId));
                         },
                         onRenewTap: (item) async {
                           final renewed = await RenewBottomSheet.show(
