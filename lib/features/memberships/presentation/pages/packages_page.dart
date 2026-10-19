@@ -7,6 +7,7 @@ import 'package:gym_managment_app/core/theme/app_spacing.dart';
 import 'package:gym_managment_app/core/theme/app_text_styles.dart';
 import 'package:gym_managment_app/core/widgets/empty_state.dart';
 import 'package:gym_managment_app/core/widgets/loaders/package_card_skeleton.dart';
+import 'package:gym_managment_app/core/widgets/paginated_bottom_loader.dart';
 import '../cubit/packages/packages_cubit.dart';
 import '../cubit/packages/packages_state.dart';
 import '../widgets/package_card.dart';
@@ -116,28 +117,36 @@ class _PackagesPageState extends State<PackagesPage> {
 
                 Widget content;
                 if (isLargeScreen) {
-                  content = GridView.builder(
-                    padding: const EdgeInsets.only(
-                      left: AppSpacing.lg,
-                      right: AppSpacing.lg,
-                      top: AppSpacing.lg,
-                      bottom: 88, // Space for FAB
-                    ),
-                    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 420,
-                      mainAxisSpacing: AppSpacing.md,
-                      crossAxisSpacing: AppSpacing.md,
-                      mainAxisExtent: gridItemHeight,
-                    ),
-                    itemCount: packages.length,
-                    itemBuilder: (context, index) {
-                      final pkg = packages[index];
-                      return PackageCard(
-                        package: pkg,
-                        onEdit: () => _openEditPackage(pkg.id),
-                        onToggleActive: (val) => context.read<PackagesCubit>().toggleActive(pkg.id, val),
-                      );
-                    },
+                  content = Column(
+                    children: [
+                      Expanded(
+                        child: GridView.builder(
+                          padding: const EdgeInsets.only(
+                            left: AppSpacing.lg,
+                            right: AppSpacing.lg,
+                            top: AppSpacing.lg,
+                            bottom: 88, // Space for FAB
+                          ),
+                          gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 420,
+                            mainAxisSpacing: AppSpacing.md,
+                            crossAxisSpacing: AppSpacing.md,
+                            mainAxisExtent: gridItemHeight,
+                          ),
+                          itemCount: packages.length,
+                          itemBuilder: (context, index) {
+                            final pkg = packages[index];
+                            return PackageCard(
+                              package: pkg,
+                              onEdit: () => _openEditPackage(pkg.id),
+                              onToggleActive: (val) => context.read<PackagesCubit>().toggleActive(pkg.id, val),
+                            );
+                          },
+                        ),
+                      ),
+                      if (state.isLoadingMore)
+                        const PaginatedBottomLoader(isLoading: true),
+                    ],
                   );
                 } else {
                   content = ListView.separated(
@@ -147,9 +156,15 @@ class _PackagesPageState extends State<PackagesPage> {
                       top: AppSpacing.md,
                       bottom: 88, // Space for FAB
                     ),
-                    itemCount: packages.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.md),
+                    itemCount: packages.length + (state.isLoadingMore ? 1 : 0),
+                    separatorBuilder: (_, index) {
+                      if (index >= packages.length) return const SizedBox.shrink();
+                      return const SizedBox(height: AppSpacing.md);
+                    },
                     itemBuilder: (context, index) {
+                      if (index == packages.length) {
+                        return const PaginatedBottomLoader(isLoading: true);
+                      }
                       final pkg = packages[index];
                       return PackageCard(
                         package: pkg,
@@ -160,10 +175,19 @@ class _PackagesPageState extends State<PackagesPage> {
                   );
                 }
 
-                return Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1200),
-                    child: content,
+                return NotificationListener<ScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification.metrics.pixels >=
+                        notification.metrics.maxScrollExtent - 200) {
+                      context.read<PackagesCubit>().loadMore();
+                    }
+                    return false;
+                  },
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1200),
+                      child: content,
+                    ),
                   ),
                 );
               },

@@ -43,6 +43,9 @@ class FakePackagesCubit extends Cubit<PackagesState> implements PackagesCubit {
     return true;
   }
 
+  @override
+  Future<void> loadMore() async {}
+
   void setState(PackagesState state) => emit(state);
 }
 
