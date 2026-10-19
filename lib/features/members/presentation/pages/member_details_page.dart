@@ -10,7 +10,9 @@ import 'package:gym_managment_app/core/theme/app_text_styles.dart';
 import 'package:gym_managment_app/core/utils/currency_formatter.dart';
 import 'package:gym_managment_app/core/utils/date_utils.dart';
 import 'package:gym_managment_app/core/utils/responsive_utils.dart';
+import 'package:gym_managment_app/core/router/routes.dart';
 import 'package:gym_managment_app/core/widgets/app_button.dart';
+import 'package:gym_managment_app/core/widgets/app_exit_scope.dart';
 import 'package:gym_managment_app/core/widgets/confirm_dialog.dart';
 import 'package:gym_managment_app/core/widgets/skeletons/skeletons.dart';
 import 'package:gym_managment_app/core/widgets/status_chip.dart';
@@ -221,13 +223,26 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
           );
         }
       },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text('تفاصيل المشترك', style: AppTextStyles.titleLarge),
-          backgroundColor: AppColors.surface,
-          elevation: 0,
-          scrolledUnderElevation: 2,
+      child: AppExitScope(
+        fallbackToDashboard: true,
+        child: Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            title: Text('تفاصيل المشترك', style: AppTextStyles.titleLarge),
+            backgroundColor: AppColors.surface,
+            elevation: 0,
+            scrolledUnderElevation: 2,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              tooltip: 'رجوع',
+              onPressed: () {
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                } else {
+                  context.go(AppRoutes.dashboard);
+                }
+              },
+            ),
           actions: [
             BlocBuilder<MemberDetailsCubit, MemberDetailsState>(
               builder: (context, state) {
@@ -711,8 +726,9 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
           },
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSubscriptionsTab(List<SubscriptionHistoryItem> subscriptions) {
     if (subscriptions.isEmpty) {

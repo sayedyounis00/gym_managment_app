@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gym_managment_app/app.dart';
 import 'package:gym_managment_app/core/database/app_database.dart';
 import 'package:gym_managment_app/core/di/injection_container.dart';
@@ -87,6 +88,95 @@ void main() {
     await tester.tap(find.text('خروج'));
     await tester.pumpAndSettle();
     expect(popCalled, isTrue);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('navigating to member details from dashboard pops back to dashboard',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const GymApp());
+    await tester.pumpAndSettle();
+
+    // Verify on Dashboard initially
+    var navBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+    expect(navBar.selectedIndex, 0);
+
+    // Push Member Details route from Dashboard
+    final BuildContext dashboardContext = tester.element(find.byType(NavigationBar));
+    dashboardContext.push(AppRoutes.memberDetailsPath(1));
+    await tester.pumpAndSettle();
+
+    expect(find.text('تفاصيل المشترك'), findsOneWidget);
+
+    // Back press returns to Dashboard
+    await appRouter.routerDelegate.popRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('تفاصيل المشترك'), findsNothing);
+    navBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+    expect(navBar.selectedIndex, 0);
+
+    // Pressing back on Dashboard now triggers the exit dialog
+    unawaited(appRouter.routerDelegate.popRoute());
+    await tester.pumpAndSettle();
+    expect(find.text('الخروج من التطبيق'), findsOneWidget);
+
+    // Dismiss dialog to clean up pending timers
+    await tester.tap(find.text('إلغاء'));
+    await tester.pumpAndSettle();
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('direct member details route with no history falls back to dashboard on back',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const GymApp());
+    await tester.pumpAndSettle();
+
+    // Directly navigate to member details (no prior history)
+    appRouter.go(AppRoutes.memberDetailsPath(1));
+    await tester.pumpAndSettle();
+
+    expect(find.text('تفاصيل المشترك'), findsOneWidget);
+
+    // Back press falls back to Dashboard rather than exiting directly
+    await appRouter.routerDelegate.popRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('تفاصيل المشترك'), findsNothing);
+    final navBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+    expect(navBar.selectedIndex, 0);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('standalone route about to exit triggers exit confirmation dialog',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const GymApp());
+    await tester.pumpAndSettle();
+
+    // Directly navigate to settings (no prior history)
+    appRouter.go(AppRoutes.settings);
+    await tester.pumpAndSettle();
+
+    expect(find.text('الإعدادات'), findsOneWidget);
+
+    // Back press triggers exit alert dialog
+    unawaited(appRouter.routerDelegate.popRoute());
+    await tester.pumpAndSettle();
+
+    expect(find.text('الخروج من التطبيق'), findsOneWidget);
+    expect(find.text('هل أنت متأكد من رغبتك في إغلاق التطبيق؟'), findsOneWidget);
+
+    // Dismissing stays on settings
+    await tester.tap(find.text('إلغاء'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('الخروج من التطبيق'), findsNothing);
+    expect(find.text('الإعدادات'), findsOneWidget);
 
     await tester.pumpWidget(const SizedBox());
     await tester.pumpAndSettle();

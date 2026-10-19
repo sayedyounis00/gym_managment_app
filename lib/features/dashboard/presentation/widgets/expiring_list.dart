@@ -8,6 +8,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/date_utils.dart';
 import '../../domain/entities/expiring_subscription.dart';
+import '../../../memberships/presentation/widgets/renew_bottom_sheet.dart';
 
 class ExpiringListSection extends StatelessWidget {
   final List<ExpiringSubscription> expiringSoon;
@@ -258,7 +259,11 @@ class ExpiringListSection extends StatelessWidget {
             if (onRenewTap != null) {
               onRenewTap!(item);
             } else {
-              _showMemberDetailsDialog(context, item);
+              RenewBottomSheet.show(
+                context,
+                memberId: item.memberId,
+                memberName: item.memberName,
+              );
             }
           },
           child: const Text('تجديد'),
@@ -284,7 +289,7 @@ class ExpiringListSection extends StatelessWidget {
           child: InkWell(
             onTap: () => onMemberTap != null
                 ? onMemberTap!(item)
-                : _showMemberDetailsDialog(context, item),
+                : context.push(AppRoutes.memberDetailsPath(item.memberId)),
             borderRadius: BorderRadius.circular(AppRadius.lg),
             child: Ink(
               padding: EdgeInsets.all(isNarrow ? AppSpacing.sm + 2 : AppSpacing.md),
@@ -450,60 +455,5 @@ class ExpiringListSection extends StatelessWidget {
       return parts[0].substring(0, 1);
     }
     return '?';
-  }
-
-  void _showMemberDetailsDialog(BuildContext context, ExpiringSubscription item) {
-    showDialog(
-      context: context,
-      barrierColor: AppColors.overlay,
-      builder: (ctx) => AlertDialog(
-        title: Text(item.memberName, style: AppTextStyles.titleLarge),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('الهاتف: ${item.phone}', style: AppTextStyles.bodyMedium),
-            const SizedBox(height: AppSpacing.xs),
-            Text('الباقة: ${item.packageName ?? "باقة عامة"}',
-                style: AppTextStyles.bodyMedium),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'تاريخ الانتهاء: ${AppDateUtils.formatShortDate(item.endDate)}',
-              style: AppTextStyles.bodyMedium,
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'المتبقي: ${item.daysLeft <= 0 ? "ينتهي اليوم" : "${item.daysLeft} أيام"}',
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: item.daysLeft <= 0 ? AppColors.error : AppColors.warning,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton.icon(
-            icon: const Icon(Symbols.call_rounded, size: 18),
-            label: const Text('اتصال'),
-            onPressed: () {
-              Navigator.pop(ctx);
-              _makeCall(context, item.phone);
-            },
-          ),
-          TextButton.icon(
-            icon: const Icon(Symbols.chat_bubble_outline_rounded, size: 18),
-            label: const Text('واتساب'),
-            onPressed: () {
-              Navigator.pop(ctx);
-              _openWhatsApp(context, item.phone);
-            },
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('إغلاق'),
-          ),
-        ],
-      ),
-    );
   }
 }
