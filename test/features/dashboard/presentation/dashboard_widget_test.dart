@@ -18,12 +18,13 @@ void main() {
       );
 
       expect(find.text('تنتهي قريباً (خلال 7 أيام)'), findsOneWidget);
-      expect(find.text('0 مشترك'), findsOneWidget);
+      expect(find.text('عرض الكل'), findsNothing);
       expect(find.text('جميع الاشتراكات سارية'), findsOneWidget);
       expect(find.text('لا توجد اشتراكات تنتهي خلال الـ 7 أيام القادمة.'), findsOneWidget);
     });
 
-    testWidgets('ExpiringListSection displays member items with badges', (tester) async {
+    testWidgets('ExpiringListSection displays member items with badges and View All button', (tester) async {
+      bool viewAllCalled = false;
       final expiringItems = [
         ExpiringSubscription(
           memberId: 1,
@@ -47,19 +48,59 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: SingleChildScrollView(
-              child: ExpiringListSection(expiringSoon: expiringItems),
+              child: ExpiringListSection(
+                expiringSoon: expiringItems,
+                onViewAllTap: () {
+                  viewAllCalled = true;
+                },
+              ),
             ),
           ),
         ),
       );
 
-      expect(find.text('2 مشترك'), findsOneWidget);
+      expect(find.text('عرض الكل'), findsOneWidget);
       expect(find.text('أحمد محمود'), findsOneWidget);
       expect(find.text('سارة علي'), findsOneWidget);
       expect(find.text('اليوم'), findsOneWidget);
       expect(find.text('3 أيام'), findsOneWidget);
       expect(find.byIcon(Symbols.call_rounded), findsNWidgets(2));
       expect(find.byIcon(Symbols.chat_bubble_outline_rounded), findsNWidgets(2));
+
+      await tester.tap(find.text('عرض الكل'));
+      await tester.pump();
+      expect(viewAllCalled, isTrue);
+    });
+
+    testWidgets('ExpiringListSection displays only the 3 closest expiring members when more exist', (tester) async {
+      final expiringItems = List.generate(
+        6,
+        (i) => ExpiringSubscription(
+          memberId: i + 1,
+          memberName: 'مشترك $i',
+          phone: '+20100000000$i',
+          endDate: DateTime.now().add(Duration(days: i)),
+          daysLeft: i,
+          packageName: 'باقة $i',
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: ExpiringListSection(expiringSoon: expiringItems),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('مشترك 0'), findsOneWidget);
+      expect(find.text('مشترك 1'), findsOneWidget);
+      expect(find.text('مشترك 2'), findsOneWidget);
+      expect(find.text('مشترك 3'), findsNothing);
+      expect(find.text('مشترك 4'), findsNothing);
+      expect(find.text('مشترك 5'), findsNothing);
     });
 
     testWidgets('FinanceSummaryCard handles negative-profit state correctly', (tester) async {

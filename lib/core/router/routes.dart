@@ -15,6 +15,7 @@ class AppRoutes {
   static const String backup = '/settings/backup';
 
   static String membersWithStatus(String status) => '/members?status=$status';
+  static String membersExpiringSoon() => membersWithStatus('expiringSoon');
   static String memberDetailsPath(int id) => '/members/$id';
   static String editMemberPath(int id) => '/members/$id/edit';
   static String editPackagePath(int id) => '/memberships/package/$id/edit';

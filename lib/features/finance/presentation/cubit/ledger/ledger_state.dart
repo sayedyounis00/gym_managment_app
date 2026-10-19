@@ -33,6 +33,9 @@ final class LedgerLoaded extends LedgerState {
   final Map<DateTime, DailyTotal> dailyTotals;
   final LedgerType filter;
   final DateTime selectedMonth;
+  final bool hasMore;
+  final bool isLoadingMore;
+  final int totalCount;
 
   const LedgerLoaded({
     required this.entries,
@@ -40,7 +43,32 @@ final class LedgerLoaded extends LedgerState {
     required this.dailyTotals,
     required this.filter,
     required this.selectedMonth,
-  });
+    this.hasMore = false,
+    this.isLoadingMore = false,
+    int? totalCount,
+  }) : totalCount = totalCount ?? entries.length;
+
+  LedgerLoaded copyWith({
+    List<LedgerEntry>? entries,
+    Map<DateTime, List<LedgerEntry>>? groupedByDay,
+    Map<DateTime, DailyTotal>? dailyTotals,
+    LedgerType? filter,
+    DateTime? selectedMonth,
+    bool? hasMore,
+    bool? isLoadingMore,
+    int? totalCount,
+  }) {
+    return LedgerLoaded(
+      entries: entries ?? this.entries,
+      groupedByDay: groupedByDay ?? this.groupedByDay,
+      dailyTotals: dailyTotals ?? this.dailyTotals,
+      filter: filter ?? this.filter,
+      selectedMonth: selectedMonth ?? this.selectedMonth,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      totalCount: totalCount ?? this.totalCount,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -49,6 +77,9 @@ final class LedgerLoaded extends LedgerState {
         dailyTotals,
         filter,
         selectedMonth,
+        hasMore,
+        isLoadingMore,
+        totalCount,
       ];
 }
 

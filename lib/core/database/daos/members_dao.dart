@@ -61,6 +61,21 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
           ? ArabicSearchUtils.normalizePhone(query)
           : null;
 
+      final allSubRows = await (select(subscriptions)
+            ..orderBy([(s) => OrderingTerm.desc(s.endDate)]))
+          .join([
+        leftOuterJoin(packages, packages.id.equalsExp(subscriptions.packageId)),
+      ]).get();
+
+      final Map<int, ({Subscription sub, Package? package})> latestSubs = {};
+      for (final row in allSubRows) {
+        final sub = row.readTable(subscriptions);
+        latestSubs.putIfAbsent(
+          sub.memberId,
+          () => (sub: sub, package: row.readTableOrNull(packages)),
+        );
+      }
+
       for (final m in allMembers) {
         // Search filter matching
         if (cleanQuery != null) {
@@ -76,23 +91,9 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
           }
         }
 
-        // Fetch latest subscription for this member
-        final subQuery = (select(subscriptions)
-              ..where((s) => s.memberId.equals(m.id))
-              ..orderBy([(s) => OrderingTerm.desc(s.endDate)])
-              ..limit(1))
-            .join([
-          leftOuterJoin(packages, packages.id.equalsExp(subscriptions.packageId)),
-        ]);
-
-        final subRows = await subQuery.get();
-        Subscription? latestSub;
-        Package? latestPackage;
-
-        if (subRows.isNotEmpty) {
-          latestSub = subRows.first.readTable(subscriptions);
-          latestPackage = subRows.first.readTableOrNull(packages);
-        }
+        final subData = latestSubs[m.id];
+        final latestSub = subData?.sub;
+        final latestPackage = subData?.package;
 
         // Resolve status
         final status = resolveMemberStatus(

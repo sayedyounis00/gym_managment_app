@@ -8,6 +8,7 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/widgets/empty_state.dart';
+import '../../../../core/widgets/paginated_bottom_loader.dart';
 import '../../../../core/widgets/segmented_selector.dart';
 import '../../domain/entities/daily_total.dart';
 import '../../domain/entities/finance_enums.dart';
@@ -112,7 +113,15 @@ class _FinanceView extends StatelessWidget {
             context.read<LedgerCubit>().setMonth(month);
             context.read<BalancesCubit>().load();
           },
-          child: CustomScrollView(
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              if (notification.metrics.pixels >=
+                  notification.metrics.maxScrollExtent - 200) {
+                context.read<LedgerCubit>().loadMore();
+              }
+              return false;
+            },
+            child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               // 1. Month Selector & 3-Cell Summary Card
@@ -457,6 +466,9 @@ class _FinanceView extends StatelessWidget {
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
+                            if (index == dayKeys.length) {
+                              return const PaginatedBottomLoader(isLoading: true);
+                            }
                             final dayKey = dayKeys[index];
                             final dayEntries = state.groupedByDay[dayKey] ?? [];
                             final dailyTotal = state.dailyTotals[dayKey] ??
@@ -469,7 +481,7 @@ class _FinanceView extends StatelessWidget {
                               dailyTotal: dailyTotal,
                             );
                           },
-                          childCount: dayKeys.length,
+                          childCount: dayKeys.length + (state.isLoadingMore ? 1 : 0),
                         ),
                       ),
                     );
@@ -482,8 +494,9 @@ class _FinanceView extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildDayGroup({
     required BuildContext context,

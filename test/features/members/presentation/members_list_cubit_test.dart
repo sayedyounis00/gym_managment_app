@@ -96,5 +96,47 @@ void main() {
         ),
       ],
     );
+
+    test('loads only first 10 members when 25 exist and loads more on loadMore()', () async {
+      final membersList = List.generate(
+        25,
+        (i) => MemberSummary(
+          id: i + 1,
+          name: 'مشترك $i',
+          phone: '0100000000$i',
+          status: MemberStatusType.active,
+        ),
+      );
+
+      when(() => mockGetMembers(any())).thenAnswer(
+        (_) => Stream.value(membersList),
+      );
+
+      final cubit = MembersListCubit(getMembers: mockGetMembers);
+      cubit.init();
+
+      await Future.delayed(Duration.zero);
+
+      expect(cubit.state, isA<MembersListLoaded>());
+      var loaded = cubit.state as MembersListLoaded;
+      expect(loaded.members.length, equals(10));
+      expect(loaded.totalCount, equals(25));
+      expect(loaded.hasMore, isTrue);
+      expect(loaded.isLoadingMore, isFalse);
+
+      // Trigger loadMore
+      final loadMoreFuture = cubit.loadMore();
+      expect((cubit.state as MembersListLoaded).isLoadingMore, isTrue);
+
+      await loadMoreFuture;
+
+      loaded = cubit.state as MembersListLoaded;
+      expect(loaded.members.length, equals(20));
+      expect(loaded.totalCount, equals(25));
+      expect(loaded.hasMore, isTrue);
+      expect(loaded.isLoadingMore, isFalse);
+
+      cubit.close();
+    });
   });
 }

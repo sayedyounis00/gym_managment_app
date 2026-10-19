@@ -18,11 +18,33 @@ class PackagesLoading extends PackagesState {
 
 class PackagesLoaded extends PackagesState {
   final List<MembershipPackage> packages;
+  final bool hasMore;
+  final bool isLoadingMore;
+  final int totalCount;
 
-  const PackagesLoaded(this.packages);
+  const PackagesLoaded(
+    this.packages, {
+    this.hasMore = false,
+    this.isLoadingMore = false,
+    int? totalCount,
+  }) : totalCount = totalCount ?? packages.length;
+
+  PackagesLoaded copyWith({
+    List<MembershipPackage>? packages,
+    bool? hasMore,
+    bool? isLoadingMore,
+    int? totalCount,
+  }) {
+    return PackagesLoaded(
+      packages ?? this.packages,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      totalCount: totalCount ?? this.totalCount,
+    );
+  }
 
   @override
-  List<Object?> get props => [packages];
+  List<Object?> get props => [packages, hasMore, isLoadingMore, totalCount];
 }
 
 class PackagesEmpty extends PackagesState {
