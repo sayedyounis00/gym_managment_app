@@ -63,17 +63,26 @@ class MembershipsDao extends DatabaseAccessor<AppDatabase> with _$MembershipsDao
     );
   }
 
-  Future<bool> hasSubscriptions(int packageId) async {
+  Future<int> countSubscriptionsForPackage(int packageId) async {
     final count = subscriptions.id.count();
     final query = selectOnly(subscriptions)
       ..addColumns([count])
       ..where(subscriptions.packageId.equals(packageId));
     final result = await query.map((r) => r.read(count)).getSingle();
-    return (result ?? 0) > 0;
+    return result ?? 0;
+  }
+
+  Future<bool> hasSubscriptions(int packageId) async {
+    final count = await countSubscriptionsForPackage(packageId);
+    return count > 0;
   }
 
   Future<int> deletePackage(int id) {
-    return (delete(packages)..where((p) => p.id.equals(id))).go();
+    return transaction(() async {
+      await (update(subscriptions)..where((s) => s.packageId.equals(id)))
+          .write(const SubscriptionsCompanion(packageId: Value(null)));
+      return (delete(packages)..where((p) => p.id.equals(id))).go();
+    });
   }
 
   Future<Subscription?> getLatestSubscription(int memberId) {
@@ -124,8 +133,16 @@ class MembershipsDao extends DatabaseAccessor<AppDatabase> with _$MembershipsDao
             .write(const SubscriptionsCompanion(status: Value('expired')));
       }
 
-      // 2. Insert new subscription
-      final newSubId = await into(subscriptions).insert(subscription);
+      // 2. Insert new subscription (ensuring trackAttendance snapshot is copied if not already provided)
+      var subToInsert = subscription;
+      if (!subscription.trackAttendance.present && subscription.packageId.value != null) {
+        final pkg = await (select(packages)..where((p) => p.id.equals(subscription.packageId.value!))).getSingleOrNull();
+        if (pkg != null) {
+          subToInsert = subToInsert.copyWith(trackAttendance: Value(pkg.trackAttendance));
+        }
+      }
+
+      final newSubId = await into(subscriptions).insert(subToInsert);
 
       // 3. Insert payment row if payment provided
       if (payment != null) {

@@ -8,6 +8,7 @@ import 'tables/installments_table.dart';
 import 'tables/payments_table.dart';
 import 'tables/expenses_table.dart';
 import 'tables/member_notes_table.dart';
+import 'tables/attendance_logs_table.dart';
 import 'daos/dashboard_dao.dart';
 import 'daos/members_dao.dart';
 import 'daos/notes_dao.dart';
@@ -15,6 +16,7 @@ import 'daos/memberships_dao.dart';
 import 'daos/payments_dao.dart';
 import 'daos/expenses_dao.dart';
 import 'daos/finance_dao.dart';
+import 'daos/attendance_dao.dart';
 
 part 'app_database.g.dart';
 
@@ -28,6 +30,7 @@ part 'app_database.g.dart';
     Payments,
     Expenses,
     MemberNotes,
+    AttendanceLogs,
   ],
   daos: [
     DashboardDao,
@@ -37,6 +40,7 @@ part 'app_database.g.dart';
     PaymentsDao,
     ExpensesDao,
     FinanceDao,
+    AttendanceDao,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -44,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
       : super(e ?? driftDatabase(name: 'gym_management_app'));
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -165,6 +169,15 @@ class AppDatabase extends _$AppDatabase {
             await safeAddColumn('expenses', 'created_at', 'INTEGER NOT NULL DEFAULT 0');
             await safeAddColumn('expenses', 'voided_at', 'INTEGER');
           }
+          if (from < 8) {
+            await safeAddColumn('packages', 'track_attendance', 'INTEGER NOT NULL DEFAULT 0');
+            await safeAddColumn('subscriptions', 'track_attendance', 'INTEGER NOT NULL DEFAULT 0');
+            await m.createTable(attendanceLogs);
+            await customStatement('CREATE UNIQUE INDEX IF NOT EXISTS idx_attendance_logs_sub_attended ON attendance_logs (subscription_id, attended_on);');
+            await customStatement('CREATE INDEX IF NOT EXISTS idx_attendance_logs_member_id ON attendance_logs (member_id);');
+            await customStatement('CREATE INDEX IF NOT EXISTS idx_attendance_logs_subscription_id ON attendance_logs (subscription_id);');
+            await customStatement('CREATE INDEX IF NOT EXISTS idx_attendance_logs_attended_on ON attendance_logs (attended_on);');
+          }
         },
         beforeOpen: (details) async {
           await customStatement('DROP TABLE IF EXISTS attendance;');
@@ -176,6 +189,7 @@ class AppDatabase extends _$AppDatabase {
   Future<void> clearAllData() async {
     await customStatement('DROP TABLE IF EXISTS attendance;');
     await customStatement('PRAGMA foreign_keys = OFF;');
+    await delete(attendanceLogs).go();
     await delete(memberNotes).go();
     await delete(payments).go();
     await delete(installments).go();

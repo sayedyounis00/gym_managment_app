@@ -7,6 +7,7 @@ class MembershipPackage extends Equatable {
   final int durationValue;
   final String durationUnit; // 'days' | 'months'
   final bool isActive;
+  final bool trackAttendance;
   final DateTime createdAt;
 
   const MembershipPackage({
@@ -16,6 +17,7 @@ class MembershipPackage extends Equatable {
     required this.durationValue,
     required this.durationUnit,
     this.isActive = true,
+    this.trackAttendance = false,
     required this.createdAt,
   });
 
@@ -45,6 +47,7 @@ class MembershipPackage extends Equatable {
     int? durationValue,
     String? durationUnit,
     bool? isActive,
+    bool? trackAttendance,
     DateTime? createdAt,
   }) {
     return MembershipPackage(
@@ -54,6 +57,7 @@ class MembershipPackage extends Equatable {
       durationValue: durationValue ?? this.durationValue,
       durationUnit: durationUnit ?? this.durationUnit,
       isActive: isActive ?? this.isActive,
+      trackAttendance: trackAttendance ?? this.trackAttendance,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -66,6 +70,7 @@ class MembershipPackage extends Equatable {
         durationValue,
         durationUnit,
         isActive,
+        trackAttendance,
         createdAt,
       ];
 }

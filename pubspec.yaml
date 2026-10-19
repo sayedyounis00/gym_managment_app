@@ -43,6 +43,7 @@ dependencies:
   share_plus: ^13.3.1
   simple_clean_navbar: ^1.1.1
   skeletonizer: ^3.0.0
+  table_calendar: ^3.3.0
   timezone: ^0.11.2
   url_launcher: ^6.3.3
   uuid: ^4.6.0

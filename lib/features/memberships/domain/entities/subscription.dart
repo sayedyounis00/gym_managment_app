@@ -17,6 +17,7 @@ class Subscription extends Equatable {
   final DateTime? pausedAt;
   final String? pauseReason;
   final int totalPausedDays;
+  final bool trackAttendance;
   final double amountPaid;
   final DateTime createdAt;
   final List<SubscriptionPeriod> periods;
@@ -34,6 +35,7 @@ class Subscription extends Equatable {
     this.pausedAt,
     this.pauseReason,
     this.totalPausedDays = 0,
+    this.trackAttendance = false,
     this.amountPaid = 0.0,
     required this.createdAt,
     this.periods = const [],
@@ -146,6 +148,7 @@ class Subscription extends Equatable {
     String? pauseReason,
     bool clearPauseReason = false,
     int? totalPausedDays,
+    bool? trackAttendance,
     double? amountPaid,
     DateTime? createdAt,
     List<SubscriptionPeriod>? periods,
@@ -163,6 +166,7 @@ class Subscription extends Equatable {
       pausedAt: clearPausedAt ? null : (pausedAt ?? this.pausedAt),
       pauseReason: clearPauseReason ? null : (pauseReason ?? this.pauseReason),
       totalPausedDays: totalPausedDays ?? this.totalPausedDays,
+      trackAttendance: trackAttendance ?? this.trackAttendance,
       amountPaid: amountPaid ?? this.amountPaid,
       createdAt: createdAt ?? this.createdAt,
       periods: periods ?? this.periods,
@@ -183,6 +187,7 @@ class Subscription extends Equatable {
         pausedAt,
         pauseReason,
         totalPausedDays,
+        trackAttendance,
         amountPaid,
         createdAt,
         periods,
