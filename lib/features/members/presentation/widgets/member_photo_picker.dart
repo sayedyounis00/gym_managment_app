@@ -98,92 +98,104 @@ class MemberPhotoPicker extends StatelessWidget {
                   style: AppTextStyles.titleMedium,
                 ),
                 const SizedBox(height: AppSpacing.md),
-                ListTile(
-                  leading: const Icon(
-                    Icons.camera_alt_rounded,
-                    color: AppColors.primary,
-                  ),
-                  title: Text(
-                    'التقاط صورة بالكاميرا',
-                    style: AppTextStyles.bodyLarge,
-                  ),
-                  onTap: () async {
-                    Navigator.of(ctx).pop();
-                    final photo = await picker.pickImage(
-                      source: ImageSource.camera,
-                      maxWidth: 1200,
-                      maxHeight: 1200,
-                      imageQuality: 85,
-                    );
-                    if (photo != null) {
-                      final cropped = await _cropImage(photo.path);
-                      if (cropped != null) {
-                        onPhotoSelected(cropped);
-                      }
-                    }
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(
-                    Icons.photo_library_rounded,
-                    color: AppColors.primary,
-                  ),
-                  title: Text(
-                    'اختيار من المعرض',
-                    style: AppTextStyles.bodyLarge,
-                  ),
-                  onTap: () async {
-                    Navigator.of(ctx).pop();
-                    final photo = await picker.pickImage(
-                      source: ImageSource.gallery,
-                      maxWidth: 1200,
-                      maxHeight: 1200,
-                      imageQuality: 85,
-                    );
-                    if (photo != null) {
-                      final cropped = await _cropImage(photo.path);
-                      if (cropped != null) {
-                        onPhotoSelected(cropped);
-                      }
-                    }
-                  },
-                ),
-                if (newPhotoFile != null || (existingPhotoPath != null && existingPhotoPath!.isNotEmpty)) ...[
-                  ListTile(
+                Material(
+                  color: Colors.transparent,
+                  child: ListTile(
                     leading: const Icon(
-                      Icons.fullscreen_rounded,
+                      Icons.camera_alt_rounded,
                       color: AppColors.primary,
                     ),
                     title: Text(
-                      'عرض الصورة بالحجم الكامل',
+                      'التقاط صورة بالكاميرا',
                       style: AppTextStyles.bodyLarge,
                     ),
-                    onTap: () {
+                    onTap: () async {
                       Navigator.of(ctx).pop();
-                      ImagePreviewDialog.show(
-                        context,
-                        file: newPhotoFile,
-                        imagePath: existingPhotoPath,
-                        title: name.isNotEmpty ? name : 'صورة المشترك',
+                      final photo = await picker.pickImage(
+                        source: ImageSource.camera,
+                        maxWidth: 1200,
+                        maxHeight: 1200,
+                        imageQuality: 85,
                       );
+                      if (photo != null) {
+                        final cropped = await _cropImage(photo.path);
+                        if (cropped != null) {
+                          onPhotoSelected(cropped);
+                        }
+                      }
                     },
                   ),
-                  const Divider(color: AppColors.border),
-                  ListTile(
+                ),
+                Material(
+                  color: Colors.transparent,
+                  child: ListTile(
                     leading: const Icon(
-                      Icons.delete_outline_rounded,
-                      color: AppColors.error,
+                      Icons.photo_library_rounded,
+                      color: AppColors.primary,
                     ),
                     title: Text(
-                      'حذف الصورة',
-                      style: AppTextStyles.bodyLarge.copyWith(
+                      'اختيار من المعرض',
+                      style: AppTextStyles.bodyLarge,
+                    ),
+                    onTap: () async {
+                      Navigator.of(ctx).pop();
+                      final photo = await picker.pickImage(
+                        source: ImageSource.gallery,
+                        maxWidth: 1200,
+                        maxHeight: 1200,
+                        imageQuality: 85,
+                      );
+                      if (photo != null) {
+                        final cropped = await _cropImage(photo.path);
+                        if (cropped != null) {
+                          onPhotoSelected(cropped);
+                        }
+                      }
+                    },
+                  ),
+                ),
+                if (newPhotoFile != null || (existingPhotoPath != null && existingPhotoPath!.isNotEmpty)) ...[
+                  Material(
+                    color: Colors.transparent,
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.fullscreen_rounded,
+                        color: AppColors.primary,
+                      ),
+                      title: Text(
+                        'عرض الصورة بالحجم الكامل',
+                        style: AppTextStyles.bodyLarge,
+                      ),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        ImagePreviewDialog.show(
+                          context,
+                          file: newPhotoFile,
+                          imagePath: existingPhotoPath,
+                          title: name.isNotEmpty ? name : 'صورة المشترك',
+                        );
+                      },
+                    ),
+                  ),
+                  const Divider(color: AppColors.border),
+                  Material(
+                    color: Colors.transparent,
+                    child: ListTile(
+                      leading: const Icon(
+                        Icons.delete_outline_rounded,
                         color: AppColors.error,
                       ),
+                      title: Text(
+                        'حذف الصورة',
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: AppColors.error,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.of(ctx).pop();
+                        onPhotoRemoved();
+                      },
                     ),
-                    onTap: () {
-                      Navigator.of(ctx).pop();
-                      onPhotoRemoved();
-                    },
                   ),
                 ],
               ],

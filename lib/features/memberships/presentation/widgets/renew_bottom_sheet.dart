@@ -94,39 +94,42 @@ class RenewBottomSheet extends StatelessWidget {
                       final pkg = packages[index];
                       final isSelected = pkg.id == selected?.id;
 
-                      return ListTile(
-                        onTap: () {
-                          context.read<RenewCubit>().selectPackage(pkg);
-                          Navigator.of(pickerCtx).pop();
-                        },
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: isSelected ? AppColors.primaryLight : AppColors.secondaryLight,
-                            shape: BoxShape.circle,
+                      return Material(
+                        color: Colors.transparent,
+                        child: ListTile(
+                          onTap: () {
+                            context.read<RenewCubit>().selectPackage(pkg);
+                            Navigator.of(pickerCtx).pop();
+                          },
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? AppColors.primaryLight : AppColors.secondaryLight,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.card_membership_rounded,
+                              color: isSelected ? AppColors.primary : AppColors.secondary,
+                              size: 20,
+                            ),
                           ),
-                          child: Icon(
-                            Icons.card_membership_rounded,
-                            color: isSelected ? AppColors.primary : AppColors.secondary,
-                            size: 20,
+                          title: Text(
+                            pkg.name,
+                            style: AppTextStyles.titleSmall.copyWith(
+                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        title: Text(
-                          pkg.name,
-                          style: AppTextStyles.titleSmall.copyWith(
-                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                          subtitle: Text(
+                            pkg.formattedDuration,
+                            style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
                           ),
-                        ),
-                        subtitle: Text(
-                          pkg.formattedDuration,
-                          style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
-                        ),
-                        trailing: Text(
-                          CurrencyFormatter.format(pkg.price),
-                          style: AppTextStyles.titleMedium.copyWith(
-                            color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                            fontWeight: FontWeight.w700,
+                          trailing: Text(
+                            CurrencyFormatter.format(pkg.price),
+                            style: AppTextStyles.titleMedium.copyWith(
+                              color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       );
