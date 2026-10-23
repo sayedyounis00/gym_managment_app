@@ -10,6 +10,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/database/daos/finance_dao.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/utils/date_utils.dart';
 import '../../domain/entities/daily_total.dart';
 import '../../domain/entities/finance_enums.dart';
 import '../../domain/entities/finance_summary.dart';
@@ -124,7 +125,7 @@ class FinanceRepositoryImpl implements FinanceRepository {
         ),
       );
 
-      final monthName = DateFormat('MMMM yyyy', 'ar').format(month);
+      final monthName = AppDateUtils.formatMonthYear(month);
       final generatedAt = DateFormat('yyyy/MM/dd - hh:mm a', 'ar').format(DateTime.now());
 
       doc.addPage(

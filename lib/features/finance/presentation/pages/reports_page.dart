@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/utils/date_utils.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/segmented_selector.dart';
 import '../cubit/reports/reports_cubit.dart';
@@ -123,7 +124,7 @@ class _ReportsView extends StatelessWidget {
     return BlocBuilder<ReportsCubit, ReportsState>(
       builder: (context, state) {
         final cubit = context.read<ReportsCubit>();
-        final monthLabel = DateFormat('MMMM yyyy', 'ar').format(state.selectedMonth);
+        final monthLabel = AppDateUtils.formatMonthYear(state.selectedMonth);
 
         return Scaffold(
           backgroundColor: AppColors.background,

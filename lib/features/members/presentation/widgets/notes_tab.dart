@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:gym_managment_app/core/theme/app_colors.dart';
 import 'package:gym_managment_app/core/theme/app_spacing.dart';
 import 'package:gym_managment_app/core/theme/app_text_styles.dart';
+import 'package:gym_managment_app/core/utils/date_utils.dart';
 import 'package:gym_managment_app/core/widgets/confirm_dialog.dart';
 import 'package:gym_managment_app/features/members/domain/entities/member_note.dart';
 
@@ -147,7 +147,7 @@ class NotesTab extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.sm),
             itemBuilder: (context, index) {
               final note = notes[index];
-              final dateFormat = DateFormat('d MMMM yyyy - hh:mm a', 'ar');
+              final formattedDate = AppDateUtils.formatDateTime(note.createdAt);
 
               return Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -176,7 +176,7 @@ class NotesTab extends StatelessWidget {
                         const SizedBox(width: AppSpacing.xs),
                         Expanded(
                           child: Text(
-                            dateFormat.format(note.createdAt),
+                            formattedDate,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textSecondary,
                             ),

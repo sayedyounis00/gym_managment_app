@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/utils/date_utils.dart';
 import '../../../../core/widgets/empty_state.dart';
 import '../../../../core/widgets/paginated_bottom_loader.dart';
 import '../../../../core/widgets/segmented_selector.dart';
@@ -141,7 +142,7 @@ class _FinanceView extends StatelessWidget {
                       BlocBuilder<FinanceOverviewCubit, FinanceOverviewState>(
                         builder: (context, state) {
                           final selectedMonth = context.read<FinanceOverviewCubit>().selectedMonth;
-                          final monthLabel = DateFormat('MMMM yyyy', 'ar').format(selectedMonth);
+                          final monthLabel = AppDateUtils.formatMonthYear(selectedMonth);
 
                           return Container(
                             height: 44,
@@ -249,17 +250,20 @@ class _FinanceView extends StatelessWidget {
                           AppSpacing.lg,
                           AppSpacing.sm,
                         ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.surface,
+                        child: Material(
+                          color: AppColors.surface,
+                          shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(AppRadius.lg),
-                            border: Border.all(color: AppColors.border),
+                            side: const BorderSide(color: AppColors.border),
                           ),
+                          clipBehavior: Clip.antiAlias,
                           child: Theme(
                             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
                             child: ExpansionTile(
                               initiallyExpanded: true,
                               tilePadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                              shape: const RoundedRectangleBorder(side: BorderSide.none),
+                              collapsedShape: const RoundedRectangleBorder(side: BorderSide.none),
                               leading: Container(
                                 padding: const EdgeInsets.all(6),
                                 decoration: const BoxDecoration(
@@ -508,8 +512,8 @@ class _FinanceView extends StatelessWidget {
     final now = DateTime.now();
     final isToday = day.year == now.year && day.month == now.month && day.day == now.day;
     final dayLabel = isToday
-        ? 'اليوم - ${DateFormat('d MMMM yyyy', 'ar').format(day)}'
-        : DateFormat('EEEE، d MMMM yyyy', 'ar').format(day);
+        ? 'اليوم - ${AppDateUtils.formatShortDate(day)}'
+        : '${DateFormat('EEEE', 'ar').format(day)}، ${AppDateUtils.formatShortDate(day)}';
 
     final netPrefix = dailyTotal.net > 0 ? '+' : '';
     final netColor = dailyTotal.net >= 0 ? AppColors.success : AppColors.error;

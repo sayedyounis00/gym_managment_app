@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
+import '../utils/date_utils.dart';
 
 class DateField extends StatelessWidget {
   final String label;
@@ -54,7 +54,7 @@ class DateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formattedDate = DateFormat('d MMMM yyyy', 'ar').format(value);
+    final formattedDate = AppDateUtils.formatShortDate(value);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
