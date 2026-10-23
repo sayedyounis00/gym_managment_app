@@ -4,6 +4,7 @@ import '../database/app_database.dart';
 import '../database/daos/dashboard_dao.dart';
 import '../database/daos/members_dao.dart';
 import '../database/daos/notes_dao.dart';
+import '../database/daos/attendance_dao.dart';
 import '../services/image_storage_service.dart';
 import '../services/notification_service.dart';
 
@@ -26,6 +27,7 @@ import '../../features/dashboard/data/repositories/dashboard_repository_impl.dar
 import '../../features/dashboard/domain/repositories/dashboard_repository.dart';
 import '../../features/dashboard/domain/usecases/get_dashboard_summary.dart';
 import '../../features/dashboard/presentation/cubit/dashboard_cubit.dart';
+import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
 
 import '../../features/members/data/repositories/members_repository_impl.dart';
 import '../../features/members/data/repositories/notes_repository_impl.dart';
@@ -43,6 +45,7 @@ import '../../features/members/presentation/cubit/members_list/members_list_cubi
 import '../../features/members/presentation/cubit/member_form/member_form_cubit.dart';
 import '../../features/members/presentation/cubit/member_details/member_details_cubit.dart';
 import '../../features/members/presentation/cubit/member_notes/member_notes_cubit.dart';
+import '../../features/members/presentation/cubit/attendance/attendance_cubit.dart';
 
 import '../database/daos/memberships_dao.dart';
 import '../../features/memberships/data/datasources/memberships_local_datasource.dart';
@@ -56,6 +59,7 @@ import '../../features/memberships/domain/usecases/pause_subscription.dart';
 import '../../features/memberships/domain/usecases/resume_subscription.dart';
 import '../../features/memberships/domain/usecases/get_member_subscriptions.dart';
 import '../../features/memberships/domain/usecases/delete_subscription.dart';
+import '../../features/memberships/domain/usecases/end_subscription.dart';
 import '../../features/memberships/domain/usecases/schedule_expiry_notifications.dart';
 import '../../features/memberships/presentation/cubit/packages/packages_cubit.dart';
 import '../../features/memberships/presentation/cubit/package_form/package_form_cubit.dart';
@@ -135,6 +139,10 @@ Future<void> initDependencies({
 
   if (!sl.isRegistered<FinanceDao>()) {
     sl.registerSingleton<FinanceDao>(FinanceDao(sl<AppDatabase>()));
+  }
+
+  if (!sl.isRegistered<AttendanceDao>()) {
+    sl.registerSingleton<AttendanceDao>(AttendanceDao(sl<AppDatabase>()));
   }
 
   // Services
@@ -263,6 +271,7 @@ Future<void> initDependencies({
         deleteMember: sl<DeleteMember>(),
         recordPaymentUseCase: sl<RecordPayment>(),
         deleteSubscriptionUseCase: sl<DeleteSubscription>(),
+        endSubscriptionUseCase: sl<EndSubscription>(),
       ),
     );
   }
@@ -275,6 +284,18 @@ Future<void> initDependencies({
         updateNote: sl<UpdateNote>(),
         deleteNote: sl<DeleteNote>(),
       ),
+    );
+  }
+
+  if (!sl.isRegistered<AttendanceCubit>()) {
+    sl.registerFactory<AttendanceCubit>(
+      () => AttendanceCubit(attendanceDao: sl<AttendanceDao>()),
+    );
+  }
+
+  if (!sl.isRegistered<NotificationsCubit>()) {
+    sl.registerFactory<NotificationsCubit>(
+      () => NotificationsCubit(membersRepository: sl<MembersRepository>()),
     );
   }
 
@@ -328,6 +349,10 @@ Future<void> initDependencies({
     sl.registerLazySingleton<DeleteSubscription>(() => DeleteSubscription(sl<MembershipsRepository>()));
   }
 
+  if (!sl.isRegistered<EndSubscription>()) {
+    sl.registerLazySingleton<EndSubscription>(() => EndSubscription(sl<MembershipsRepository>()));
+  }
+
   if (!sl.isRegistered<GetExpiringSubscriptions>()) {
     sl.registerLazySingleton<GetExpiringSubscriptions>(() => GetExpiringSubscriptions(sl<MembershipsRepository>()));
   }
@@ -354,6 +379,7 @@ Future<void> initDependencies({
       () => PackageFormCubit(
         savePackage: sl<SavePackage>(),
         getPackages: sl<GetPackages>(),
+        deletePackage: sl<DeletePackage>(),
       ),
     );
   }

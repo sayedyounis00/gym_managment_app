@@ -1,4 +1,5 @@
 class AppRoutes {
+  static const String splash = '/splash';
   static const String dashboard = '/';
   static const String members = '/members';
   static const String addMember = '/members/new';
@@ -13,6 +14,7 @@ class AppRoutes {
   static const String financeReports = '/finance/reports';
   static const String settings = '/settings';
   static const String backup = '/settings/backup';
+  static const String notifications = '/notifications';
 
   static String membersWithStatus(String status) => '/members?status=$status';
   static String membersExpiringSoon() => membersWithStatus('expiringSoon');

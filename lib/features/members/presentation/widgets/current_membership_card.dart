@@ -12,6 +12,7 @@ class CurrentMembershipCard extends StatelessWidget {
   final MemberStatusType status;
   final VoidCallback onRenew;
   final VoidCallback? onDelete;
+  final VoidCallback? onEndSubscription;
 
   const CurrentMembershipCard({
     super.key,
@@ -19,6 +20,7 @@ class CurrentMembershipCard extends StatelessWidget {
     required this.status,
     required this.onRenew,
     this.onDelete,
+    this.onEndSubscription,
   });
 
   @override
@@ -80,6 +82,7 @@ class CurrentMembershipCard extends StatelessWidget {
     }
 
     final sub = subscription!;
+    final isPayAsYouGo = sub.isPayAsYouGo;
     final now = DateTime.now();
     final today = AppDateUtils.startOfDay(now);
     final start = AppDateUtils.startOfDay(sub.startDate);
@@ -134,14 +137,46 @@ class CurrentMembershipCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      sub.packageName,
-                      style: AppTextStyles.titleMedium,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            sub.packageName,
+                            style: AppTextStyles.titleMedium,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isPayAsYouGo) ...[
+                          const SizedBox(width: AppSpacing.xs),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryLight,
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.full),
+                            ),
+                            child: Text(
+                              'حسب الاستخدام (يومي)',
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.primaryDark,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     Text(
-                      '${AppDateUtils.formatShortDate(sub.startDate)}  ←  ${AppDateUtils.formatShortDate(sub.endDate)}',
+                      isPayAsYouGo
+                          ? (status == MemberStatusType.expired
+                              ? 'من ${AppDateUtils.formatShortDate(sub.startDate)}  ←  انتهى ${AppDateUtils.formatShortDate(sub.endDate)}'
+                              : 'بدأ في ${AppDateUtils.formatShortDate(sub.startDate)}  ·  مفتوح حتى الإنهاء')
+                          : '${AppDateUtils.formatShortDate(sub.startDate)}  ←  ${AppDateUtils.formatShortDate(sub.endDate)}',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -166,51 +201,209 @@ class CurrentMembershipCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.full),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: AppColors.surfaceVariant,
-              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                daysRemaining < 0
-                    ? 'انتهى منذ ${daysRemaining.abs()} يوم'
-                    : daysRemaining == 0
-                        ? 'ينتهي اليوم'
-                        : 'باقي $daysRemaining يوم',
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: progressColor,
-                  fontWeight: FontWeight.w600,
+          if (isPayAsYouGo) ...[
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm + 2),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceVariant.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(
+                  color: AppColors.border.withValues(alpha: 0.6),
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              child: Column(
                 children: [
-                  Text(
-                    'المدفوع: ${CurrencyFormatter.format(sub.paidAmount)} / ${CurrencyFormatter.format(sub.price)}',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  if (sub.remainingAmount > 0)
-                    Text(
-                      'متبقي: ${CurrencyFormatter.format(sub.remainingAmount)}',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.error,
-                        fontWeight: FontWeight.w700,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.event_available_rounded,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'أيام الحضور: ',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            '${sub.attendedDaysCount} يوم',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+                      Row(
+                        children: [
+                          Text(
+                            'سعر اليوم: ',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          Text(
+                            CurrencyFormatter.format(sub.dailyRate),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: AppSpacing.xs + 2),
+                    child: Divider(height: 1, thickness: 0.5),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'المطلوب',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            CurrencyFormatter.format(sub.price),
+                            style: AppTextStyles.titleMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'المدفوع',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            CurrencyFormatter.format(sub.paidAmount),
+                            style: AppTextStyles.titleMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.success,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'المتبقي',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            CurrencyFormatter.format(sub.remainingAmount),
+                            style: AppTextStyles.titleMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: sub.remainingAmount > 0
+                                  ? AppColors.error
+                                  : AppColors.success,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ],
               ),
+            ),
+            if (status == MemberStatusType.active &&
+                onEndSubscription != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: onEndSubscription,
+                  icon: const Icon(
+                    Icons.stop_circle_outlined,
+                    size: 16,
+                    color: AppColors.warning,
+                  ),
+                  label: const Text(
+                    'إنهاء الاشتراك اليومي',
+                    style: TextStyle(
+                      color: AppColors.warning,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.warning),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
+              ),
             ],
-          ),
+          ] else ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.full),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 8,
+                backgroundColor: AppColors.surfaceVariant,
+                valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  daysRemaining < 0
+                      ? 'انتهى منذ ${daysRemaining.abs()} يوم'
+                      : daysRemaining == 0
+                          ? 'ينتهي اليوم'
+                          : 'باقي $daysRemaining يوم',
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: progressColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'المدفوع: ${CurrencyFormatter.format(sub.paidAmount)} / ${CurrencyFormatter.format(sub.price)}',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    if (sub.remainingAmount > 0)
+                      Text(
+                        'متبقي: ${CurrencyFormatter.format(sub.remainingAmount)}',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

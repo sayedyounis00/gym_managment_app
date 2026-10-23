@@ -12,6 +12,7 @@ import 'package:gym_managment_app/features/members/domain/usecases/toggle_member
 import 'package:gym_managment_app/features/members/presentation/cubit/member_details/member_details_cubit.dart';
 import 'package:gym_managment_app/features/members/presentation/cubit/member_details/member_details_state.dart';
 import 'package:gym_managment_app/features/memberships/domain/usecases/delete_subscription.dart';
+import 'package:gym_managment_app/features/memberships/domain/usecases/end_subscription.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockGetMemberDetails extends Mock implements GetMemberDetails {}
@@ -19,6 +20,7 @@ class MockToggleMemberSuspension extends Mock implements ToggleMemberSuspension 
 class MockDeleteMember extends Mock implements DeleteMember {}
 class MockRecordPayment extends Mock implements RecordPayment {}
 class MockDeleteSubscription extends Mock implements DeleteSubscription {}
+class MockEndSubscription extends Mock implements EndSubscription {}
 
 void main() {
   late MockGetMemberDetails mockGetMemberDetails;
@@ -26,6 +28,7 @@ void main() {
   late MockDeleteMember mockDeleteMember;
   late MockRecordPayment mockRecordPayment;
   late MockDeleteSubscription mockDeleteSubscription;
+  late MockEndSubscription mockEndSubscription;
   late MemberDetailsCubit cubit;
 
   final now = DateTime.now();
@@ -67,6 +70,7 @@ void main() {
     mockDeleteMember = MockDeleteMember();
     mockRecordPayment = MockRecordPayment();
     mockDeleteSubscription = MockDeleteSubscription();
+    mockEndSubscription = MockEndSubscription();
 
     cubit = MemberDetailsCubit(
       getMemberDetails: mockGetMemberDetails,
@@ -74,6 +78,7 @@ void main() {
       deleteMember: mockDeleteMember,
       recordPaymentUseCase: mockRecordPayment,
       deleteSubscriptionUseCase: mockDeleteSubscription,
+      endSubscriptionUseCase: mockEndSubscription,
     );
   });
 
@@ -128,5 +133,15 @@ void main() {
         expect(currentMember.bmi!.category, equals(BmiCategory.normal));
       },
     );
+
+    test('endSubscription calls endSubscriptionUseCase and returns true on success', () async {
+      when(() => mockEndSubscription(10)).thenAnswer((_) async => const Right(unit));
+      when(() => mockGetMemberDetails(1)).thenAnswer((_) async => Right(initialDetailsData));
+
+      await cubit.load(1);
+      final result = await cubit.endSubscription(10);
+      expect(result, isTrue);
+      verify(() => mockEndSubscription(10)).called(1);
+    });
   });
 }

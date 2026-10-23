@@ -6,6 +6,7 @@ import '../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../features/members/presentation/cubit/member_details/member_details_cubit.dart';
 import '../../features/members/presentation/cubit/member_form/member_form_cubit.dart';
 import '../../features/members/presentation/cubit/member_notes/member_notes_cubit.dart';
+import '../../features/members/presentation/cubit/attendance/attendance_cubit.dart';
 import '../../features/members/presentation/cubit/members_list/members_list_cubit.dart';
 import '../../features/members/presentation/pages/add_edit_member_page.dart';
 import '../../features/members/presentation/pages/member_details_page.dart';
@@ -16,10 +17,13 @@ import '../../features/memberships/presentation/pages/packages_page.dart';
 import '../../features/memberships/presentation/pages/add_edit_package_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/settings/presentation/pages/backup_page.dart';
+import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/finance/presentation/pages/finance_page.dart';
 import '../../features/finance/presentation/pages/add_expense_page.dart';
 import '../../features/finance/presentation/pages/add_payment_page.dart';
 import '../../features/finance/presentation/pages/reports_page.dart';
+import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
+import '../../features/notifications/presentation/pages/notifications_page.dart';
 import '../di/injection_container.dart';
 import '../widgets/app_exit_scope.dart';
 import '../widgets/main_shell_screen.dart';
@@ -31,7 +35,7 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
   final navKey = rootNavigatorKey ?? GlobalKey<NavigatorState>();
   return GoRouter(
     navigatorKey: navKey,
-    initialLocation: AppRoutes.dashboard,
+    initialLocation: AppRoutes.splash,
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
@@ -111,6 +115,7 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
             providers: [
               BlocProvider(create: (_) => sl<MemberDetailsCubit>()),
               BlocProvider(create: (_) => sl<MemberNotesCubit>()),
+              BlocProvider(create: (_) => sl<AttendanceCubit>()),
             ],
             child: MemberDetailsPage(memberId: id),
           ),
@@ -214,6 +219,27 @@ GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
         child: const AppExitScope(
           child: ReportsPage(),
         ),
+      ),
+    ),
+    GoRoute(
+      parentNavigatorKey: navKey,
+      path: AppRoutes.notifications,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: BlocProvider(
+          create: (_) => sl<NotificationsCubit>()..init(),
+          child: const AppExitScope(
+            child: NotificationsPage(),
+          ),
+        ),
+      ),
+    ),
+    GoRoute(
+      parentNavigatorKey: navKey,
+      path: AppRoutes.splash,
+      pageBuilder: (context, state) => MaterialPage(
+        key: state.pageKey,
+        child: const SplashPage(),
       ),
     ),
   ],

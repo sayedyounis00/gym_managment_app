@@ -142,6 +142,53 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('CurrentMembershipCard renders pay-as-you-go dues breakdown and end button without LinearProgressIndicator', (tester) async {
+      final now = DateTime.now();
+      var endCalled = false;
+      final sub = SubscriptionHistoryItem(
+        id: 2,
+        memberId: 1,
+        packageName: 'اشتراك يومي حسب الاستخدام',
+        startDate: now.subtract(const Duration(days: 5)),
+        endDate: DateTime(2099, 12, 31),
+        price: 60.0,
+        paidAmount: 20.0,
+        status: MemberStatusType.active,
+        isPayAsYouGo: true,
+        attendedDaysCount: 3,
+        dailyRate: 20.0,
+      );
+
+      await tester.pumpWidget(
+        wrapWidget(
+          CurrentMembershipCard(
+            subscription: sub,
+            status: MemberStatusType.active,
+            onRenew: () {},
+            onEndSubscription: () => endCalled = true,
+          ),
+          width: 360,
+        ),
+      );
+
+      expect(find.text('اشتراك يومي حسب الاستخدام'), findsOneWidget);
+      expect(find.text('حسب الاستخدام (يومي)'), findsOneWidget);
+      expect(find.text('أيام الحضور: '), findsOneWidget);
+      expect(find.text('3 يوم'), findsOneWidget);
+      expect(find.text('المطلوب'), findsOneWidget);
+      expect(find.text('المدفوع'), findsOneWidget);
+      expect(find.text('المتبقي'), findsOneWidget);
+      expect(find.byType(LinearProgressIndicator), findsNothing);
+
+      final endBtn = find.text('إنهاء الاشتراك اليومي');
+      expect(endBtn, findsOneWidget);
+
+      await tester.tap(endBtn);
+      await tester.pump();
+      expect(endCalled, isTrue);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('Responsive text scale 1.3x renders without clipping or overflow', (tester) async {
       await tester.pumpWidget(
         MaterialApp(

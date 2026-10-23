@@ -12,7 +12,6 @@ import 'package:gym_managment_app/core/services/background_backup_worker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
   await initializeDateFormatting('ar', null);
   Intl.defaultLocale = 'ar';
 

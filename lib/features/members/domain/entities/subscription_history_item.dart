@@ -13,6 +13,10 @@ class SubscriptionHistoryItem extends Equatable {
   final bool isRenewal;
   final bool trackAttendance;
   final String? paymentMethod;
+  final bool isDaily;
+  final bool isPayAsYouGo;
+  final int attendedDaysCount;
+  final double dailyRate;
 
   const SubscriptionHistoryItem({
     required this.id,
@@ -26,6 +30,10 @@ class SubscriptionHistoryItem extends Equatable {
     this.isRenewal = false,
     this.trackAttendance = false,
     this.paymentMethod,
+    this.isDaily = false,
+    this.isPayAsYouGo = false,
+    this.attendedDaysCount = 0,
+    this.dailyRate = 0.0,
   });
 
   double get remainingAmount => (price - paidAmount).clamp(0, double.infinity);
@@ -43,6 +51,10 @@ class SubscriptionHistoryItem extends Equatable {
         isRenewal,
         trackAttendance,
         paymentMethod,
+        isDaily,
+        isPayAsYouGo,
+        attendedDaysCount,
+        dailyRate,
       ];
 }
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:gym_managment_app/core/theme/app_colors.dart';
 import 'package:gym_managment_app/core/theme/app_spacing.dart';
@@ -28,6 +27,9 @@ import '../widgets/body_stats_card.dart';
 import '../widgets/current_membership_card.dart';
 import '../widgets/member_avatar.dart';
 import '../widgets/notes_tab.dart';
+import '../widgets/attendance_calendar_tab.dart';
+import '../cubit/attendance/attendance_cubit.dart';
+import '../../domain/entities/member.dart';
 
 import 'package:gym_managment_app/core/di/injection_container.dart';
 import 'package:gym_managment_app/features/memberships/presentation/cubit/pause/pause_cubit.dart';
@@ -55,9 +57,12 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     context.read<MemberDetailsCubit>().load(widget.memberId);
     context.read<MemberNotesCubit>().init(widget.memberId);
+    try {
+      context.read<AttendanceCubit>().init(widget.memberId);
+    } catch (_) {}
   }
 
   @override
@@ -200,6 +205,30 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
     }
   }
 
+  Future<void> _confirmEndSubscription(SubscriptionHistoryItem sub) async {
+    final confirm = await ConfirmDialog.show(
+      context,
+      title: 'إنهاء اشتراك ${sub.packageName}؟',
+      message: 'هل تريد إنهاء الاشتراك اليومي للمشترك؟ سيتم إغلاق الباقة وحفظ سجل الحضور والمستحقات الحالية.',
+      confirmLabel: 'إنهاء الاشتراك',
+      isDestructive: false,
+    );
+
+    if (confirm == true && mounted) {
+      HapticFeedback.mediumImpact();
+      final success = await context.read<MemberDetailsCubit>().endSubscription(sub.id);
+      if (success && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم إنهاء الاشتراك بنجاح'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<MemberDetailsCubit, MemberDetailsState>(
@@ -270,48 +299,80 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                             _confirmDelete(state.data.member.name);
                           } else if (val == 'suspend') {
                             _handlePauseOrResume(state.data.member);
+                          } else if (val == 'end_sub') {
+                            final current = state.data.currentSubscription;
+                            if (current != null) {
+                              _confirmEndSubscription(current);
+                            }
                           }
                         },
-                        itemBuilder: (ctx) => [
-                          PopupMenuItem(
-                            value: 'suspend',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  state.data.member.isSuspended
-                                      ? Icons.play_circle_outline_rounded
-                                      : Icons.pause_circle_outline_rounded,
-                                  color: AppColors.paused,
-                                  size: 20,
+                        itemBuilder: (ctx) {
+                          final currentSub = state.data.currentSubscription;
+                          final canEndSub = currentSub != null &&
+                              currentSub.isPayAsYouGo &&
+                              state.data.status == MemberStatusType.active;
+
+                          return [
+                            if (canEndSub) ...[
+                              PopupMenuItem(
+                                value: 'end_sub',
+                                child: Row(
+                                  children: const [
+                                    Icon(
+                                      Icons.stop_circle_outlined,
+                                      color: AppColors.warning,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: AppSpacing.xs),
+                                    Text(
+                                      'إنهاء الاشتراك اليومي',
+                                      style: TextStyle(color: AppColors.warning),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: AppSpacing.xs),
-                                Text(
-                                  state.data.member.isSuspended
-                                      ? 'استئناف العضوية'
-                                      : 'إيقاف مؤقت',
-                                ),
-                              ],
+                              ),
+                              const PopupMenuDivider(),
+                            ],
+                            PopupMenuItem(
+                              value: 'suspend',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    state.data.member.isSuspended
+                                        ? Icons.play_circle_outline_rounded
+                                        : Icons.pause_circle_outline_rounded,
+                                    color: AppColors.paused,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Text(
+                                    state.data.member.isSuspended
+                                        ? 'استئناف العضوية'
+                                        : 'إيقاف مؤقت',
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          const PopupMenuDivider(),
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: const [
-                                Icon(
-                                  Icons.delete_outline_rounded,
-                                  color: AppColors.error,
-                                  size: 20,
-                                ),
-                                SizedBox(width: AppSpacing.xs),
-                                Text(
-                                  'حذف المشترك',
-                                  style: TextStyle(color: AppColors.error),
-                                ),
-                              ],
+                            const PopupMenuDivider(),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: const [
+                                  Icon(
+                                    Icons.delete_outline_rounded,
+                                    color: AppColors.error,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: AppSpacing.xs),
+                                  Text(
+                                    'حذف المشترك',
+                                    style: TextStyle(color: AppColors.error),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ];
+                        },
                       ),
                     ],
                   );
@@ -640,6 +701,11 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                           onDelete: currentSub != null
                               ? () => _confirmDeleteSubscription(currentSub)
                               : null,
+                          onEndSubscription: (currentSub != null &&
+                                  currentSub.isPayAsYouGo &&
+                                  status == MemberStatusType.active)
+                              ? () => _confirmEndSubscription(currentSub)
+                              : null,
                         ),
                         const SizedBox(height: AppSpacing.lg),
 
@@ -689,6 +755,12 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                                   child: Text('الملاحظات', maxLines: 1),
                                 ),
                               ),
+                              Tab(
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text('الحضور', maxLines: 1),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -709,8 +781,13 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                                 state.data.subscriptions,
                                 state.data.member.id,
                               );
-                            } else {
+                            } else if (index == 2) {
                               return _buildNotesTab();
+                            } else {
+                              return _buildAttendanceTab(
+                                state.data.member,
+                                state.data.currentSubscription,
+                              );
                             }
                           },
                         ),
@@ -772,20 +849,46 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                       runSpacing: AppSpacing.xs,
                       children: [
                         Text(sub.packageName, style: AppTextStyles.titleMedium),
+                        if (sub.isPayAsYouGo)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryLight,
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.full),
+                            ),
+                            child: Text(
+                              'حسب الاستخدام (يومي)',
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.primaryDark,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
                         if (sub.paymentMethod != null)
                           StatusChip.paymentMethod(sub.paymentMethod!),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      '${AppDateUtils.formatShortDate(sub.startDate)}  ←  ${AppDateUtils.formatShortDate(sub.endDate)}',
+                      sub.isPayAsYouGo
+                          ? (sub.status == MemberStatusType.expired
+                              ? 'من ${AppDateUtils.formatShortDate(sub.startDate)}  ←  انتهى ${AppDateUtils.formatShortDate(sub.endDate)}'
+                              : 'بدأ في ${AppDateUtils.formatShortDate(sub.startDate)}  ·  مفتوح حتى الإنهاء')
+                          : '${AppDateUtils.formatShortDate(sub.startDate)}  ←  ${AppDateUtils.formatShortDate(sub.endDate)}',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'السعر: ${CurrencyFormatter.format(sub.price)}  ·  المدفوع: ${CurrencyFormatter.format(sub.paidAmount)}',
+                      sub.isPayAsYouGo
+                          ? 'حضور ${sub.attendedDaysCount} يوم × ${CurrencyFormatter.format(sub.dailyRate)}  ·  المطلوب: ${CurrencyFormatter.format(sub.price)}  ·  المدفوع: ${CurrencyFormatter.format(sub.paidAmount)}'
+                          : 'السعر: ${CurrencyFormatter.format(sub.price)}  ·  المدفوع: ${CurrencyFormatter.format(sub.paidAmount)}',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: sub.remainingAmount > 0
                             ? AppColors.error
@@ -802,6 +905,21 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                 children: [
                   StatusChip.memberStatus(sub.status),
                   const SizedBox(height: AppSpacing.xs),
+                  if (sub.isPayAsYouGo && sub.status == MemberStatusType.active) ...[
+                    IconButton(
+                      icon: const Icon(
+                        Icons.stop_circle_outlined,
+                        size: 20,
+                        color: AppColors.warning,
+                      ),
+                      tooltip: 'إنهاء الاشتراك اليومي',
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => _confirmEndSubscription(sub),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                  ],
                   IconButton(
                     icon: const Icon(
                       Icons.delete_outline_rounded,
@@ -882,7 +1000,7 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                 const SizedBox(height: AppSpacing.sm),
             itemBuilder: (context, index) {
               final payment = payments[index];
-              final dateFormat = DateFormat('d MMMM yyyy - hh:mm a', 'ar');
+              final formattedDate = AppDateUtils.formatDateTime(payment.paidAt);
 
               return Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
@@ -923,7 +1041,7 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                             ),
                           ),
                           Text(
-                            dateFormat.format(payment.paidAt),
+                            formattedDate,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -1020,5 +1138,39 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
         return const SizedBox.shrink();
       },
     );
+  }
+
+  Widget _buildAttendanceTab(
+    Member member,
+    SubscriptionHistoryItem? currentSub,
+  ) {
+    final isDailyPlanActive = !member.isSuspended &&
+        currentSub != null &&
+        currentSub.status == MemberStatusType.active &&
+        (currentSub.isDaily || currentSub.isPayAsYouGo);
+
+    void onAttendanceChanged() {
+      context.read<MemberDetailsCubit>().refresh();
+    }
+
+    try {
+      context.read<AttendanceCubit>();
+      return AttendanceCalendarTab(
+        memberId: member.id,
+        isDailyPlanActive: isDailyPlanActive,
+        activeSubscriptionId: currentSub?.id,
+        onAttendanceChanged: onAttendanceChanged,
+      );
+    } catch (_) {
+      return BlocProvider<AttendanceCubit>(
+        create: (_) => sl<AttendanceCubit>()..init(member.id),
+        child: AttendanceCalendarTab(
+          memberId: member.id,
+          isDailyPlanActive: isDailyPlanActive,
+          activeSubscriptionId: currentSub?.id,
+          onAttendanceChanged: onAttendanceChanged,
+        ),
+      );
+    }
   }
 }

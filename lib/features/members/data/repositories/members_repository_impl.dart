@@ -199,7 +199,8 @@ class MembersRepositoryImpl implements MembersRepository {
       final allPayments = await membersDao.getMemberPayments(memberId);
       final now = DateTime.now();
 
-      final list = rows.map((r) {
+      final list = <SubscriptionHistoryItem>[];
+      for (final r in rows) {
         final sub = r.readTable(membersDao.subscriptions);
         final pkg = r.readTableOrNull(membersDao.packages);
 
@@ -209,30 +210,52 @@ class MembersRepositoryImpl implements MembersRepository {
           (sum, p) => sum + p.amount,
         );
 
-        final price = pkg?.price ?? 0.0;
-        final status = resolveMemberStatus(
-          isSuspended: sub.status == 'paused',
-          subscriptionEndDate: sub.endDate,
-          now: now,
-        );
+        final isPayAsYouGo = sub.isPayAsYouGo || (pkg?.isPayAsYouGo ?? false);
+        final dailyRate = sub.priceSnapshot ?? pkg?.price ?? 0.0;
+        int attendedCount = 0;
+        if (isPayAsYouGo) {
+          final countExpr = membersDao.db.attendanceLogs.id.count();
+          final q = membersDao.selectOnly(membersDao.db.attendanceLogs)
+            ..addColumns([countExpr])
+            ..where(membersDao.db.attendanceLogs.subscriptionId.equals(sub.id));
+          attendedCount = (await q.map((row) => row.read(countExpr)).getSingle()) ?? 0;
+        }
+
+        final price = isPayAsYouGo ? (attendedCount * dailyRate) : (pkg?.price ?? sub.priceSnapshot ?? 0.0);
+        final status = (sub.status == 'expired')
+            ? MemberStatusType.expired
+            : resolveMemberStatus(
+                isSuspended: sub.status == 'paused',
+                subscriptionEndDate: sub.endDate,
+                now: now,
+              );
 
         final paymentMethod = relatedPayments.isNotEmpty
             ? relatedPayments.first.paymentMethod
             : (sub.amountPaid > 0 ? 'cash' : null);
 
-        return SubscriptionHistoryItem(
+        final isDaily = isPayAsYouGo ||
+            (pkg != null && pkg.durationValue == 1 && pkg.durationUnit == 'days') ||
+            (pkg?.trackAttendance == true);
+
+        list.add(SubscriptionHistoryItem(
           id: sub.id,
           memberId: sub.memberId,
-          packageName: pkg?.name ?? 'باقة مخصصة',
+          packageName: pkg?.name ?? sub.packageNameSnapshot ?? 'باقة مخصصة',
           startDate: sub.startDate,
           endDate: sub.endDate,
           price: price,
           paidAmount: totalPaid,
           status: status,
           isRenewal: sub.isRenewal,
+          trackAttendance: pkg?.trackAttendance ?? sub.trackAttendance,
           paymentMethod: paymentMethod,
-        );
-      }).toList();
+          isDaily: isDaily,
+          isPayAsYouGo: isPayAsYouGo,
+          attendedDaysCount: attendedCount,
+          dailyRate: dailyRate,
+        ));
+      }
 
       list.sort((a, b) => b.endDate.compareTo(a.endDate));
       return Right(list);

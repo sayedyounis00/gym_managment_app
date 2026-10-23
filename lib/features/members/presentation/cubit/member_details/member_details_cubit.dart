@@ -4,6 +4,7 @@ import 'package:gym_managment_app/features/members/domain/usecases/get_member_de
 import 'package:gym_managment_app/features/members/domain/usecases/record_payment.dart';
 import 'package:gym_managment_app/features/members/domain/usecases/toggle_member_suspension.dart';
 import 'package:gym_managment_app/features/memberships/domain/usecases/delete_subscription.dart';
+import 'package:gym_managment_app/features/memberships/domain/usecases/end_subscription.dart';
 import 'member_details_state.dart';
 
 class MemberDetailsCubit extends Cubit<MemberDetailsState> {
@@ -12,6 +13,7 @@ class MemberDetailsCubit extends Cubit<MemberDetailsState> {
   final DeleteMember deleteMember;
   final RecordPayment recordPaymentUseCase;
   final DeleteSubscription deleteSubscriptionUseCase;
+  final EndSubscription endSubscriptionUseCase;
 
   int? _memberId;
 
@@ -21,6 +23,7 @@ class MemberDetailsCubit extends Cubit<MemberDetailsState> {
     required this.deleteMember,
     required this.recordPaymentUseCase,
     required this.deleteSubscriptionUseCase,
+    required this.endSubscriptionUseCase,
   }) : super(const MemberDetailsInitial());
 
   Future<void> load(int memberId) async {
@@ -120,6 +123,26 @@ class MemberDetailsCubit extends Cubit<MemberDetailsState> {
     }
 
     final result = await deleteSubscriptionUseCase(subscriptionId);
+    return result.fold(
+      (failure) {
+        emit(MemberDetailsError(failure.message));
+        return false;
+      },
+      (_) async {
+        await _fetchData();
+        return true;
+      },
+    );
+  }
+
+  Future<bool> endSubscription(int subscriptionId) async {
+    if (_memberId == null) return false;
+    final s = state;
+    if (s is MemberDetailsLoaded) {
+      emit(s.copyWith(isActionLoading: true));
+    }
+
+    final result = await endSubscriptionUseCase(subscriptionId);
     return result.fold(
       (failure) {
         emit(MemberDetailsError(failure.message));

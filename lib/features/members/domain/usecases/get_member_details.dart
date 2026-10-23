@@ -60,11 +60,13 @@ class GetMemberDetails implements UseCase<MemberDetailsData, int> {
           currentSub = subscriptions.first;
         }
 
-        final status = resolveMemberStatus(
-          isSuspended: member.isSuspended,
-          subscriptionEndDate: currentSub?.endDate,
-          now: DateTime.now(),
-        );
+        final status = (currentSub?.status == MemberStatusType.expired)
+            ? MemberStatusType.expired
+            : resolveMemberStatus(
+                isSuspended: member.isSuspended,
+                subscriptionEndDate: currentSub?.endDate,
+                now: DateTime.now(),
+              );
 
         return Right(
           MemberDetailsData(
