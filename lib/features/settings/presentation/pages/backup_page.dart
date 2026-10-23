@@ -247,7 +247,9 @@ class _BackupView extends StatelessWidget {
                                 'ar',
                               ).format(item.createdAt.toLocal());
 
-                              return ListTile(
+                              return Material(
+                                color: Colors.transparent,
+                                child: ListTile(
                                 leading: Container(
                                   width: 40,
                                   height: 40,
@@ -313,7 +315,8 @@ class _BackupView extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                              );
+                              ),
+                            );
                             },
                           ),
                         ),
