@@ -11,6 +11,8 @@ void main() {
 
     await tester.pumpWidget(const GymApp());
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 3600));
+    await tester.pumpAndSettle();
 
     expect(find.text('لوحة التحكم'), findsOneWidget);
     await testDb.close();
