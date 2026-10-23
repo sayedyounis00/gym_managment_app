@@ -20,6 +20,7 @@ class Subscriptions extends Table {
   TextColumn get pauseReason => text().nullable()();
   IntColumn get totalPausedDays => integer().withDefault(const Constant(0))();
   BoolColumn get trackAttendance => boolean().withDefault(const Constant(false))();
+  BoolColumn get isPayAsYouGo => boolean().withDefault(const Constant(false))();
   RealColumn get amountPaid => real().withDefault(const Constant(0.0))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }

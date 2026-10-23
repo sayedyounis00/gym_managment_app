@@ -853,6 +853,21 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _isPayAsYouGoMeta = const VerificationMeta(
+    'isPayAsYouGo',
+  );
+  @override
+  late final GeneratedColumn<bool> isPayAsYouGo = GeneratedColumn<bool>(
+    'is_pay_as_you_go',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_pay_as_you_go" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -875,6 +890,7 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
     durationInDays,
     isActive,
     trackAttendance,
+    isPayAsYouGo,
     createdAt,
   ];
   @override
@@ -952,6 +968,15 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
         ),
       );
     }
+    if (data.containsKey('is_pay_as_you_go')) {
+      context.handle(
+        _isPayAsYouGoMeta,
+        isPayAsYouGo.isAcceptableOrUnknown(
+          data['is_pay_as_you_go']!,
+          _isPayAsYouGoMeta,
+        ),
+      );
+    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -999,6 +1024,10 @@ class $PackagesTable extends Packages with TableInfo<$PackagesTable, Package> {
         DriftSqlType.bool,
         data['${effectivePrefix}track_attendance'],
       )!,
+      isPayAsYouGo: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_pay_as_you_go'],
+      )!,
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1021,6 +1050,7 @@ class Package extends DataClass implements Insertable<Package> {
   final int durationInDays;
   final bool isActive;
   final bool trackAttendance;
+  final bool isPayAsYouGo;
   final DateTime createdAt;
   const Package({
     required this.id,
@@ -1031,6 +1061,7 @@ class Package extends DataClass implements Insertable<Package> {
     required this.durationInDays,
     required this.isActive,
     required this.trackAttendance,
+    required this.isPayAsYouGo,
     required this.createdAt,
   });
   @override
@@ -1044,6 +1075,7 @@ class Package extends DataClass implements Insertable<Package> {
     map['duration_in_days'] = Variable<int>(durationInDays);
     map['is_active'] = Variable<bool>(isActive);
     map['track_attendance'] = Variable<bool>(trackAttendance);
+    map['is_pay_as_you_go'] = Variable<bool>(isPayAsYouGo);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
   }
@@ -1058,6 +1090,7 @@ class Package extends DataClass implements Insertable<Package> {
       durationInDays: Value(durationInDays),
       isActive: Value(isActive),
       trackAttendance: Value(trackAttendance),
+      isPayAsYouGo: Value(isPayAsYouGo),
       createdAt: Value(createdAt),
     );
   }
@@ -1076,6 +1109,7 @@ class Package extends DataClass implements Insertable<Package> {
       durationInDays: serializer.fromJson<int>(json['durationInDays']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       trackAttendance: serializer.fromJson<bool>(json['trackAttendance']),
+      isPayAsYouGo: serializer.fromJson<bool>(json['isPayAsYouGo']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
   }
@@ -1091,6 +1125,7 @@ class Package extends DataClass implements Insertable<Package> {
       'durationInDays': serializer.toJson<int>(durationInDays),
       'isActive': serializer.toJson<bool>(isActive),
       'trackAttendance': serializer.toJson<bool>(trackAttendance),
+      'isPayAsYouGo': serializer.toJson<bool>(isPayAsYouGo),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
   }
@@ -1104,6 +1139,7 @@ class Package extends DataClass implements Insertable<Package> {
     int? durationInDays,
     bool? isActive,
     bool? trackAttendance,
+    bool? isPayAsYouGo,
     DateTime? createdAt,
   }) => Package(
     id: id ?? this.id,
@@ -1114,6 +1150,7 @@ class Package extends DataClass implements Insertable<Package> {
     durationInDays: durationInDays ?? this.durationInDays,
     isActive: isActive ?? this.isActive,
     trackAttendance: trackAttendance ?? this.trackAttendance,
+    isPayAsYouGo: isPayAsYouGo ?? this.isPayAsYouGo,
     createdAt: createdAt ?? this.createdAt,
   );
   Package copyWithCompanion(PackagesCompanion data) {
@@ -1134,6 +1171,9 @@ class Package extends DataClass implements Insertable<Package> {
       trackAttendance: data.trackAttendance.present
           ? data.trackAttendance.value
           : this.trackAttendance,
+      isPayAsYouGo: data.isPayAsYouGo.present
+          ? data.isPayAsYouGo.value
+          : this.isPayAsYouGo,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
     );
   }
@@ -1149,6 +1189,7 @@ class Package extends DataClass implements Insertable<Package> {
           ..write('durationInDays: $durationInDays, ')
           ..write('isActive: $isActive, ')
           ..write('trackAttendance: $trackAttendance, ')
+          ..write('isPayAsYouGo: $isPayAsYouGo, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1164,6 +1205,7 @@ class Package extends DataClass implements Insertable<Package> {
     durationInDays,
     isActive,
     trackAttendance,
+    isPayAsYouGo,
     createdAt,
   );
   @override
@@ -1178,6 +1220,7 @@ class Package extends DataClass implements Insertable<Package> {
           other.durationInDays == this.durationInDays &&
           other.isActive == this.isActive &&
           other.trackAttendance == this.trackAttendance &&
+          other.isPayAsYouGo == this.isPayAsYouGo &&
           other.createdAt == this.createdAt);
 }
 
@@ -1190,6 +1233,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
   final Value<int> durationInDays;
   final Value<bool> isActive;
   final Value<bool> trackAttendance;
+  final Value<bool> isPayAsYouGo;
   final Value<DateTime> createdAt;
   const PackagesCompanion({
     this.id = const Value.absent(),
@@ -1200,6 +1244,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     this.durationInDays = const Value.absent(),
     this.isActive = const Value.absent(),
     this.trackAttendance = const Value.absent(),
+    this.isPayAsYouGo = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
   PackagesCompanion.insert({
@@ -1211,6 +1256,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     required int durationInDays,
     this.isActive = const Value.absent(),
     this.trackAttendance = const Value.absent(),
+    this.isPayAsYouGo = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : name = Value(name),
        price = Value(price),
@@ -1224,6 +1270,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     Expression<int>? durationInDays,
     Expression<bool>? isActive,
     Expression<bool>? trackAttendance,
+    Expression<bool>? isPayAsYouGo,
     Expression<DateTime>? createdAt,
   }) {
     return RawValuesInsertable({
@@ -1235,6 +1282,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
       if (durationInDays != null) 'duration_in_days': durationInDays,
       if (isActive != null) 'is_active': isActive,
       if (trackAttendance != null) 'track_attendance': trackAttendance,
+      if (isPayAsYouGo != null) 'is_pay_as_you_go': isPayAsYouGo,
       if (createdAt != null) 'created_at': createdAt,
     });
   }
@@ -1248,6 +1296,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     Value<int>? durationInDays,
     Value<bool>? isActive,
     Value<bool>? trackAttendance,
+    Value<bool>? isPayAsYouGo,
     Value<DateTime>? createdAt,
   }) {
     return PackagesCompanion(
@@ -1259,6 +1308,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
       durationInDays: durationInDays ?? this.durationInDays,
       isActive: isActive ?? this.isActive,
       trackAttendance: trackAttendance ?? this.trackAttendance,
+      isPayAsYouGo: isPayAsYouGo ?? this.isPayAsYouGo,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -1290,6 +1340,9 @@ class PackagesCompanion extends UpdateCompanion<Package> {
     if (trackAttendance.present) {
       map['track_attendance'] = Variable<bool>(trackAttendance.value);
     }
+    if (isPayAsYouGo.present) {
+      map['is_pay_as_you_go'] = Variable<bool>(isPayAsYouGo.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1307,6 +1360,7 @@ class PackagesCompanion extends UpdateCompanion<Package> {
           ..write('durationInDays: $durationInDays, ')
           ..write('isActive: $isActive, ')
           ..write('trackAttendance: $trackAttendance, ')
+          ..write('isPayAsYouGo: $isPayAsYouGo, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
         .toString();
@@ -1478,6 +1532,21 @@ class $SubscriptionsTable extends Subscriptions
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _isPayAsYouGoMeta = const VerificationMeta(
+    'isPayAsYouGo',
+  );
+  @override
+  late final GeneratedColumn<bool> isPayAsYouGo = GeneratedColumn<bool>(
+    'is_pay_as_you_go',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_pay_as_you_go" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _amountPaidMeta = const VerificationMeta(
     'amountPaid',
   );
@@ -1517,6 +1586,7 @@ class $SubscriptionsTable extends Subscriptions
     pauseReason,
     totalPausedDays,
     trackAttendance,
+    isPayAsYouGo,
     amountPaid,
     createdAt,
   ];
@@ -1628,6 +1698,15 @@ class $SubscriptionsTable extends Subscriptions
         ),
       );
     }
+    if (data.containsKey('is_pay_as_you_go')) {
+      context.handle(
+        _isPayAsYouGoMeta,
+        isPayAsYouGo.isAcceptableOrUnknown(
+          data['is_pay_as_you_go']!,
+          _isPayAsYouGoMeta,
+        ),
+      );
+    }
     if (data.containsKey('amount_paid')) {
       context.handle(
         _amountPaidMeta,
@@ -1701,6 +1780,10 @@ class $SubscriptionsTable extends Subscriptions
         DriftSqlType.bool,
         data['${effectivePrefix}track_attendance'],
       )!,
+      isPayAsYouGo: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_pay_as_you_go'],
+      )!,
       amountPaid: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}amount_paid'],
@@ -1732,6 +1815,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
   final String? pauseReason;
   final int totalPausedDays;
   final bool trackAttendance;
+  final bool isPayAsYouGo;
   final double amountPaid;
   final DateTime createdAt;
   const Subscription({
@@ -1748,6 +1832,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     this.pauseReason,
     required this.totalPausedDays,
     required this.trackAttendance,
+    required this.isPayAsYouGo,
     required this.amountPaid,
     required this.createdAt,
   });
@@ -1777,6 +1862,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     }
     map['total_paused_days'] = Variable<int>(totalPausedDays);
     map['track_attendance'] = Variable<bool>(trackAttendance);
+    map['is_pay_as_you_go'] = Variable<bool>(isPayAsYouGo);
     map['amount_paid'] = Variable<double>(amountPaid);
     map['created_at'] = Variable<DateTime>(createdAt);
     return map;
@@ -1807,6 +1893,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
           : Value(pauseReason),
       totalPausedDays: Value(totalPausedDays),
       trackAttendance: Value(trackAttendance),
+      isPayAsYouGo: Value(isPayAsYouGo),
       amountPaid: Value(amountPaid),
       createdAt: Value(createdAt),
     );
@@ -1833,6 +1920,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
       pauseReason: serializer.fromJson<String?>(json['pauseReason']),
       totalPausedDays: serializer.fromJson<int>(json['totalPausedDays']),
       trackAttendance: serializer.fromJson<bool>(json['trackAttendance']),
+      isPayAsYouGo: serializer.fromJson<bool>(json['isPayAsYouGo']),
       amountPaid: serializer.fromJson<double>(json['amountPaid']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
     );
@@ -1854,6 +1942,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
       'pauseReason': serializer.toJson<String?>(pauseReason),
       'totalPausedDays': serializer.toJson<int>(totalPausedDays),
       'trackAttendance': serializer.toJson<bool>(trackAttendance),
+      'isPayAsYouGo': serializer.toJson<bool>(isPayAsYouGo),
       'amountPaid': serializer.toJson<double>(amountPaid),
       'createdAt': serializer.toJson<DateTime>(createdAt),
     };
@@ -1873,6 +1962,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     Value<String?> pauseReason = const Value.absent(),
     int? totalPausedDays,
     bool? trackAttendance,
+    bool? isPayAsYouGo,
     double? amountPaid,
     DateTime? createdAt,
   }) => Subscription(
@@ -1893,6 +1983,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     pauseReason: pauseReason.present ? pauseReason.value : this.pauseReason,
     totalPausedDays: totalPausedDays ?? this.totalPausedDays,
     trackAttendance: trackAttendance ?? this.trackAttendance,
+    isPayAsYouGo: isPayAsYouGo ?? this.isPayAsYouGo,
     amountPaid: amountPaid ?? this.amountPaid,
     createdAt: createdAt ?? this.createdAt,
   );
@@ -1921,6 +2012,9 @@ class Subscription extends DataClass implements Insertable<Subscription> {
       trackAttendance: data.trackAttendance.present
           ? data.trackAttendance.value
           : this.trackAttendance,
+      isPayAsYouGo: data.isPayAsYouGo.present
+          ? data.isPayAsYouGo.value
+          : this.isPayAsYouGo,
       amountPaid: data.amountPaid.present
           ? data.amountPaid.value
           : this.amountPaid,
@@ -1944,6 +2038,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
           ..write('pauseReason: $pauseReason, ')
           ..write('totalPausedDays: $totalPausedDays, ')
           ..write('trackAttendance: $trackAttendance, ')
+          ..write('isPayAsYouGo: $isPayAsYouGo, ')
           ..write('amountPaid: $amountPaid, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -1965,6 +2060,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
     pauseReason,
     totalPausedDays,
     trackAttendance,
+    isPayAsYouGo,
     amountPaid,
     createdAt,
   );
@@ -1985,6 +2081,7 @@ class Subscription extends DataClass implements Insertable<Subscription> {
           other.pauseReason == this.pauseReason &&
           other.totalPausedDays == this.totalPausedDays &&
           other.trackAttendance == this.trackAttendance &&
+          other.isPayAsYouGo == this.isPayAsYouGo &&
           other.amountPaid == this.amountPaid &&
           other.createdAt == this.createdAt);
 }
@@ -2003,6 +2100,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
   final Value<String?> pauseReason;
   final Value<int> totalPausedDays;
   final Value<bool> trackAttendance;
+  final Value<bool> isPayAsYouGo;
   final Value<double> amountPaid;
   final Value<DateTime> createdAt;
   const SubscriptionsCompanion({
@@ -2019,6 +2117,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     this.pauseReason = const Value.absent(),
     this.totalPausedDays = const Value.absent(),
     this.trackAttendance = const Value.absent(),
+    this.isPayAsYouGo = const Value.absent(),
     this.amountPaid = const Value.absent(),
     this.createdAt = const Value.absent(),
   });
@@ -2036,6 +2135,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     this.pauseReason = const Value.absent(),
     this.totalPausedDays = const Value.absent(),
     this.trackAttendance = const Value.absent(),
+    this.isPayAsYouGo = const Value.absent(),
     this.amountPaid = const Value.absent(),
     this.createdAt = const Value.absent(),
   }) : memberId = Value(memberId),
@@ -2055,6 +2155,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     Expression<String>? pauseReason,
     Expression<int>? totalPausedDays,
     Expression<bool>? trackAttendance,
+    Expression<bool>? isPayAsYouGo,
     Expression<double>? amountPaid,
     Expression<DateTime>? createdAt,
   }) {
@@ -2073,6 +2174,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
       if (pauseReason != null) 'pause_reason': pauseReason,
       if (totalPausedDays != null) 'total_paused_days': totalPausedDays,
       if (trackAttendance != null) 'track_attendance': trackAttendance,
+      if (isPayAsYouGo != null) 'is_pay_as_you_go': isPayAsYouGo,
       if (amountPaid != null) 'amount_paid': amountPaid,
       if (createdAt != null) 'created_at': createdAt,
     });
@@ -2092,6 +2194,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     Value<String?>? pauseReason,
     Value<int>? totalPausedDays,
     Value<bool>? trackAttendance,
+    Value<bool>? isPayAsYouGo,
     Value<double>? amountPaid,
     Value<DateTime>? createdAt,
   }) {
@@ -2109,6 +2212,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
       pauseReason: pauseReason ?? this.pauseReason,
       totalPausedDays: totalPausedDays ?? this.totalPausedDays,
       trackAttendance: trackAttendance ?? this.trackAttendance,
+      isPayAsYouGo: isPayAsYouGo ?? this.isPayAsYouGo,
       amountPaid: amountPaid ?? this.amountPaid,
       createdAt: createdAt ?? this.createdAt,
     );
@@ -2158,6 +2262,9 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
     if (trackAttendance.present) {
       map['track_attendance'] = Variable<bool>(trackAttendance.value);
     }
+    if (isPayAsYouGo.present) {
+      map['is_pay_as_you_go'] = Variable<bool>(isPayAsYouGo.value);
+    }
     if (amountPaid.present) {
       map['amount_paid'] = Variable<double>(amountPaid.value);
     }
@@ -2183,6 +2290,7 @@ class SubscriptionsCompanion extends UpdateCompanion<Subscription> {
           ..write('pauseReason: $pauseReason, ')
           ..write('totalPausedDays: $totalPausedDays, ')
           ..write('trackAttendance: $trackAttendance, ')
+          ..write('isPayAsYouGo: $isPayAsYouGo, ')
           ..write('amountPaid: $amountPaid, ')
           ..write('createdAt: $createdAt')
           ..write(')'))
@@ -6541,6 +6649,7 @@ typedef $$PackagesTableCreateCompanionBuilder = PackagesCompanion Function({
   required int durationInDays,
   Value<bool> isActive,
   Value<bool> trackAttendance,
+  Value<bool> isPayAsYouGo,
   Value<DateTime> createdAt,
 });
 typedef $$PackagesTableUpdateCompanionBuilder = PackagesCompanion Function({
@@ -6552,6 +6661,7 @@ typedef $$PackagesTableUpdateCompanionBuilder = PackagesCompanion Function({
   Value<int> durationInDays,
   Value<bool> isActive,
   Value<bool> trackAttendance,
+  Value<bool> isPayAsYouGo,
   Value<DateTime> createdAt,
 });
 
@@ -6624,6 +6734,11 @@ class $$PackagesTableFilterComposer
 
   ColumnFilters<bool> get trackAttendance => $composableBuilder(
     column: $table.trackAttendance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPayAsYouGo => $composableBuilder(
+    column: $table.isPayAsYouGo,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6707,6 +6822,11 @@ class $$PackagesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isPayAsYouGo => $composableBuilder(
+    column: $table.isPayAsYouGo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -6751,6 +6871,11 @@ class $$PackagesTableAnnotationComposer
 
   GeneratedColumn<bool> get trackAttendance => $composableBuilder(
     column: $table.trackAttendance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isPayAsYouGo => $composableBuilder(
+    column: $table.isPayAsYouGo,
     builder: (column) => column,
   );
 
@@ -6819,6 +6944,7 @@ class $$PackagesTableTableManager
                 Value<int> durationInDays = const Value.absent(),
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> trackAttendance = const Value.absent(),
+                Value<bool> isPayAsYouGo = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => PackagesCompanion(
                 id: id,
@@ -6829,6 +6955,7 @@ class $$PackagesTableTableManager
                 durationInDays: durationInDays,
                 isActive: isActive,
                 trackAttendance: trackAttendance,
+                isPayAsYouGo: isPayAsYouGo,
                 createdAt: createdAt,
               ),
           createCompanionCallback:
@@ -6841,6 +6968,7 @@ class $$PackagesTableTableManager
                 required int durationInDays,
                 Value<bool> isActive = const Value.absent(),
                 Value<bool> trackAttendance = const Value.absent(),
+                Value<bool> isPayAsYouGo = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => PackagesCompanion.insert(
                 id: id,
@@ -6851,6 +6979,7 @@ class $$PackagesTableTableManager
                 durationInDays: durationInDays,
                 isActive: isActive,
                 trackAttendance: trackAttendance,
+                isPayAsYouGo: isPayAsYouGo,
                 createdAt: createdAt,
               ),
           withReferenceMapper: (p0) => p0
@@ -6925,6 +7054,7 @@ typedef $$SubscriptionsTableCreateCompanionBuilder =
       Value<String?> pauseReason,
       Value<int> totalPausedDays,
       Value<bool> trackAttendance,
+      Value<bool> isPayAsYouGo,
       Value<double> amountPaid,
       Value<DateTime> createdAt,
     });
@@ -6943,6 +7073,7 @@ typedef $$SubscriptionsTableUpdateCompanionBuilder =
       Value<String?> pauseReason,
       Value<int> totalPausedDays,
       Value<bool> trackAttendance,
+      Value<bool> isPayAsYouGo,
       Value<double> amountPaid,
       Value<DateTime> createdAt,
     });
@@ -7112,6 +7243,11 @@ class $$SubscriptionsTableFilterComposer
 
   ColumnFilters<bool> get trackAttendance => $composableBuilder(
     column: $table.trackAttendance,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPayAsYouGo => $composableBuilder(
+    column: $table.isPayAsYouGo,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7311,6 +7447,11 @@ class $$SubscriptionsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isPayAsYouGo => $composableBuilder(
+    column: $table.isPayAsYouGo,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<double> get amountPaid => $composableBuilder(
     column: $table.amountPaid,
     builder: (column) => ColumnOrderings(column),
@@ -7417,6 +7558,11 @@ class $$SubscriptionsTableAnnotationComposer
 
   GeneratedColumn<bool> get trackAttendance => $composableBuilder(
     column: $table.trackAttendance,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isPayAsYouGo => $composableBuilder(
+    column: $table.isPayAsYouGo,
     builder: (column) => column,
   );
 
@@ -7598,6 +7744,7 @@ class $$SubscriptionsTableTableManager
                 Value<String?> pauseReason = const Value.absent(),
                 Value<int> totalPausedDays = const Value.absent(),
                 Value<bool> trackAttendance = const Value.absent(),
+                Value<bool> isPayAsYouGo = const Value.absent(),
                 Value<double> amountPaid = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => SubscriptionsCompanion(
@@ -7614,6 +7761,7 @@ class $$SubscriptionsTableTableManager
                 pauseReason: pauseReason,
                 totalPausedDays: totalPausedDays,
                 trackAttendance: trackAttendance,
+                isPayAsYouGo: isPayAsYouGo,
                 amountPaid: amountPaid,
                 createdAt: createdAt,
               ),
@@ -7632,6 +7780,7 @@ class $$SubscriptionsTableTableManager
                 Value<String?> pauseReason = const Value.absent(),
                 Value<int> totalPausedDays = const Value.absent(),
                 Value<bool> trackAttendance = const Value.absent(),
+                Value<bool> isPayAsYouGo = const Value.absent(),
                 Value<double> amountPaid = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
               }) => SubscriptionsCompanion.insert(
@@ -7648,6 +7797,7 @@ class $$SubscriptionsTableTableManager
                 pauseReason: pauseReason,
                 totalPausedDays: totalPausedDays,
                 trackAttendance: trackAttendance,
+                isPayAsYouGo: isPayAsYouGo,
                 amountPaid: amountPaid,
                 createdAt: createdAt,
               ),

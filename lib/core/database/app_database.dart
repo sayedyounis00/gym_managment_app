@@ -48,7 +48,7 @@ class AppDatabase extends _$AppDatabase {
       : super(e ?? driftDatabase(name: 'gym_management_app'));
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -177,6 +177,10 @@ class AppDatabase extends _$AppDatabase {
             await customStatement('CREATE INDEX IF NOT EXISTS idx_attendance_logs_member_id ON attendance_logs (member_id);');
             await customStatement('CREATE INDEX IF NOT EXISTS idx_attendance_logs_subscription_id ON attendance_logs (subscription_id);');
             await customStatement('CREATE INDEX IF NOT EXISTS idx_attendance_logs_attended_on ON attendance_logs (attended_on);');
+          }
+          if (from < 9) {
+            await safeAddColumn('packages', 'is_pay_as_you_go', 'INTEGER NOT NULL DEFAULT 0');
+            await safeAddColumn('subscriptions', 'is_pay_as_you_go', 'INTEGER NOT NULL DEFAULT 0');
           }
         },
         beforeOpen: (details) async {

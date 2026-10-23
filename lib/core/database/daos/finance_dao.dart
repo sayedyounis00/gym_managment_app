@@ -328,7 +328,14 @@ class FinanceDao extends DatabaseAccessor<AppDatabase> with _$FinanceDaoMixin {
               ..where((p) => p.subscriptionId.equals(sub.id)))
             .get();
 
-        if (periods.isNotEmpty) {
+        if (sub.isPayAsYouGo) {
+          final countExpr = db.attendanceLogs.id.count();
+          final q = selectOnly(db.attendanceLogs)
+            ..addColumns([countExpr])
+            ..where(db.attendanceLogs.subscriptionId.equals(sub.id));
+          final attendedCount = await q.map((r) => r.read(countExpr)).getSingle() ?? 0;
+          totalDue += (attendedCount * (sub.priceSnapshot ?? 0.0));
+        } else if (periods.isNotEmpty) {
           for (final period in periods) {
             totalDue += (period.amountDue - period.discount);
           }

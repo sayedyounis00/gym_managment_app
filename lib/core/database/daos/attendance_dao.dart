@@ -22,6 +22,46 @@ class AttendanceDao extends DatabaseAccessor<AppDatabase> with _$AttendanceDaoMi
         .watch();
   }
 
+  Stream<List<AttendanceLog>> watchMemberAttendance(int memberId) {
+    return (select(attendanceLogs)
+          ..where((tbl) => tbl.memberId.equals(memberId))
+          ..orderBy([(tbl) => OrderingTerm.desc(tbl.attendedOn)]))
+        .watch();
+  }
+
+  Stream<List<DateTime>> watchMemberAttendanceDates(int memberId) {
+    return watchMemberAttendance(memberId).map(
+      (logs) => logs.map((l) => l.attendedOn).toList(),
+    );
+  }
+
+  Future<List<DateTime>> getMemberAttendanceDates(int memberId) async {
+    final rows = await (select(attendanceLogs)
+          ..where((tbl) => tbl.memberId.equals(memberId))
+          ..orderBy([(tbl) => OrderingTerm.asc(tbl.attendedOn)]))
+        .get();
+    return rows.map((r) => r.attendedOn).toList();
+  }
+
+  Future<void> toggleAttendance({
+    required int memberId,
+    required int subscriptionId,
+    required DateTime date,
+  }) async {
+    final normalized = AppDateUtils.startOfDay(date);
+    final existing = await (select(attendanceLogs)
+          ..where((tbl) =>
+              tbl.memberId.equals(memberId) &
+              tbl.attendedOn.equals(normalized)))
+        .getSingleOrNull();
+
+    if (existing != null) {
+      await (delete(attendanceLogs)..where((tbl) => tbl.id.equals(existing.id))).go();
+    } else {
+      await markAttendance(memberId, subscriptionId, normalized);
+    }
+  }
+
   Stream<List<DateTime>> watchAttendanceDates(int subscriptionId) {
     return watchAttendance(subscriptionId).map(
       (logs) => logs.map((l) => l.attendedOn).toList(),

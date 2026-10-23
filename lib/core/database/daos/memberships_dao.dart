@@ -133,12 +133,21 @@ class MembershipsDao extends DatabaseAccessor<AppDatabase> with _$MembershipsDao
             .write(const SubscriptionsCompanion(status: Value('expired')));
       }
 
-      // 2. Insert new subscription (ensuring trackAttendance snapshot is copied if not already provided)
+      // 2. Insert new subscription (ensuring trackAttendance and isPayAsYouGo snapshots are copied if package is selected)
       var subToInsert = subscription;
-      if (!subscription.trackAttendance.present && subscription.packageId.value != null) {
+      if (subscription.packageId.value != null) {
         final pkg = await (select(packages)..where((p) => p.id.equals(subscription.packageId.value!))).getSingleOrNull();
         if (pkg != null) {
-          subToInsert = subToInsert.copyWith(trackAttendance: Value(pkg.trackAttendance));
+          if (!subscription.trackAttendance.present) {
+            subToInsert = subToInsert.copyWith(trackAttendance: Value(pkg.trackAttendance));
+          }
+          if (pkg.isPayAsYouGo) {
+            subToInsert = subToInsert.copyWith(
+              isPayAsYouGo: const Value(true),
+              trackAttendance: const Value(true),
+              endDate: Value(DateTime(2099, 12, 31)),
+            );
+          }
         }
       }
 
@@ -161,6 +170,17 @@ class MembershipsDao extends DatabaseAccessor<AppDatabase> with _$MembershipsDao
       );
 
       return newSubId;
+    });
+  }
+
+  Future<void> endSubscription(int subscriptionId) {
+    return transaction(() async {
+      await (update(subscriptions)..where((s) => s.id.equals(subscriptionId))).write(
+        SubscriptionsCompanion(
+          status: const Value('expired'),
+          endDate: Value(DateTime.now()),
+        ),
+      );
     });
   }
 

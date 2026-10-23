@@ -5,10 +5,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_managment_app/core/database/app_database.dart';
 
 void main() {
-  test('AppDatabase schema version is 8 and tables can be queried', () async {
+  test('AppDatabase schema version is 9 and tables can be queried', () async {
     final db = AppDatabase(NativeDatabase.memory());
 
-    expect(db.schemaVersion, 8);
+    expect(db.schemaVersion, 9);
 
     // Verify all tables and new columns can be queried
     final packages = await db.select(db.packages).get();
@@ -214,6 +214,68 @@ void main() {
       }
     }
   });
+
+  test('migration from v8 to v9 adds is_pay_as_you_go columns to packages and subscriptions', () async {
+    final tempDir = await Directory.systemTemp.createTemp('gym_migration_test_v8_v9_');
+    final dbFile = File('${tempDir.path}/gym_test_v8.db');
+
+    try {
+      final v8Executor = NativeDatabase(dbFile);
+      await v8Executor.ensureOpen(_DummyUserV8());
+
+      // Create v8 schema tables without is_pay_as_you_go
+      await v8Executor.runCustom('''
+        CREATE TABLE packages (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, price REAL NOT NULL, duration_value INTEGER NOT NULL, duration_unit TEXT NOT NULL DEFAULT 'days', duration_in_days INTEGER NOT NULL, track_attendance INTEGER NOT NULL DEFAULT 0, is_active INTEGER NOT NULL DEFAULT 1, created_at INTEGER NOT NULL);
+      ''');
+      await v8Executor.runCustom('''
+        CREATE TABLE subscriptions (id INTEGER PRIMARY KEY AUTOINCREMENT, member_id INTEGER NOT NULL, package_id INTEGER, package_name_snapshot TEXT NOT NULL, price_snapshot REAL NOT NULL, start_date INTEGER NOT NULL, end_date INTEGER NOT NULL, is_renewal INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL DEFAULT 'active', is_paused INTEGER NOT NULL DEFAULT 0, paused_at INTEGER, pause_reason TEXT, total_paused_days INTEGER NOT NULL DEFAULT 0, amount_paid REAL NOT NULL DEFAULT 0.0, track_attendance INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL);
+      ''');
+
+      await v8Executor.runCustom('PRAGMA user_version = 8;');
+      await v8Executor.runCustom("INSERT INTO packages (id, name, price, duration_value, duration_in_days, created_at) VALUES (1, 'باقة شهرية', 300.0, 30, 30, 0);");
+      await v8Executor.runCustom("INSERT INTO subscriptions (id, member_id, package_id, package_name_snapshot, price_snapshot, start_date, end_date, created_at) VALUES (1, 1, 1, 'باقة شهرية', 300.0, 0, 1000, 0);");
+      await v8Executor.close();
+
+      // Open database with AppDatabase (which will trigger onUpgrade from 8 to 9)
+      final v9Executor = NativeDatabase(dbFile);
+      final db = AppDatabase(v9Executor);
+
+      final pkg = await (db.select(db.packages)..where((p) => p.id.equals(1))).getSingle();
+      expect(pkg.isPayAsYouGo, false);
+
+      final sub = await (db.select(db.subscriptions)..where((s) => s.id.equals(1))).getSingle();
+      expect(sub.isPayAsYouGo, false);
+
+      // Verify we can insert with isPayAsYouGo = true
+      await db.into(db.packages).insert(
+        PackagesCompanion.insert(
+          name: 'باقة يومية حسب الاستخدام',
+          price: 25.0,
+          durationValue: const Value(1),
+          durationInDays: 1,
+          createdAt: Value(DateTime.now()),
+          isPayAsYouGo: const Value(true),
+        ),
+      );
+
+      final newPkg = await (db.select(db.packages)..where((p) => p.id.equals(2))).getSingle();
+      expect(newPkg.isPayAsYouGo, true);
+
+      await db.close();
+    } finally {
+      if (tempDir.existsSync()) {
+        await tempDir.delete(recursive: true);
+      }
+    }
+  });
+}
+
+class _DummyUserV8 extends QueryExecutorUser {
+  @override
+  Future<void> beforeOpen(QueryExecutor executor, OpeningDetails details) async {}
+
+  @override
+  int get schemaVersion => 8;
 }
 
 class _DummyUserV7 extends QueryExecutorUser {

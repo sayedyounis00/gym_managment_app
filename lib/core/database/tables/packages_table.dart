@@ -9,5 +9,6 @@ class Packages extends Table {
   IntColumn get durationInDays => integer()(); // backwards compatibility
   BoolColumn get isActive => boolean().withDefault(const Constant(true))();
   BoolColumn get trackAttendance => boolean().withDefault(const Constant(false))();
+  BoolColumn get isPayAsYouGo => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }

@@ -96,12 +96,14 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
         final latestPackage = subData?.package;
 
         // Resolve status
-        final status = resolveMemberStatus(
-          isSuspended: m.isSuspended,
-          subscriptionEndDate: latestSub?.endDate,
-          daysBeforeExpiry: daysBeforeExpiry,
-          now: now,
-        );
+        final status = (latestSub?.status == 'expired')
+            ? MemberStatusType.expired
+            : resolveMemberStatus(
+                isSuspended: m.isSuspended,
+                subscriptionEndDate: latestSub?.endDate,
+                daysBeforeExpiry: daysBeforeExpiry,
+                now: now,
+              );
 
         // Apply status filter if set
         if (statusFilter != null && status != statusFilter) {
