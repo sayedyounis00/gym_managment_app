@@ -8,12 +8,14 @@ import '../../domain/entities/membership_package.dart';
 class PackageCard extends StatelessWidget {
   final MembershipPackage package;
   final VoidCallback onEdit;
+  final VoidCallback? onDelete;
   final ValueChanged<bool>? onToggleActive;
 
   const PackageCard({
     super.key,
     required this.package,
     required this.onEdit,
+    this.onDelete,
     this.onToggleActive,
   });
 
@@ -42,7 +44,7 @@ class PackageCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header row: Name + Badge + Edit Button
+                // Header row: Name + Badge + Edit Button + Delete Button
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -68,13 +70,13 @@ class PackageCard extends StatelessWidget {
                                   vertical: AppSpacing.xs - 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.secondaryLight,
+                                  color: package.isPayAsYouGo ? AppColors.infoTint : AppColors.secondaryLight,
                                   borderRadius: BorderRadius.circular(AppRadius.full),
                                 ),
                                 child: Text(
-                                  'مدة',
+                                  package.isPayAsYouGo ? 'نظام' : 'مدة',
                                   style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.secondary,
+                                    color: package.isPayAsYouGo ? AppColors.info : AppColors.secondary,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -128,6 +130,22 @@ class PackageCard extends StatelessWidget {
                         onPressed: onEdit,
                       ),
                     ),
+                    if (onDelete != null) ...[
+                      const SizedBox(width: AppSpacing.xs),
+                      Semantics(
+                        label: 'حذف باقة ${package.name}',
+                        button: true,
+                        child: IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded),
+                          iconSize: 20,
+                          visualDensity: VisualDensity.compact,
+                          constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                          color: AppColors.error,
+                          tooltip: 'حذف الباقة',
+                          onPressed: onDelete,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -145,7 +163,7 @@ class PackageCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'السعر',
+                            package.isPayAsYouGo ? 'سعر اليوم' : 'السعر',
                             style: AppTextStyles.labelSmall.copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -154,7 +172,9 @@ class PackageCard extends StatelessWidget {
                             fit: BoxFit.scaleDown,
                             alignment: AlignmentDirectional.centerStart,
                             child: Text(
-                              CurrencyFormatter.format(package.price),
+                              package.isPayAsYouGo
+                                  ? '${CurrencyFormatter.format(package.price)} / يوم'
+                                  : CurrencyFormatter.format(package.price),
                               style: AppTextStyles.headlineMedium.copyWith(
                                 color: isInactive ? AppColors.textDisabled : AppColors.primary,
                                 fontFeatures: const [FontFeature.tabularFigures()],

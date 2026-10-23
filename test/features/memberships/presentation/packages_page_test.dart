@@ -37,10 +37,12 @@ class FakePackagesCubit extends Cubit<PackagesState> implements PackagesCubit {
     toggledVal = isActive;
   }
 
+  String? deleteReturnValue;
+
   @override
-  Future<bool> delete(int id) async {
+  Future<String?> delete(int id) async {
     deletedId = id;
-    return true;
+    return deleteReturnValue;
   }
 
   @override
@@ -169,6 +171,72 @@ void main() {
 
       expect(find.byType(FloatingActionButton), findsOneWidget);
       expect(find.text('إنشاء باقة'), findsOneWidget);
+    });
+
+    testWidgets('shows ConfirmDialog when delete button is tapped on a card', (tester) async {
+      final cubit = FakePackagesCubit(PackagesLoaded(testPackages));
+
+      await tester.pumpWidget(buildTestPage(cubit: cubit));
+
+      final deleteButtons = find.byIcon(Icons.delete_outline_rounded);
+      expect(deleteButtons, findsNWidgets(2));
+
+      await tester.tap(deleteButtons.first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('حذف باقة باقة شهرية؟'), findsOneWidget);
+      expect(
+        find.text('هل أنت متأكد من حذف هذه الباقة نهائياً؟ لا يمكن حذف الباقة في حال وجود مشتركين مسجلين بها.'),
+        findsOneWidget,
+      );
+      expect(find.text('إلغاء'), findsOneWidget);
+      expect(find.text('حذف'), findsOneWidget);
+
+      // Tap Cancel
+      await tester.tap(find.text('إلغاء'));
+      await tester.pumpAndSettle();
+
+      expect(cubit.deletedId, isNull);
+    });
+
+    testWidgets('successfully deletes package when confirmed and shows success snackbar', (tester) async {
+      final cubit = FakePackagesCubit(PackagesLoaded(testPackages));
+      cubit.deleteReturnValue = null; // success
+
+      await tester.pumpWidget(buildTestPage(cubit: cubit));
+
+      final deleteButtons = find.byIcon(Icons.delete_outline_rounded);
+      await tester.tap(deleteButtons.first);
+      await tester.pumpAndSettle();
+
+      // Tap Confirm
+      await tester.tap(find.text('حذف'));
+      await tester.pumpAndSettle();
+
+      expect(cubit.deletedId, 1);
+      expect(find.text('تم حذف باقة باقة شهرية بنجاح'), findsOneWidget);
+    });
+
+    testWidgets('shows error snackbar when package cannot be deleted due to subscribers', (tester) async {
+      final cubit = FakePackagesCubit(PackagesLoaded(testPackages));
+      cubit.deleteReturnValue =
+          'لا يمكن حذف باقة مرتبطة باشتراكات، يمكنك إلغاء تفعيلها بدلاً من ذلك لحفظ السجلات';
+
+      await tester.pumpWidget(buildTestPage(cubit: cubit));
+
+      final deleteButtons = find.byIcon(Icons.delete_outline_rounded);
+      await tester.tap(deleteButtons.first);
+      await tester.pumpAndSettle();
+
+      // Tap Confirm
+      await tester.tap(find.text('حذف'));
+      await tester.pumpAndSettle();
+
+      expect(cubit.deletedId, 1);
+      expect(
+        find.text('لا يمكن حذف باقة مرتبطة باشتراكات، يمكنك إلغاء تفعيلها بدلاً من ذلك لحفظ السجلات'),
+        findsOneWidget,
+      );
     });
   });
 }

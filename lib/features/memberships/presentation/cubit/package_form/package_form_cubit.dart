@@ -2,15 +2,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/membership_package.dart';
 import '../../../domain/usecases/get_packages.dart';
 import '../../../domain/usecases/save_package.dart';
+import '../../../domain/usecases/toggle_package_active.dart';
 import 'package_form_state.dart';
 
 class PackageFormCubit extends Cubit<PackageFormState> {
   final SavePackage savePackage;
   final GetPackages getPackages;
+  final DeletePackage deletePackage;
 
   PackageFormCubit({
     required this.savePackage,
     required this.getPackages,
+    required this.deletePackage,
   }) : super(const PackageFormState());
 
   Future<void> init(int? packageId) async {
@@ -29,6 +32,7 @@ class PackageFormCubit extends Cubit<PackageFormState> {
           durationValue: pkg.durationValue,
           durationUnit: pkg.durationUnit,
           isActive: pkg.isActive,
+          isPayAsYouGo: pkg.isPayAsYouGo,
           isLoading: false,
         )),
       );
@@ -73,6 +77,16 @@ class PackageFormCubit extends Cubit<PackageFormState> {
     ));
   }
 
+  void setIsPayAsYouGo(bool isPayAsYouGo) {
+    emit(state.copyWith(
+      isPayAsYouGo: isPayAsYouGo,
+      durationValue: isPayAsYouGo ? 1 : state.durationValue,
+      durationUnit: isPayAsYouGo ? 'days' : state.durationUnit,
+      clearErrorMessage: true,
+      clearDurationError: true,
+    ));
+  }
+
   bool _validate() {
     String? nameError;
     String? priceError;
@@ -84,7 +98,7 @@ class PackageFormCubit extends Cubit<PackageFormState> {
     if (state.price <= 0) {
       priceError = 'السعر يجب أن يكون أكبر من صفر';
     }
-    if (state.durationValue <= 0) {
+    if (!state.isPayAsYouGo && state.durationValue <= 0) {
       durationError = 'المدة يجب أن تكون يوماً واحداً على الأقل';
     }
 
@@ -109,9 +123,11 @@ class PackageFormCubit extends Cubit<PackageFormState> {
       id: state.id,
       name: state.name.trim(),
       price: state.price,
-      durationValue: state.durationValue,
-      durationUnit: state.durationUnit,
+      durationValue: state.isPayAsYouGo ? 1 : state.durationValue,
+      durationUnit: state.isPayAsYouGo ? 'days' : state.durationUnit,
       isActive: state.isActive,
+      trackAttendance: state.isPayAsYouGo ? true : false,
+      isPayAsYouGo: state.isPayAsYouGo,
       createdAt: DateTime.now(),
     );
 
@@ -130,6 +146,25 @@ class PackageFormCubit extends Cubit<PackageFormState> {
           isSuccess: true,
         ));
         return true;
+      },
+    );
+  }
+
+  Future<String?> delete() async {
+    if (state.id <= 0) return 'لا يمكن حذف باقة غير محفوظة';
+    emit(state.copyWith(isSaving: true, clearErrorMessage: true));
+    final result = await deletePackage(state.id);
+    return result.fold(
+      (failure) {
+        emit(state.copyWith(
+          isSaving: false,
+          errorMessage: failure.message,
+        ));
+        return failure.message;
+      },
+      (_) {
+        emit(state.copyWith(isSaving: false));
+        return null;
       },
     );
   }

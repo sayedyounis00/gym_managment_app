@@ -27,6 +27,7 @@ void main() {
   Widget buildTestWidget({
     required MembershipPackage package,
     required VoidCallback onEdit,
+    VoidCallback? onDelete,
     ValueChanged<bool>? onToggleActive,
     double textScale = 1.0,
     double width = 360,
@@ -44,6 +45,7 @@ void main() {
                 child: PackageCard(
                   package: package,
                   onEdit: onEdit,
+                  onDelete: onDelete,
                   onToggleActive: onToggleActive,
                 ),
               ),
@@ -123,11 +125,12 @@ void main() {
       expect(toggledValue, false);
     });
 
-    testWidgets('renders without overflow on narrow width (300px) and text scale 1.3x', (tester) async {
+    testWidgets('renders without overflow on narrow width (300px) and text scale 1.3x with delete button', (tester) async {
       await tester.pumpWidget(
         buildTestWidget(
           package: activePackage,
           onEdit: () {},
+          onDelete: () {},
           onToggleActive: (_) {},
           textScale: 1.3,
           width: 300,
@@ -136,6 +139,52 @@ void main() {
 
       expect(tester.takeException(), isNull);
       expect(find.text('باقة شهرية ذهبية'), findsOneWidget);
+      expect(find.byIcon(Icons.delete_outline_rounded), findsOneWidget);
+    });
+
+    testWidgets('triggers onDelete callback when delete button is tapped', (tester) async {
+      int deleteCalls = 0;
+      await tester.pumpWidget(
+        buildTestWidget(
+          package: activePackage,
+          onEdit: () {},
+          onDelete: () => deleteCalls++,
+        ),
+      );
+
+      final deleteBtn = find.byIcon(Icons.delete_outline_rounded);
+      expect(deleteBtn, findsOneWidget);
+
+      await tester.tap(deleteBtn);
+      await tester.pump();
+      expect(deleteCalls, 1);
+    });
+
+    testWidgets('renders pay-as-you-go package badge, open duration, and daily price correctly', (tester) async {
+      final payAsYouGoPackage = MembershipPackage(
+        id: 3,
+        name: 'باقة يومية حسب الاستخدام',
+        durationValue: 1,
+        durationUnit: 'days',
+        price: 30.0,
+        isPayAsYouGo: true,
+        isActive: true,
+        createdAt: DateTime(2026, 1, 1),
+      );
+
+      await tester.pumpWidget(
+        buildTestWidget(
+          package: payAsYouGoPackage,
+          onEdit: () {},
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('باقة يومية حسب الاستخدام'), findsOneWidget);
+      expect(find.text('نظام'), findsOneWidget);
+      expect(find.text('حسب الاستخدام (مفتوح)'), findsOneWidget);
+      expect(find.textContaining('30'), findsOneWidget);
+      expect(find.textContaining('/ يوم'), findsOneWidget);
     });
   });
 }

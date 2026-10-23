@@ -15,7 +15,7 @@ class SavePackage {
     if (package.price <= 0) {
       return Future.value(const Left(DatabaseFailure('السعر يجب أن يكون أكبر من صفر')));
     }
-    if (package.durationValue <= 0) {
+    if (!package.isPayAsYouGo && package.durationValue <= 0) {
       return Future.value(const Left(DatabaseFailure('المدة يجب أن تكون يوماً واحداً على الأقل')));
     }
     return repository.savePackage(package);

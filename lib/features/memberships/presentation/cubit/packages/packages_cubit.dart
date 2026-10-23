@@ -78,14 +78,11 @@ class PackagesCubit extends Cubit<PackagesState> {
     );
   }
 
-  Future<bool> delete(int id) async {
+  Future<String?> delete(int id) async {
     final result = await deletePackage(id);
     return result.fold(
-      (failure) {
-        emit(PackagesError(failure.message));
-        return false;
-      },
-      (_) => true,
+      (failure) => failure.message,
+      (_) => null,
     );
   }
 

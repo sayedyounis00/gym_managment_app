@@ -7,6 +7,7 @@ class PackageFormState extends Equatable {
   final int durationValue;
   final String durationUnit; // 'days' | 'months'
   final bool isActive;
+  final bool isPayAsYouGo;
   final bool isLoading;
   final bool isSaving;
   final bool isSuccess;
@@ -22,6 +23,7 @@ class PackageFormState extends Equatable {
     this.durationValue = 1,
     this.durationUnit = 'months',
     this.isActive = true,
+    this.isPayAsYouGo = false,
     this.isLoading = false,
     this.isSaving = false,
     this.isSuccess = false,
@@ -40,6 +42,7 @@ class PackageFormState extends Equatable {
     int? durationValue,
     String? durationUnit,
     bool? isActive,
+    bool? isPayAsYouGo,
     bool? isLoading,
     bool? isSaving,
     bool? isSuccess,
@@ -59,6 +62,7 @@ class PackageFormState extends Equatable {
       durationValue: durationValue ?? this.durationValue,
       durationUnit: durationUnit ?? this.durationUnit,
       isActive: isActive ?? this.isActive,
+      isPayAsYouGo: isPayAsYouGo ?? this.isPayAsYouGo,
       isLoading: isLoading ?? this.isLoading,
       isSaving: isSaving ?? this.isSaving,
       isSuccess: isSuccess ?? this.isSuccess,
@@ -77,6 +81,7 @@ class PackageFormState extends Equatable {
         durationValue,
         durationUnit,
         isActive,
+        isPayAsYouGo,
         isLoading,
         isSaving,
         isSuccess,

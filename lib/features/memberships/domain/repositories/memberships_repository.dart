@@ -59,4 +59,5 @@ abstract class MembershipsRepository {
   Stream<List<Subscription>> watchExpiringSubscriptions({required DateTime now, int windowDays = 3});
   Future<Either<Failure, int>> refreshExpiredStatuses(DateTime now);
   Future<Either<Failure, Unit>> deleteSubscription(int subscriptionId);
+  Future<Either<Failure, Unit>> endSubscription(int subscriptionId);
 }

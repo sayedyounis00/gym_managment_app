@@ -40,6 +40,7 @@ abstract class MembershipsLocalDataSource {
 
   Future<int> refreshExpiredStatuses(DateTime now);
   Future<void> deleteSubscription(int subscriptionId);
+  Future<void> endSubscription(int subscriptionId);
 }
 
 class MembershipsLocalDataSourceImpl implements MembershipsLocalDataSource {
@@ -141,4 +142,8 @@ class MembershipsLocalDataSourceImpl implements MembershipsLocalDataSource {
   @override
   Future<void> deleteSubscription(int subscriptionId) =>
       dao.deleteSubscription(subscriptionId);
+
+  @override
+  Future<void> endSubscription(int subscriptionId) =>
+      dao.endSubscription(subscriptionId);
 }

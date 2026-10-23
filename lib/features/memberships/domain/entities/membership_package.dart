@@ -8,6 +8,7 @@ class MembershipPackage extends Equatable {
   final String durationUnit; // 'days' | 'months'
   final bool isActive;
   final bool trackAttendance;
+  final bool isPayAsYouGo;
   final DateTime createdAt;
 
   const MembershipPackage({
@@ -18,14 +19,16 @@ class MembershipPackage extends Equatable {
     required this.durationUnit,
     this.isActive = true,
     this.trackAttendance = false,
+    this.isPayAsYouGo = false,
     required this.createdAt,
   });
 
   /// Duration converted to estimated days for sorting/fallback.
-  int get estimatedDays => durationUnit == 'months' ? durationValue * 30 : durationValue;
+  int get estimatedDays => isPayAsYouGo ? 9999 : (durationUnit == 'months' ? durationValue * 30 : durationValue);
 
-  /// Arabic localized duration label (e.g. "30 يوم", "3 شهور", "سنة").
+  /// Arabic localized duration label (e.g. "30 يوم", "3 شهور", "سنة", "حسب الاستخدام (مفتوح)").
   String get formattedDuration {
+    if (isPayAsYouGo) return 'حسب الاستخدام (مفتوح)';
     if (durationUnit == 'months') {
       if (durationValue == 1) return 'شهر واحد';
       if (durationValue == 2) return 'شهران';
@@ -48,6 +51,7 @@ class MembershipPackage extends Equatable {
     String? durationUnit,
     bool? isActive,
     bool? trackAttendance,
+    bool? isPayAsYouGo,
     DateTime? createdAt,
   }) {
     return MembershipPackage(
@@ -58,6 +62,7 @@ class MembershipPackage extends Equatable {
       durationUnit: durationUnit ?? this.durationUnit,
       isActive: isActive ?? this.isActive,
       trackAttendance: trackAttendance ?? this.trackAttendance,
+      isPayAsYouGo: isPayAsYouGo ?? this.isPayAsYouGo,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -71,6 +76,7 @@ class MembershipPackage extends Equatable {
         durationUnit,
         isActive,
         trackAttendance,
+        isPayAsYouGo,
         createdAt,
       ];
 }

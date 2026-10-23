@@ -120,6 +120,28 @@ void main() {
       final check = await repository.getPackageById(pkgId);
       expect(check.isRight(), isTrue);
     });
+
+    test('can delete package that has NO subscriptions', () async {
+      // Create package
+      final pkg = MembershipPackage(
+        id: 0,
+        name: 'باقة تجريبية للحذف',
+        price: 500,
+        durationValue: 1,
+        durationUnit: 'months',
+        createdAt: DateTime.now(),
+      );
+      final pkgId = (await repository.savePackage(pkg)).getOrElse((_) => 0);
+      expect(pkgId, greaterThan(0));
+
+      // Attempt to delete package with 0 subscriptions
+      final deleteResult = await repository.deletePackage(pkgId);
+      expect(deleteResult.isRight(), isTrue);
+
+      // Package must no longer exist
+      final check = await repository.getPackageById(pkgId);
+      expect(check.isLeft(), isTrue);
+    });
   });
 
   group('Atomic Renewal and Payments', () {
@@ -398,6 +420,62 @@ void main() {
       final member = await (db.select(db.members)..where((m) => m.id.equals(memberId))).getSingle();
       expect(member.status, 'active');
       expect(member.isSuspended, isFalse);
+    });
+  });
+
+  group('Pay-As-You-Go Daily Plan Tests', () {
+    test('creates pay-as-you-go package and subscribes member with open-ended duration', () async {
+      final memberId = await db.into(db.members).insert(
+        MembersCompanion.insert(name: 'أحمد محمود', phone: '01055556666'),
+      );
+
+      // 1. Save pay-as-you-go package
+      final pkg = MembershipPackage(
+        id: 0,
+        name: 'باقة يومية حسب الاستخدام',
+        price: 25.0,
+        durationValue: 1,
+        durationUnit: 'days',
+        isPayAsYouGo: true,
+        trackAttendance: true,
+        createdAt: DateTime.now(),
+      );
+
+      final pkgId = (await repository.savePackage(pkg)).getOrElse((_) => 0);
+      expect(pkgId, isPositive);
+
+      final fetchedPkg = (await repository.getPackageById(pkgId)).getOrElse((_) => throw Exception());
+      expect(fetchedPkg.isPayAsYouGo, isTrue);
+
+      // 2. Subscribe member
+      final subResult = await repository.renewSubscription(
+        RenewParams(
+          memberId: memberId,
+          packageId: pkgId,
+          packageName: 'باقة يومية حسب الاستخدام',
+          price: 25.0,
+          startDate: DateTime(2026, 10, 1),
+          endDate: DateTime(2026, 10, 2), // Should be overridden to 2099-12-31 by atomicRenewOrNew
+          amountPaid: 0.0,
+          paymentMethod: 'cash',
+        ),
+      );
+      final subId = subResult.getOrElse((_) => 0);
+      expect(subId, isPositive);
+
+      final sub = await (db.select(db.subscriptions)..where((s) => s.id.equals(subId))).getSingle();
+      expect(sub.isPayAsYouGo, isTrue);
+      expect(sub.trackAttendance, isTrue);
+      expect(sub.endDate.year, 2099);
+      expect(sub.status, 'active');
+
+      // 3. End subscription
+      final endResult = await repository.endSubscription(subId);
+      expect(endResult.isRight(), isTrue);
+
+      final endedSub = await (db.select(db.subscriptions)..where((s) => s.id.equals(subId))).getSingle();
+      expect(endedSub.status, 'expired');
+      expect(endedSub.endDate.year, isNot(2099));
     });
   });
 }

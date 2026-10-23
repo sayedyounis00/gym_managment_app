@@ -12,6 +12,7 @@ class PackageModel {
       durationUnit: row.durationUnit,
       isActive: row.isActive,
       trackAttendance: row.trackAttendance,
+      isPayAsYouGo: row.isPayAsYouGo,
       createdAt: row.createdAt,
     );
   }
@@ -26,6 +27,7 @@ class PackageModel {
       durationInDays: Value(entity.estimatedDays),
       isActive: Value(entity.isActive),
       trackAttendance: Value(entity.trackAttendance),
+      isPayAsYouGo: Value(entity.isPayAsYouGo),
       createdAt: Value(entity.createdAt),
     );
   }

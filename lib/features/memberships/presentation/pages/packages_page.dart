@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_managment_app/core/router/routes.dart';
 import 'package:gym_managment_app/core/theme/app_colors.dart';
 import 'package:gym_managment_app/core/theme/app_spacing.dart';
 import 'package:gym_managment_app/core/theme/app_text_styles.dart';
+import 'package:gym_managment_app/core/widgets/confirm_dialog.dart';
 import 'package:gym_managment_app/core/widgets/empty_state.dart';
 import 'package:gym_managment_app/core/widgets/loaders/package_card_skeleton.dart';
 import 'package:gym_managment_app/core/widgets/paginated_bottom_loader.dart';
+import '../../domain/entities/membership_package.dart';
 import '../cubit/packages/packages_cubit.dart';
 import '../cubit/packages/packages_state.dart';
 import '../widgets/package_card.dart';
@@ -32,6 +35,47 @@ class _PackagesPageState extends State<PackagesPage> {
 
   void _openEditPackage(int id) {
     context.push(AppRoutes.editPackagePath(id));
+  }
+
+  Future<void> _confirmDeletePackage(MembershipPackage package) async {
+    final confirm = await ConfirmDialog.show(
+      context,
+      title: 'حذف باقة ${package.name}؟',
+      message: 'هل أنت متأكد من حذف هذه الباقة نهائياً؟ لا يمكن حذف الباقة في حال وجود مشتركين مسجلين بها.',
+      confirmLabel: 'حذف',
+      isDestructive: true,
+    );
+
+    if (confirm == true && mounted) {
+      final error = await context.read<PackagesCubit>().delete(package.id);
+      if (!mounted) return;
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.error,
+          ),
+        );
+      } else {
+        HapticFeedback.lightImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Text('تم حذف باقة ${package.name} بنجاح'),
+                ),
+              ],
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -140,6 +184,7 @@ class _PackagesPageState extends State<PackagesPage> {
                             return PackageCard(
                               package: pkg,
                               onEdit: () => _openEditPackage(pkg.id),
+                              onDelete: () => _confirmDeletePackage(pkg),
                               onToggleActive: (val) => context.read<PackagesCubit>().toggleActive(pkg.id, val),
                             );
                           },
@@ -170,6 +215,7 @@ class _PackagesPageState extends State<PackagesPage> {
                       return PackageCard(
                         package: pkg,
                         onEdit: () => _openEditPackage(pkg.id),
+                        onDelete: () => _confirmDeletePackage(pkg),
                         onToggleActive: (val) => context.read<PackagesCubit>().toggleActive(pkg.id, val),
                       );
                     },

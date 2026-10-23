@@ -7,6 +7,7 @@ import 'package:gym_managment_app/core/theme/app_spacing.dart';
 import 'package:gym_managment_app/core/theme/app_text_styles.dart';
 import 'package:gym_managment_app/core/widgets/app_button.dart';
 import 'package:gym_managment_app/core/widgets/app_text_field.dart';
+import 'package:gym_managment_app/core/widgets/confirm_dialog.dart';
 import 'package:gym_managment_app/core/widgets/money_field.dart';
 import 'package:gym_managment_app/core/widgets/segmented_selector.dart';
 import '../cubit/package_form/package_form_cubit.dart';
@@ -36,6 +37,43 @@ class _AddEditPackagePageState extends State<AddEditPackagePage> {
     _nameController.dispose();
     _durationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _confirmDelete() async {
+    final state = context.read<PackageFormCubit>().state;
+    if (state.id <= 0) return;
+
+    final confirm = await ConfirmDialog.show(
+      context,
+      title: 'حذف باقة ${state.name}؟',
+      message: 'هل أنت متأكد من حذف هذه الباقة نهائياً؟ لا يمكن حذف الباقة في حال وجود مشتركين مسجلين بها.',
+      confirmLabel: 'حذف',
+      isDestructive: true,
+    );
+
+    if (confirm != true || !mounted) return;
+
+    final error = await context.read<PackageFormCubit>().delete();
+    if (!mounted) return;
+    if (error == null) {
+      HapticFeedback.lightImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text('تم حذف باقة ${state.name} بنجاح'),
+              ),
+            ],
+          ),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.success,
+        ),
+      );
+      context.pop(true);
+    }
   }
 
   @override
@@ -85,6 +123,14 @@ class _AddEditPackagePageState extends State<AddEditPackagePage> {
         return Scaffold(
           appBar: AppBar(
             title: Text(state.isEditMode ? 'تعديل الباقة' : 'إنشاء باقة جديدة'),
+            actions: [
+              if (state.isEditMode)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+                  tooltip: 'حذف الباقة',
+                  onPressed: state.isSaving ? null : _confirmDelete,
+                ),
+            ],
           ),
           body: Center(
             child: ConstrainedBox(
@@ -97,10 +143,40 @@ class _AddEditPackagePageState extends State<AddEditPackagePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // 0. Package Type Selector
+                          Text(
+                            'نوع الباقة',
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xs + 2),
+                          SegmentedSelector<bool>(
+                            selectedValue: state.isPayAsYouGo,
+                            onSelected: (val) =>
+                                context.read<PackageFormCubit>().setIsPayAsYouGo(val),
+                            segments: const [
+                              SegmentItem(
+                                value: false,
+                                label: 'باقة عادية',
+                                icon: Icons.calendar_month_outlined,
+                              ),
+                              SegmentItem(
+                                value: true,
+                                label: 'حسب الاستخدام',
+                                icon: Icons.all_inclusive_rounded,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+
                           // 1. Package Name
                           AppTextField(
                             label: 'اسم الباقة',
-                            hint: 'مثال: باقة اللياقة الشهرية، باقة 3 شهور...',
+                            hint: state.isPayAsYouGo
+                                ? 'مثال: باقة يومية، تمرين حسب الاستخدام...'
+                                : 'مثال: باقة اللياقة الشهرية، باقة 3 شهور...',
                             controller: _nameController,
                             errorText: state.nameError,
                             onChanged: (val) => context.read<PackageFormCubit>().setName(val),
@@ -110,67 +186,101 @@ class _AddEditPackagePageState extends State<AddEditPackagePage> {
 
                           // 2. Price
                           MoneyField(
-                            label: 'السعر',
+                            label: state.isPayAsYouGo ? 'سعر اليوم الواحد' : 'السعر',
                             initialValue: state.price,
                             errorText: state.priceError,
                             onChanged: (val) => context.read<PackageFormCubit>().setPrice(val),
                           ),
                           const SizedBox(height: AppSpacing.lg),
 
-                          // 3. Duration: Value + Unit Selector
-                          Text(
-                            'المدة',
-                            style: AppTextStyles.labelMedium.copyWith(
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w600,
+                          // 3. Duration: Value + Unit Selector OR Pay As You Go Info
+                          if (state.isPayAsYouGo) ...[
+                            Container(
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              decoration: BoxDecoration(
+                                color: AppColors.infoTint,
+                                borderRadius: BorderRadius.circular(AppRadius.md),
+                                border: Border.all(
+                                  color: AppColors.info.withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(
+                                    Icons.info_outline_rounded,
+                                    color: AppColors.info,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: AppSpacing.sm),
+                                  Expanded(
+                                    child: Text(
+                                      'نظام الدفع حسب الاستخدام: يستمر الاشتراك مفتوحاً بدون تاريخ انتهاء حتى تقوم بإنهائه أو تجديده لباقة أخرى. يتم احتساب المبلغ المطلوب للمشترك تلقائياً بناءً على عدد أيام الحضور (سعر اليوم × عدد أيام الحضور).',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: AppColors.textPrimary,
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: AppSpacing.xs + 2),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Number field
-                              Expanded(
-                                flex: 2,
-                                child: TextFormField(
-                                  controller: _durationController,
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  onChanged: (val) {
-                                    final parsed = int.tryParse(val) ?? 1;
-                                    context.read<PackageFormCubit>().setDurationValue(parsed);
-                                  },
-                                  decoration: InputDecoration(
-                                    hintText: '1',
-                                    errorText: state.durationError,
-                                    prefixIcon: const Icon(
-                                      Icons.timer_outlined,
-                                      color: AppColors.textSecondary,
-                                      size: 20,
+                            const SizedBox(height: AppSpacing.xl),
+                          ] else ...[
+                            Text(
+                              'المدة',
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: AppColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xs + 2),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Number field
+                                Expanded(
+                                  flex: 2,
+                                  child: TextFormField(
+                                    controller: _durationController,
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    onChanged: (val) {
+                                      final parsed = int.tryParse(val) ?? 1;
+                                      context.read<PackageFormCubit>().setDurationValue(parsed);
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: '1',
+                                      errorText: state.durationError,
+                                      prefixIcon: const Icon(
+                                        Icons.timer_outlined,
+                                        color: AppColors.textSecondary,
+                                        size: 20,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: AppSpacing.md),
+                                const SizedBox(width: AppSpacing.md),
 
-                              // Unit selector: شهور / أيام
-                              Expanded(
-                                flex: 3,
-                                child: SegmentedSelector<String>(
-                                  selectedValue: state.durationUnit,
-                                  onSelected: (unit) =>
-                                      context.read<PackageFormCubit>().setDurationUnit(unit),
-                                  segments: const [
-                                    SegmentItem(value: 'months', label: 'شهور'),
-                                    SegmentItem(value: 'days', label: 'أيام'),
-                                  ],
+                                // Unit selector: شهور / أيام
+                                Expanded(
+                                  flex: 3,
+                                  child: SegmentedSelector<String>(
+                                    selectedValue: state.durationUnit,
+                                    onSelected: (unit) =>
+                                        context.read<PackageFormCubit>().setDurationUnit(unit),
+                                    segments: const [
+                                      SegmentItem(value: 'months', label: 'شهور'),
+                                      SegmentItem(value: 'days', label: 'أيام'),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: AppSpacing.xl),
+                              ],
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                          ],
 
                           // 4. Active Toggle Card
                           Container(
