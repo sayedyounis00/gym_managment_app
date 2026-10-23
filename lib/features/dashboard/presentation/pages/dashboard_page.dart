@@ -20,6 +20,9 @@ import '../widgets/backup_reminder_banner.dart';
 import 'package:gym_managment_app/features/memberships/presentation/widgets/renew_bottom_sheet.dart';
 import 'package:gym_managment_app/features/finance/presentation/widgets/add_payment_sheet.dart';
 import 'package:gym_managment_app/features/finance/presentation/pages/add_expense_page.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../notifications/presentation/cubit/notifications_cubit.dart';
+import '../../../notifications/presentation/cubit/notifications_state.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -83,35 +86,35 @@ class _DashboardPageState extends State<DashboardPage> {
             tooltip: 'الإعدادات والنسخ الاحتياطي',
             onPressed: () => context.push(AppRoutes.settings),
           ),
-          BlocBuilder<DashboardCubit, DashboardState>(
-            builder: (context, state) {
-              final expiringCount = state is DashboardLoaded
-                  ? state.summary.expiringSoon.length
-                  : 0;
+          BlocProvider(
+            create: (_) => sl<NotificationsCubit>()..init(),
+            child: BlocBuilder<NotificationsCubit, NotificationsState>(
+              builder: (context, notifState) {
+                final hasNotifications = notifState is NotificationsLoaded &&
+                    notifState.hasNotifications;
 
-              return IconButton(
-                icon: expiringCount > 0
-                    ? Badge.count(
-                        count: expiringCount,
-                        child: const Icon(Symbols.notifications_rounded),
-                      )
-                    : const Icon(Symbols.notifications_rounded),
-                tooltip: 'الإشعارات والتنبيهات',
-                onPressed: () {
-                  if (state is DashboardLoaded &&
-                      state.summary.expiringSoon.isNotEmpty) {
-                    _scrollToExpiring();
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('لا توجد إشعارات جديدة حالياً'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                },
-              );
-            },
+                return IconButton(
+                  icon: Badge(
+                    isLabelVisible: hasNotifications,
+                    smallSize: 8,
+                    child: const Icon(Symbols.notifications_rounded),
+                  ),
+                  tooltip: 'الإشعارات والتنبيهات',
+                  onPressed: () {
+                    if (hasNotifications) {
+                      context.push(AppRoutes.notifications);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('لا توجد إشعارات جديدة حالياً'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                );
+              },
+            ),
           ),
           const SizedBox(width: AppSpacing.sm),
         ],

@@ -78,6 +78,7 @@ class DashboardDao extends DatabaseAccessor<AppDatabase> with _$DashboardDaoMixi
     ])
       ..where(
         members.status.equals('active') &
+        members.isSuspended.equals(false) &
         subscriptions.status.equals('active') &
         subscriptions.endDate.isBiggerOrEqualValue(startOfDay) &
         subscriptions.endDate.isSmallerOrEqualValue(endWindow),

@@ -286,6 +286,22 @@ void main() {
       expect(john.daysLeft, equals(0));
     });
 
+    test('getExpiringSubscriptions excludes suspended members even if subscription expires within 7 days', () async {
+      final now = DateTime.now();
+
+      // Suspend John Doe who is currently in expiring
+      await (db.update(db.members)..where((tbl) => tbl.name.equals('John Doe'))).write(
+        const MembersCompanion(isSuspended: Value(true)),
+      );
+
+      final expiring = await dao.getExpiringSubscriptions(now: now, windowDays: 7);
+      final names = expiring.map((e) => e.memberName).toList();
+
+      expect(names, isNot(contains('John Doe')));
+      expect(names, containsAll(['Sarah Connor', 'Mike Tyson']));
+      expect(expiring.length, equals(2));
+    });
+
     test('countNewSubscriptions counts new subscriptions in rolling 30 days excluding renewals and paused members', () async {
       final now = DateTime.now();
       final (since, until) = AppDateUtils.rollingMonthWindow(now);
