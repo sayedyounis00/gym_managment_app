@@ -34,14 +34,31 @@ class PaymentsDao extends DatabaseAccessor<AppDatabase> with _$PaymentsDaoMixin 
     return rowsAffected > 0;
   }
 
+  DateTime getPaymentRetentionCutoff([DateTime? referenceDate]) {
+    final now = referenceDate ?? DateTime.now();
+    return DateTime(now.year, now.month - 3, 1);
+  }
+
+  Future<int> deletePaymentsOlderThanThreeMonths({int? memberId, DateTime? referenceDate}) {
+    final cutoff = getPaymentRetentionCutoff(referenceDate);
+    final query = delete(payments)
+      ..where((p) => p.paidAt.isSmallerThanValue(cutoff));
+    if (memberId != null) {
+      query.where((p) => p.memberId.equals(memberId));
+    }
+    return query.go();
+  }
+
   Stream<List<Payment>> watchPaymentsByMember(int memberId) {
+    deletePaymentsOlderThanThreeMonths(memberId: memberId);
     return (select(payments)
           ..where((p) => p.memberId.equals(memberId))
           ..orderBy([(p) => OrderingTerm.desc(p.paidAt)]))
         .watch();
   }
 
-  Future<List<Payment>> getPaymentsByMember(int memberId) {
+  Future<List<Payment>> getPaymentsByMember(int memberId) async {
+    await deletePaymentsOlderThanThreeMonths(memberId: memberId);
     return (select(payments)
           ..where((p) => p.memberId.equals(memberId))
           ..orderBy([(p) => OrderingTerm.desc(p.paidAt)]))

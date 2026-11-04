@@ -97,7 +97,7 @@ class DashboardDao extends DatabaseAccessor<AppDatabase> with _$DashboardDaoMixi
         phone: member.phone,
         endDate: sub.endDate,
         daysLeft: diff < 0 ? 0 : diff,
-        packageName: package?.name,
+        packageName: sub.packageNameSnapshot ?? package?.name,
       );
     }).toList();
   }

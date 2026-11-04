@@ -186,8 +186,30 @@ class AppDatabase extends _$AppDatabase {
         beforeOpen: (details) async {
           await customStatement('DROP TABLE IF EXISTS attendance;');
           await customStatement('PRAGMA foreign_keys = ON;');
+          await customStatement('PRAGMA synchronous = NORMAL;');
+          await customStatement('PRAGMA temp_store = MEMORY;');
+          await customStatement('PRAGMA cache_size = -2000;');
+          try {
+            await customStatement('''
+              UPDATE subscriptions
+              SET price_snapshot = (SELECT price FROM packages WHERE packages.id = subscriptions.package_id)
+              WHERE price_snapshot IS NULL AND package_id IS NOT NULL;
+            ''');
+            await customStatement('''
+              UPDATE subscriptions
+              SET package_name_snapshot = (SELECT name FROM packages WHERE packages.id = subscriptions.package_id)
+              WHERE package_name_snapshot IS NULL AND package_id IS NOT NULL;
+            ''');
+          } catch (_) {}
         },
       );
+
+  /// Automatically purges payments older than 3 months ago (before the beginning of the month 3 months prior to current month).
+  Future<int> cleanupPaymentsOlderThanThreeMonths({DateTime? referenceDate}) {
+    final now = referenceDate ?? DateTime.now();
+    final cutoff = DateTime(now.year, now.month - 3, 1);
+    return (delete(payments)..where((p) => p.paidAt.isSmallerThanValue(cutoff))).go();
+  }
 
   /// Deletes all data from all tables, leaving the database completely clean.
   Future<void> clearAllData() async {

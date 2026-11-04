@@ -141,6 +141,12 @@ class MembershipsDao extends DatabaseAccessor<AppDatabase> with _$MembershipsDao
           if (!subscription.trackAttendance.present) {
             subToInsert = subToInsert.copyWith(trackAttendance: Value(pkg.trackAttendance));
           }
+          if (!subscription.priceSnapshot.present || subscription.priceSnapshot.value == null) {
+            subToInsert = subToInsert.copyWith(priceSnapshot: Value(pkg.price));
+          }
+          if (!subscription.packageNameSnapshot.present || subscription.packageNameSnapshot.value == null) {
+            subToInsert = subToInsert.copyWith(packageNameSnapshot: Value(pkg.name));
+          }
           if (pkg.isPayAsYouGo) {
             subToInsert = subToInsert.copyWith(
               isPayAsYouGo: const Value(true),

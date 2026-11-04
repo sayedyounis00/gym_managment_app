@@ -228,7 +228,23 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
         .get();
   }
 
-  Future<List<Payment>> getMemberPayments(int memberId) {
+  DateTime getPaymentRetentionCutoff([DateTime? referenceDate]) {
+    final now = referenceDate ?? DateTime.now();
+    return DateTime(now.year, now.month - 3, 1);
+  }
+
+  Future<int> deletePaymentsOlderThanThreeMonths({int? memberId, DateTime? referenceDate}) {
+    final cutoff = getPaymentRetentionCutoff(referenceDate);
+    final query = delete(payments)
+      ..where((p) => p.paidAt.isSmallerThanValue(cutoff));
+    if (memberId != null) {
+      query.where((p) => p.memberId.equals(memberId));
+    }
+    return query.go();
+  }
+
+  Future<List<Payment>> getMemberPayments(int memberId) async {
+    await deletePaymentsOlderThanThreeMonths(memberId: memberId);
     return (select(payments)
           ..where((p) => p.memberId.equals(memberId))
           ..orderBy([(p) => OrderingTerm.desc(p.paidAt)]))
