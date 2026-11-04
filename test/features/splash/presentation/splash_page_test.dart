@@ -5,13 +5,15 @@ import 'package:gym_managment_app/core/router/routes.dart';
 import 'package:gym_managment_app/features/splash/presentation/pages/splash_page.dart';
 
 void main() {
-  testWidgets('SplashPage renders animated GIF asset and navigates to dashboard', (tester) async {
+  testWidgets('SplashPage renders logo with white background and navigates to dashboard', (tester) async {
     final router = GoRouter(
       initialLocation: AppRoutes.splash,
       routes: [
         GoRoute(
           path: AppRoutes.splash,
-          builder: (context, state) => const SplashPage(),
+          builder: (context, state) => const SplashPage(
+            duration: Duration(milliseconds: 1000),
+          ),
         ),
         GoRoute(
           path: AppRoutes.dashboard,
@@ -23,16 +25,20 @@ void main() {
     await tester.pumpWidget(MaterialApp.router(routerConfig: router));
     await tester.pump();
 
-    // Verify Image.asset is rendered
+    // Verify Scaffold background color is white
+    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+    expect(scaffold.backgroundColor, Colors.white);
+
+    // Verify Image.asset is rendered with spear-gym-logo
     expect(find.byType(Image), findsOneWidget);
     final imageWidget = tester.widget<Image>(find.byType(Image));
-    expect((imageWidget.image as AssetImage).assetName, 'assets/gif/splash-screen.gif');
+    expect((imageWidget.image as AssetImage).assetName, 'assets/icons/spear-gym-logo.png');
 
     // Dashboard should not be visible initially
     expect(find.text('لوحة التحكم'), findsNothing);
 
-    // Fast-forward timer past 3500ms
-    await tester.pump(const Duration(milliseconds: 3600));
+    // Forward past the duration
+    await tester.pump(const Duration(milliseconds: 1100));
     await tester.pumpAndSettle();
 
     // Verify navigated to dashboard
