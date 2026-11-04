@@ -29,6 +29,9 @@ import '../widgets/transaction_tile.dart';
 import '../widgets/void_dialog.dart';
 import 'add_expense_page.dart';
 import 'reports_page.dart';
+import '../../../../core/widgets/app_button.dart';
+import '../../../security/presentation/cubit/security_cubit.dart';
+import '../../../security/presentation/widgets/floating_pin_dialog.dart';
 
 class FinancePage extends StatelessWidget {
   const FinancePage({super.key});
@@ -75,6 +78,69 @@ class _FinanceView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final secState = context.watch<SecurityCubit>().state;
+    if (secState.isSecurityEnabled && secState.isLocked) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text('الحسابات', style: AppTextStyles.titleLarge),
+          backgroundColor: AppColors.surface,
+          elevation: 0,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryLight,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.lock_rounded,
+                    size: 36,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Text(
+                  'صفحة الحسابات مقفلة',
+                  style: AppTextStyles.titleMedium.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'أدخل رمز المرور لعرض ومتابعة الحسابات والمالية',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                SizedBox(
+                  width: 200,
+                  child: AppButton(
+                    label: 'إدخال رمز المرور',
+                    leadingIcon: Icons.key_rounded,
+                    onPressed: () => FloatingPinDialog.show(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -243,6 +309,7 @@ class _FinanceView extends StatelessWidget {
                 child: BlocBuilder<BalancesCubit, BalancesState>(
                   builder: (context, state) {
                     if (state is BalancesLoaded && state.filteredBalances.isNotEmpty) {
+                      final selectedMonth = context.watch<FinanceOverviewCubit>().selectedMonth;
                       return Padding(
                         padding: const EdgeInsets.fromLTRB(
                           AppSpacing.lg,
@@ -318,7 +385,9 @@ class _FinanceView extends StatelessWidget {
                                     itemBuilder: (context, index) {
                                       final balance = state.filteredBalances[index];
                                       return BalanceTile(
+                                        key: ValueKey(balance.memberId),
                                         balance: balance,
+                                        selectedMonth: selectedMonth,
                                         onTap: () async {
                                           final success = await AddPaymentSheet.show(
                                             context,
@@ -579,6 +648,7 @@ class _FinanceView extends StatelessWidget {
               itemBuilder: (context, idx) {
                 final entry = entries[idx];
                 return TransactionTile(
+                  key: ValueKey(entry.id),
                   entry: entry,
                   onTap: () async {
                     if (entry.isVoided) return;

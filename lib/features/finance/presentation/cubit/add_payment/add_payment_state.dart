@@ -10,6 +10,7 @@ class MemberPeriodOption extends Equatable {
   final double paidAmount;
   final double remaining;
   final DateTime startDate;
+  final bool isPayAsYouGo;
 
   const MemberPeriodOption({
     this.subscriptionId,
@@ -19,6 +20,7 @@ class MemberPeriodOption extends Equatable {
     required this.paidAmount,
     required this.remaining,
     required this.startDate,
+    this.isPayAsYouGo = false,
   });
 
   @override
@@ -30,6 +32,7 @@ class MemberPeriodOption extends Equatable {
         paidAmount,
         remaining,
         startDate,
+        isPayAsYouGo,
       ];
 }
 

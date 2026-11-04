@@ -109,6 +109,7 @@ class _VoidConfirmationDialogState extends State<VoidConfirmationDialog> {
             const SizedBox(height: AppSpacing.xs),
             TextField(
               controller: _reasonController,
+              onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
               decoration: InputDecoration(
                 hintText: 'مثال: خطأ في إدخال المبلغ...',
                 hintStyle: AppTextStyles.bodyMedium.copyWith(

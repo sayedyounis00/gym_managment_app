@@ -29,8 +29,8 @@ class PaymentStatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 28,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      constraints: const BoxConstraints(minHeight: 26),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
       decoration: BoxDecoration(
         color: status.tintColor,
         borderRadius: BorderRadius.circular(AppRadius.full),
@@ -49,11 +49,15 @@ class PaymentStatusChip extends StatelessWidget {
             color: status.color,
           ),
           const SizedBox(width: AppSpacing.xs),
-          Text(
-            status.labelArabic,
-            style: AppTextStyles.labelMedium.copyWith(
-              color: status.color,
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: Text(
+              status.labelArabic,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: status.color,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

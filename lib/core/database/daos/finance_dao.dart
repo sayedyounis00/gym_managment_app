@@ -328,19 +328,25 @@ class FinanceDao extends DatabaseAccessor<AppDatabase> with _$FinanceDaoMixin {
               ..where((p) => p.subscriptionId.equals(sub.id)))
             .get();
 
-        if (sub.isPayAsYouGo) {
+        final pkg = sub.packageId != null
+            ? await (select(packages)..where((p) => p.id.equals(sub.packageId!))).getSingleOrNull()
+            : null;
+        final isPayAsYouGo = sub.isPayAsYouGo || (pkg?.isPayAsYouGo ?? false);
+        final dailyRate = sub.priceSnapshot ?? pkg?.price ?? 0.0;
+
+        if (isPayAsYouGo) {
           final countExpr = db.attendanceLogs.id.count();
           final q = selectOnly(db.attendanceLogs)
             ..addColumns([countExpr])
             ..where(db.attendanceLogs.subscriptionId.equals(sub.id));
           final attendedCount = await q.map((r) => r.read(countExpr)).getSingle() ?? 0;
-          totalDue += (attendedCount * (sub.priceSnapshot ?? 0.0));
+          totalDue += (attendedCount * dailyRate);
         } else if (periods.isNotEmpty) {
           for (final period in periods) {
             totalDue += (period.amountDue - period.discount);
           }
         } else {
-          totalDue += (sub.priceSnapshot ?? 0.0);
+          totalDue += (sub.priceSnapshot ?? pkg?.price ?? 0.0);
         }
       }
 
@@ -353,6 +359,12 @@ class FinanceDao extends DatabaseAccessor<AppDatabase> with _$FinanceDaoMixin {
       double totalPaid = 0.0;
       for (final p in memberPayments) {
         totalPaid += p.amount;
+      }
+      for (final s in memberSubs) {
+        final hasPayments = memberPayments.any((p) => p.subscriptionId == s.id);
+        if (!hasPayments && s.amountPaid > 0) {
+          totalPaid += s.amountPaid;
+        }
       }
 
       final remaining = totalDue - totalPaid;

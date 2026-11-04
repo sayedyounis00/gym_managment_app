@@ -71,6 +71,7 @@ class _AddExpenseView extends StatelessWidget {
               children: [
                 Expanded(
                   child: SingleChildScrollView(
+                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -94,6 +95,7 @@ class _AddExpenseView extends StatelessWidget {
                           const SizedBox(height: AppSpacing.xs),
                           TextFormField(
                             initialValue: state.customLabel,
+                            onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                             onChanged: (text) => cubit.setCustomLabel(text),
                             decoration: InputDecoration(
                               hintText: 'مثال: أدوات نظافة، صيانة أجهزة...',
@@ -191,6 +193,7 @@ class _AddExpenseView extends StatelessWidget {
                         TextFormField(
                           initialValue: state.note,
                           maxLines: 2,
+                          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                           onChanged: (text) => cubit.setNote(text),
                           decoration: InputDecoration(
                             hintText: 'تفاصيل إضافية عن الفاتورة أو المصروف...',
@@ -269,7 +272,10 @@ class _AddExpenseView extends StatelessWidget {
                           label: 'حفظ المصروف',
                           height: 52,
                           isLoading: state.isSubmitting,
-                          onPressed: () => cubit.submit(),
+                          onPressed: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            cubit.submit();
+                          },
                         ),
                       ),
                       const SizedBox(width: AppSpacing.md),
@@ -279,7 +285,10 @@ class _AddExpenseView extends StatelessWidget {
                           height: 52,
                           onPressed: state.isSubmitting
                               ? null
-                              : () => Navigator.of(context).pop(),
+                              : () {
+                                  FocusManager.instance.primaryFocus?.unfocus();
+                                  Navigator.of(context).pop();
+                                },
                         ),
                       ),
                     ],

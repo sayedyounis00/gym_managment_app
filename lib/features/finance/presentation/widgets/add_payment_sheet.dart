@@ -57,9 +57,10 @@ class AddPaymentSheet extends StatelessWidget {
 
         return Padding(
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+            bottom: MediaQuery.viewInsetsOf(context).bottom,
           ),
           child: SingleChildScrollView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
               AppSpacing.xs,
@@ -302,6 +303,7 @@ class AddPaymentSheet extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xs),
                 TextFormField(
                   initialValue: state.note,
+                  onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
                   onChanged: (text) => cubit.setNote(text),
                   decoration: InputDecoration(
                     hintText: 'ملاحظات حول الدفعة...',

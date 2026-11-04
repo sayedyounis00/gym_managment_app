@@ -287,55 +287,57 @@ class _ReportsView extends StatelessWidget {
       );
     }
 
-    return BarChart(
-      BarChartData(
-        maxY: maxY * 1.15,
-        barGroups: bars,
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: (maxY / 4).clamp(1.0, double.infinity),
-          getDrawingHorizontalLine: (val) => const FlLine(
-            color: AppColors.chartGrid,
-            dashArray: [4, 4],
-            strokeWidth: 1,
-          ),
-        ),
-        titlesData: FlTitlesData(
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 42,
-              getTitlesWidget: (val, meta) {
-                return Text(
-                  CurrencyFormatter.formatCompact(val),
-                  style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
-                );
-              },
+    return RepaintBoundary(
+      child: BarChart(
+        BarChartData(
+          maxY: maxY * 1.15,
+          barGroups: bars,
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: (maxY / 4).clamp(1.0, double.infinity),
+            getDrawingHorizontalLine: (val) => const FlLine(
+              color: AppColors.chartGrid,
+              dashArray: [4, 4],
+              strokeWidth: 1,
             ),
           ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              reservedSize: 26,
-              getTitlesWidget: (val, meta) {
-                final idx = val.toInt();
-                if (idx < 0 || idx >= dailyTotals.length) return const SizedBox.shrink();
-                final date = dailyTotals[idx].date as DateTime;
-                return Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Text(
-                    DateFormat('d/M').format(date),
+          titlesData: FlTitlesData(
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 42,
+                getTitlesWidget: (val, meta) {
+                  return Text(
+                    CurrencyFormatter.formatCompact(val),
                     style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 26,
+                getTitlesWidget: (val, meta) {
+                  final idx = val.toInt();
+                  if (idx < 0 || idx >= dailyTotals.length) return const SizedBox.shrink();
+                  final date = dailyTotals[idx].date as DateTime;
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      DateFormat('d/M').format(date),
+                      style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
+                    ),
+                  );
+                },
+              ),
             ),
           ),
+          borderData: FlBorderData(show: false),
         ),
-        borderData: FlBorderData(show: false),
       ),
     );
   }

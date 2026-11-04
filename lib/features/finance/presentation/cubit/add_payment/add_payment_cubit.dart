@@ -55,7 +55,41 @@ class AddPaymentCubit extends Cubit<AddPaymentState> {
             ..orderBy([(p) => OrderingTerm.asc(p.startDate)]))
           .get();
 
-      if (periods.isNotEmpty) {
+      final pkg = sub.packageId != null
+          ? await (db.select(db.packages)..where((p) => p.id.equals(sub.packageId!))).getSingleOrNull()
+          : null;
+      final isPayAsYouGo = sub.isPayAsYouGo || (pkg?.isPayAsYouGo ?? false);
+
+      if (isPayAsYouGo) {
+        final countExpr = db.attendanceLogs.id.count();
+        final q = db.selectOnly(db.attendanceLogs)
+          ..addColumns([countExpr])
+          ..where(db.attendanceLogs.subscriptionId.equals(sub.id));
+        final attendedCount = await q.map((r) => r.read(countExpr)).getSingle() ?? 0;
+
+        final dailyRate = sub.priceSnapshot ?? pkg?.price ?? 0.0;
+        final due = attendedCount * dailyRate;
+
+        final subPayments = await (db.select(db.payments)
+              ..where((p) => p.subscriptionId.equals(sub.id) & p.voidedAt.isNull()))
+            .get();
+        final paid = subPayments.fold<double>(0.0, (sum, p) => sum + p.amount);
+        final remaining = (due - paid).clamp(0.0, double.infinity);
+
+        final pkgName = sub.packageNameSnapshot ?? pkg?.name ?? 'اشتراك يومي';
+        final label = attendedCount > 0 ? '$pkgName (حضور $attendedCount يوم)' : pkgName;
+
+        options.add(MemberPeriodOption(
+          subscriptionId: sub.id,
+          periodId: null,
+          label: label,
+          dueAmount: due,
+          paidAmount: paid,
+          remaining: remaining,
+          startDate: sub.startDate,
+          isPayAsYouGo: true,
+        ));
+      } else if (periods.isNotEmpty) {
         for (final period in periods) {
           final periodPayments = await (db.select(db.payments)
                 ..where((p) => p.periodId.equals(period.id) & p.voidedAt.isNull()))
@@ -67,11 +101,12 @@ class AddPaymentCubit extends Cubit<AddPaymentState> {
           options.add(MemberPeriodOption(
             subscriptionId: sub.id,
             periodId: period.id,
-            label: '${sub.packageNameSnapshot ?? "باقة"} - شهر ${period.periodNumber}',
+            label: '${sub.packageNameSnapshot ?? pkg?.name ?? "باقة"} - شهر ${period.periodNumber}',
             dueAmount: due,
             paidAmount: paid,
             remaining: remaining,
             startDate: period.startDate,
+            isPayAsYouGo: false,
           ));
         }
       } else {
@@ -80,17 +115,18 @@ class AddPaymentCubit extends Cubit<AddPaymentState> {
               ..where((p) => p.subscriptionId.equals(sub.id) & p.voidedAt.isNull()))
             .get();
         final paid = subPayments.fold<double>(0.0, (sum, p) => sum + p.amount);
-        final due = sub.priceSnapshot ?? 0.0;
+        final due = sub.priceSnapshot ?? pkg?.price ?? 0.0;
         final remaining = (due - paid).clamp(0.0, double.infinity);
 
         options.add(MemberPeriodOption(
           subscriptionId: sub.id,
           periodId: null,
-          label: sub.packageNameSnapshot ?? 'اشتراك',
+          label: sub.packageNameSnapshot ?? pkg?.name ?? 'اشتراك',
           dueAmount: due,
           paidAmount: paid,
           remaining: remaining,
           startDate: sub.startDate,
+          isPayAsYouGo: false,
         ));
       }
     }
@@ -150,8 +186,9 @@ class AddPaymentCubit extends Cubit<AddPaymentState> {
       return false;
     }
 
-    // Overpayment check per plan 6.2
+    // Overpayment check per plan 6.2 (not applicable to Pay-As-You-Go which allows advance/any payment)
     if (state.selectedPeriod != null &&
+        !state.selectedPeriod!.isPayAsYouGo &&
         state.selectedPeriod!.remaining > 0 &&
         state.amount > state.selectedPeriod!.remaining + 0.01) {
       emit(state.copyWith(
