@@ -7,6 +7,10 @@ import '../database/daos/notes_dao.dart';
 import '../database/daos/attendance_dao.dart';
 import '../services/image_storage_service.dart';
 import '../services/notification_service.dart';
+import '../../features/security/data/datasources/security_local_datasource.dart';
+import '../../features/security/data/repositories/security_repository_impl.dart';
+import '../../features/security/domain/repositories/security_repository.dart';
+import '../../features/security/presentation/cubit/security_cubit.dart';
 
 import '../../features/settings/data/datasources/backup_source.dart';
 import '../../features/settings/data/datasources/export_source.dart';
@@ -152,6 +156,33 @@ Future<void> initDependencies({
 
   if (!sl.isRegistered<NotificationService>()) {
     sl.registerLazySingleton<NotificationService>(() => NotificationServiceImpl());
+  }
+
+  if (!sl.isRegistered<FlutterSecureStorage>()) {
+    sl.registerLazySingleton<FlutterSecureStorage>(
+      () => const FlutterSecureStorage(
+        aOptions: AndroidOptions(resetOnError: true),
+        iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+      ),
+    );
+  }
+
+  if (!sl.isRegistered<SecurityLocalDataSource>()) {
+    sl.registerLazySingleton<SecurityLocalDataSource>(
+      () => SecurityLocalDataSourceImpl(secureStorage: sl<FlutterSecureStorage>()),
+    );
+  }
+
+  if (!sl.isRegistered<SecurityRepository>()) {
+    sl.registerLazySingleton<SecurityRepository>(
+      () => SecurityRepositoryImpl(localDataSource: sl<SecurityLocalDataSource>()),
+    );
+  }
+
+  if (!sl.isRegistered<SecurityCubit>()) {
+    final securityCubit = SecurityCubit(repository: sl<SecurityRepository>());
+    sl.registerSingleton<SecurityCubit>(securityCubit);
+    await securityCubit.init();
   }
 
   // Dashboard Data sources & Repositories
@@ -647,11 +678,15 @@ Future<void> initDependencies({
 Future<void> reinitializeDatabase() async {
   NotificationService? existingNotificationService;
   ImageStorageService? existingImageStorageService;
+  SecurityCubit? existingSecurityCubit;
   if (sl.isRegistered<NotificationService>()) {
     existingNotificationService = sl<NotificationService>();
   }
   if (sl.isRegistered<ImageStorageService>()) {
     existingImageStorageService = sl<ImageStorageService>();
+  }
+  if (sl.isRegistered<SecurityCubit>()) {
+    existingSecurityCubit = sl<SecurityCubit>();
   }
 
   if (sl.isRegistered<AppDatabase>()) {
@@ -667,6 +702,9 @@ Future<void> reinitializeDatabase() async {
   }
   if (existingImageStorageService != null) {
     sl.registerSingleton<ImageStorageService>(existingImageStorageService);
+  }
+  if (existingSecurityCubit != null) {
+    sl.registerSingleton<SecurityCubit>(existingSecurityCubit);
   }
 
   await initDependencies();

@@ -9,6 +9,10 @@ import 'package:gym_managment_app/core/theme/app_colors.dart';
 import 'package:gym_managment_app/core/theme/app_skeleton_theme.dart';
 import 'package:gym_managment_app/core/theme/app_spacing.dart';
 import 'package:gym_managment_app/core/theme/app_text_styles.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:gym_managment_app/core/di/injection_container.dart';
+import 'package:gym_managment_app/features/security/presentation/cubit/security_cubit.dart';
+import 'package:gym_managment_app/features/security/presentation/widgets/app_security_barrier.dart';
 import 'package:gym_managment_app/core/theme/app_theme.dart';
 
 class GymApp extends StatefulWidget {
@@ -101,9 +105,11 @@ class _GymAppState extends State<GymApp> {
 
   @override
   Widget build(BuildContext context) {
-    return KeyedSubtree(
-      key: _key,
-      child: MaterialApp.router(
+    return BlocProvider<SecurityCubit>.value(
+      value: sl<SecurityCubit>(),
+      child: KeyedSubtree(
+        key: _key,
+        child: MaterialApp.router(
         scaffoldMessengerKey: _scaffoldMessengerKey,
         title: AppConstants.appName,
         theme: AppTheme.light,
@@ -118,12 +124,21 @@ class _GymAppState extends State<GymApp> {
         routerConfig: _currentRouter,
         debugShowCheckedModeBanner: false,
         builder: (context, child) {
-          return SkeletonizerConfig(
-            data: AppSkeletonTheme.config,
-            child: child ?? const SizedBox.shrink(),
+          return GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            child: AppSecurityBarrier(
+              child: SkeletonizerConfig(
+                data: AppSkeletonTheme.config,
+                child: child ?? const SizedBox.shrink(),
+              ),
+            ),
           );
         },
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -20,6 +20,10 @@ import 'package:gym_managment_app/features/settings/presentation/cubit/export_cu
 import 'package:gym_managment_app/features/settings/presentation/pages/export_sheet.dart';
 import 'package:gym_managment_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:gym_managment_app/features/settings/presentation/widgets/backup_status_card.dart';
+import 'package:gym_managment_app/features/settings/presentation/widgets/settings_group_card.dart';
+import 'package:gym_managment_app/features/security/data/datasources/security_local_datasource.dart';
+import 'package:gym_managment_app/features/security/data/repositories/security_repository_impl.dart';
+import 'package:gym_managment_app/features/security/presentation/cubit/security_cubit.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -85,6 +89,13 @@ void main() {
         exportMembersPdf: mockExportPdf,
       ),
     );
+
+    const storage = FlutterSecureStorage();
+    final secDataSource = SecurityLocalDataSourceImpl(secureStorage: storage);
+    final secRepo = SecurityRepositoryImpl(localDataSource: secDataSource);
+    final secCubit = SecurityCubit(repository: secRepo);
+    await secCubit.init();
+    sl.registerSingleton<SecurityCubit>(secCubit);
   });
 
   tearDown(() async {
@@ -96,25 +107,32 @@ void main() {
       locale: const Locale('ar'),
       home: Directionality(
         textDirection: TextDirection.rtl,
-        child: child,
+        child: BlocProvider.value(
+          value: sl<SecurityCubit>(),
+          child: child,
+        ),
       ),
     );
   }
 
   group('Settings UI & Widget Tests', () {
-    testWidgets('SettingsPage renders all three section groups and tiles', (tester) async {
+    testWidgets('SettingsPage renders all section groups and tiles including security', (tester) async {
       await tester.pumpWidget(buildTestableWidget(const SettingsPage()));
       await tester.pumpAndSettle();
 
       expect(find.text('الإعدادات'), findsOneWidget);
       expect(find.text('البيانات'), findsOneWidget);
-      expect(find.text('التنبيهات'), findsOneWidget);
-      expect(find.text('عن التطبيق'), findsOneWidget);
-
+      expect(find.text('الأمان وحماية البيانات'), findsOneWidget);
       expect(find.text('النسخ الاحتياطي والاستعادة'), findsOneWidget);
       expect(find.text('نسخ احتياطي الآن'), findsOneWidget);
       expect(find.text('تصدير المشتركين'), findsOneWidget);
+      expect(find.text('قفل البيانات المالية والإحصائيات'), findsOneWidget);
+      expect(find.text('تغيير رمز المرور'), findsOneWidget);
       expect(find.text('تفعيل التنبيهات'), findsOneWidget);
+
+      await tester.drag(find.byType(ListView).first, const Offset(0, -300));
+      await tester.pumpAndSettle();
+      expect(find.text('عن التطبيق'), findsOneWidget);
       expect(find.text('إصدار التطبيق'), findsOneWidget);
     });
 
@@ -122,7 +140,10 @@ void main() {
       await tester.pumpWidget(buildTestableWidget(const SettingsPage()));
       await tester.pumpAndSettle();
 
-      final switchFinder = find.byType(Switch);
+      final switchFinder = find.descendant(
+        of: find.widgetWithText(SettingsGroupCard, 'التنبيهات'),
+        matching: find.byType(Switch),
+      );
       expect(switchFinder, findsOneWidget);
 
       await tester.tap(switchFinder);

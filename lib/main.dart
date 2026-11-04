@@ -12,6 +12,11 @@ import 'package:gym_managment_app/core/services/background_backup_worker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Cap image cache to prevent memory bloat on mobile devices
+  PaintingBinding.instance.imageCache.maximumSize = 100;
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 30 * 1024 * 1024;
+
   await initializeDateFormatting('ar', null);
   Intl.defaultLocale = 'ar';
 
@@ -25,8 +30,11 @@ void main() async {
 
   try {
     await initDependencies();
-    await sl<NotificationService>().init();
-    await BackgroundBackupWorker.init();
+    await Future.wait([
+      sl<NotificationService>().init(),
+      BackgroundBackupWorker.init(),
+    ]);
+    await sl<NotificationService>().requestPermission();
   } catch (error, stackTrace) {
     developer.log('Initialization error', error: error, stackTrace: stackTrace);
   }

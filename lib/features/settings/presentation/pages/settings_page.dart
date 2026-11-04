@@ -13,6 +13,9 @@ import '../cubit/backup_cubit.dart';
 import '../cubit/backup_state.dart';
 import '../widgets/settings_group_card.dart';
 import 'export_sheet.dart';
+import 'package:gym_managment_app/features/security/presentation/cubit/security_cubit.dart';
+import 'package:gym_managment_app/features/security/presentation/cubit/security_state.dart';
+import 'package:gym_managment_app/features/security/presentation/widgets/change_pin_dialog.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -203,7 +206,93 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 const SizedBox(height: AppSpacing.lg),
 
-                // Group 2: التنبيهات
+                // Group 2: الأمان وحماية البيانات
+                BlocBuilder<SecurityCubit, SecurityState>(
+                  builder: (context, securityState) {
+                    final hasCustomPin = securityState.hasCustomPin;
+                    return SettingsGroupCard(
+                      title: 'الأمان وحماية البيانات',
+                      tiles: [
+                        SettingsTileData(
+                          icon: Icons.shield_rounded,
+                          iconColor: AppColors.primary,
+                          iconBackgroundColor: AppColors.primaryLight,
+                          title: 'قفل البيانات المالية والإحصائيات',
+                          subtitle: 'تمويه بطاقات لوحة التحكم وقفل الحسابات برمز مرور',
+                          trailing: Switch.adaptive(
+                            value: securityState.isSecurityEnabled,
+                            activeTrackColor: AppColors.primary,
+                            activeThumbColor: AppColors.surface,
+                            onChanged: (val) {
+                              context.read<SecurityCubit>().setSecurityEnabled(val);
+                            },
+                          ),
+                        ),
+                        SettingsTileData(
+                          icon: Icons.key_rounded,
+                          iconColor: AppColors.secondary,
+                          iconBackgroundColor: AppColors.secondaryLight,
+                          title: 'تغيير رمز المرور',
+                          subtitle: hasCustomPin
+                              ? 'تم تعيين رمز مرور مخصص'
+                              : 'رمز المرور الحالي: 0000 (افتراضي)',
+                          trailing: const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 14,
+                            color: AppColors.textDisabled,
+                          ),
+                          onTap: () async {
+                            final changed = await ChangePinDialog.show(context);
+                            if (changed == true && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  backgroundColor: AppColors.success,
+                                  behavior: SnackBarBehavior.floating,
+                                  content: Row(
+                                    children: [
+                                      const Icon(Icons.check_circle_rounded,
+                                          color: Colors.white, size: 20),
+                                      const SizedBox(width: AppSpacing.sm),
+                                      Expanded(
+                                        child: Text(
+                                          'تم تحديث رمز المرور بنجاح',
+                                          style: AppTextStyles.bodyMedium
+                                              .copyWith(color: Colors.white),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                        if (securityState.isSecurityEnabled && !securityState.isLocked)
+                          SettingsTileData(
+                            icon: Icons.lock_outline_rounded,
+                            iconColor: AppColors.warning,
+                            iconBackgroundColor: AppColors.warningTint,
+                            title: 'قفل البيانات الآن',
+                            subtitle: 'إعادة تمويه البطاقات وقفل قسم الحسابات فوراً',
+                            onTap: () {
+                              context.read<SecurityCubit>().lock();
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  backgroundColor: AppColors.secondary,
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 2),
+                                  content: Text('تم قفل البيانات الحساسة بنجاح'),
+                                ),
+                              );
+                            },
+                          ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // Group 3: التنبيهات
                 SettingsGroupCard(
                   title: 'التنبيهات',
                   tiles: [

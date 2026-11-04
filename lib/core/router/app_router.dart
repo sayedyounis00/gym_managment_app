@@ -17,25 +17,61 @@ import '../../features/memberships/presentation/pages/packages_page.dart';
 import '../../features/memberships/presentation/pages/add_edit_package_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/settings/presentation/pages/backup_page.dart';
-import '../../features/splash/presentation/pages/splash_page.dart';
 import '../../features/finance/presentation/pages/finance_page.dart';
 import '../../features/finance/presentation/pages/add_expense_page.dart';
 import '../../features/finance/presentation/pages/add_payment_page.dart';
 import '../../features/finance/presentation/pages/reports_page.dart';
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
 import '../../features/notifications/presentation/pages/notifications_page.dart';
+import '../../features/splash/presentation/pages/splash_page.dart';
 import '../di/injection_container.dart';
 import '../widgets/app_exit_scope.dart';
 import '../widgets/main_shell_screen.dart';
 import 'routes.dart';
 
+class KeyboardDismissNavigatorObserver extends NavigatorObserver {
+  void _dismissKeyboard() {
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _dismissKeyboard();
+    super.didPush(route, previousRoute);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _dismissKeyboard();
+    super.didPop(route, previousRoute);
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    _dismissKeyboard();
+    super.didRemove(route, previousRoute);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    _dismissKeyboard();
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+  }
+}
+
 final GlobalKey<NavigatorState> _defaultRootNavigatorKey = GlobalKey<NavigatorState>();
 
-GoRouter createAppRouter({GlobalKey<NavigatorState>? rootNavigatorKey}) {
+GoRouter createAppRouter({
+  GlobalKey<NavigatorState>? rootNavigatorKey,
+  String initialLocation = AppRoutes.splash,
+}) {
   final navKey = rootNavigatorKey ?? GlobalKey<NavigatorState>();
   return GoRouter(
     navigatorKey: navKey,
-    initialLocation: AppRoutes.splash,
+    initialLocation: initialLocation,
+    observers: [
+      KeyboardDismissNavigatorObserver(),
+    ],
   routes: [
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
