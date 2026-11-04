@@ -12,6 +12,11 @@ abstract class NotificationService {
     required DateTime endDate,
     int daysBefore = 3,
   });
+  Future<void> showSubscriptionExpiringNotification({
+    required int subscriptionId,
+    required String memberName,
+    required int daysLeft,
+  });
   Future<void> cancelSubscriptionExpiry(int subscriptionId);
   Future<void> showExpiringGroupNotification({required int count});
   Future<void> cancelAll();
@@ -55,6 +60,19 @@ class NotificationServiceImpl implements NotificationService {
           developer.log('Notification tapped: ${response.payload}');
         },
       );
+
+      final androidPlatform = _notificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      if (androidPlatform != null) {
+        const channel = AndroidNotificationChannel(
+          channelId,
+          channelName,
+          description: channelDescription,
+          importance: Importance.high,
+        );
+        await androidPlatform.createNotificationChannel(channel);
+      }
 
       _isInitialized = true;
     } catch (e, stack) {
@@ -116,7 +134,16 @@ class NotificationServiceImpl implements NotificationService {
         0,
       );
 
-      if (scheduledTime.isBefore(DateTime.now())) {
+      final now = DateTime.now();
+      if (scheduledTime.isBefore(now)) {
+        final diffDays = endDate.difference(DateTime(now.year, now.month, now.day)).inDays;
+        if (diffDays >= 0 && diffDays <= daysBefore) {
+          await showSubscriptionExpiringNotification(
+            subscriptionId: subscriptionId,
+            memberName: memberName,
+            daysLeft: diffDays,
+          );
+        }
         return;
       }
 
@@ -148,6 +175,56 @@ class NotificationServiceImpl implements NotificationService {
     } catch (e, stack) {
       developer.log(
         'Error scheduling subscription notification: $e',
+        error: e,
+        stackTrace: stack,
+      );
+    }
+  }
+
+  @override
+  Future<void> showSubscriptionExpiringNotification({
+    required int subscriptionId,
+    required String memberName,
+    required int daysLeft,
+  }) async {
+    try {
+      if (!_isInitialized) await init();
+
+      final String body;
+      if (daysLeft <= 0) {
+        body = 'اشتراك المشترك $memberName ينتهي اليوم!';
+      } else if (daysLeft == 1) {
+        body = 'اشتراك المشترك $memberName ينتهي غداً';
+      } else if (daysLeft == 2) {
+        body = 'اشتراك المشترك $memberName ينتهي خلال يومين';
+      } else {
+        body = 'اشتراك المشترك $memberName ينتهي خلال $daysLeft أيام';
+      }
+
+      const androidDetails = AndroidNotificationDetails(
+        channelId,
+        channelName,
+        channelDescription: channelDescription,
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      );
+
+      const notificationDetails = NotificationDetails(
+        android: androidDetails,
+        iOS: DarwinNotificationDetails(),
+      );
+
+      await _notificationsPlugin.show(
+        id: subscriptionId,
+        title: 'تنبيه انتهاء الاشتراك',
+        body: body,
+        notificationDetails: notificationDetails,
+        payload: 'member_subscription:$subscriptionId',
+      );
+    } catch (e, stack) {
+      developer.log(
+        'Error showing expiring notification: $e',
         error: e,
         stackTrace: stack,
       );

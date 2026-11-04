@@ -3,6 +3,7 @@ import 'package:workmanager/workmanager.dart';
 
 import '../../features/settings/data/datasources/backup_source.dart';
 import '../di/injection_container.dart';
+import 'background_expiry_worker.dart';
 
 @pragma('vm:entry-point')
 void callbackDispatcher() {
@@ -16,6 +17,8 @@ void callbackDispatcher() {
       } catch (e) {
         debugPrint('Workmanager weekly auto-backup failed: $e');
       }
+    } else if (task == BackgroundExpiryWorker.taskIdentifier) {
+      return await BackgroundExpiryWorker.execute();
     }
     return Future.value(true);
   });
@@ -33,6 +36,7 @@ abstract final class BackgroundBackupWorker {
         frequency: const Duration(days: 7),
         existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
       );
+      await BackgroundExpiryWorker.registerPeriodicTask();
     } catch (e) {
       debugPrint('BackgroundBackupWorker initialization failed: $e');
     }
