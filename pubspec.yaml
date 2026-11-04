@@ -23,6 +23,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_secure_storage: ^11.2.0
+  font_awesome_flutter: ^11.0.0
   fpdart: ^1.2.0
   freezed_annotation: ^3.1.0
   get_it: ^9.3.0
@@ -63,13 +64,14 @@ dev_dependencies:
     sdk: flutter
   freezed: ^4.0.1 # Code generator for immutable data models
   injectable_generator: ^3.1.3 # Generator for GetIt / Injectable
+  integration_test:
+    sdk: flutter
   json_serializable: ^6.14.1 # Generator for JSON serialization
   mocktail: ^1.0.5 # Null-safe mocking library
 
 flutter:
   uses-material-design: true
   assets:
-    - assets/gif/
     - assets/icons/
 
 flutter_launcher_icons:
@@ -77,3 +79,6 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/icons/spear-gym-logo.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
+  remove_alpha_ios: true
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icons/spear-gym-logo-adaptive.png"
