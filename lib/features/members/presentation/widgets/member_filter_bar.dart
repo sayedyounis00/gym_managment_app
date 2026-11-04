@@ -16,42 +16,53 @@ class MemberFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+    final barHeight = (38.0 * textScale).clamp(38.0, 52.0);
+    final chipHeight = (36.0 * textScale).clamp(36.0, 48.0);
+
     return SizedBox(
-      height: 38,
-      child: ListView(
+      height: barHeight,
+      child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        children: [
-          _buildChip(
-            label: 'الكل',
-            isSelected: selectedFilter == null,
-            onTap: () => onFilterSelected(null),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          _buildChip(
-            label: 'نشط',
-            isSelected: selectedFilter == MemberStatusType.active,
-            onTap: () => onFilterSelected(MemberStatusType.active),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          _buildChip(
-            label: 'ينتهي قريباً',
-            isSelected: selectedFilter == MemberStatusType.expiringSoon,
-            onTap: () => onFilterSelected(MemberStatusType.expiringSoon),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          _buildChip(
-            label: 'منتهي',
-            isSelected: selectedFilter == MemberStatusType.expired,
-            onTap: () => onFilterSelected(MemberStatusType.expired),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          _buildChip(
-            label: 'موقوف',
-            isSelected: selectedFilter == MemberStatusType.paused,
-            onTap: () => onFilterSelected(MemberStatusType.paused),
-          ),
-        ],
+        child: Row(
+          children: [
+            _buildChip(
+              label: 'الكل',
+              isSelected: selectedFilter == null,
+              onTap: () => onFilterSelected(null),
+              chipHeight: chipHeight,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            _buildChip(
+              label: 'نشط',
+              isSelected: selectedFilter == MemberStatusType.active,
+              onTap: () => onFilterSelected(MemberStatusType.active),
+              chipHeight: chipHeight,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            _buildChip(
+              label: 'ينتهي قريباً',
+              isSelected: selectedFilter == MemberStatusType.expiringSoon,
+              onTap: () => onFilterSelected(MemberStatusType.expiringSoon),
+              chipHeight: chipHeight,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            _buildChip(
+              label: 'منتهي',
+              isSelected: selectedFilter == MemberStatusType.expired,
+              onTap: () => onFilterSelected(MemberStatusType.expired),
+              chipHeight: chipHeight,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            _buildChip(
+              label: 'موقوف',
+              isSelected: selectedFilter == MemberStatusType.paused,
+              onTap: () => onFilterSelected(MemberStatusType.paused),
+              chipHeight: chipHeight,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -60,6 +71,7 @@ class MemberFilterBar extends StatelessWidget {
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
+    required double chipHeight,
   }) {
     return Material(
       color: Colors.transparent,
@@ -69,7 +81,7 @@ class MemberFilterBar extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeInOut,
-          height: 36,
+          height: chipHeight,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             color: isSelected ? AppColors.primaryLight : AppColors.surface,

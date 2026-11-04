@@ -159,6 +159,7 @@ class _AddEditMemberPageState extends State<AddEditMemberPage> {
                 icon: const Icon(Icons.arrow_back_rounded),
                 tooltip: 'رجوع',
                 onPressed: () async {
+                  FocusManager.instance.primaryFocus?.unfocus();
                   final canExit = await _onWillPop(isDirty);
                   if (canExit && context.mounted) {
                     Navigator.of(context).pop();
@@ -173,6 +174,7 @@ class _AddEditMemberPageState extends State<AddEditMemberPage> {
                       children: [
                         Expanded(
                           child: SingleChildScrollView(
+                            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                             padding: const EdgeInsets.all(AppSpacing.md),
                             child: ResponsiveCenteredContainer(
                               maxWidth: 600,
@@ -391,6 +393,7 @@ class _AddEditMemberPageState extends State<AddEditMemberPage> {
                                     variant: AppButtonVariant.primary,
                                     isLoading: state.isSaving,
                                     onPressed: () {
+                                      FocusManager.instance.primaryFocus?.unfocus();
                                       context.read<MemberFormCubit>().save();
                                     },
                                   ),
@@ -401,6 +404,7 @@ class _AddEditMemberPageState extends State<AddEditMemberPage> {
                                     label: 'إلغاء',
                                     variant: AppButtonVariant.outlined,
                                     onPressed: () async {
+                                      FocusManager.instance.primaryFocus?.unfocus();
                                       final canExit = await _onWillPop(isDirty);
                                       if (canExit && context.mounted) {
                                         Navigator.of(context).pop();

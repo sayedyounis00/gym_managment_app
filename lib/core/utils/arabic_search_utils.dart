@@ -4,6 +4,7 @@ class ArabicSearchUtils {
   static final RegExp _tashkeelRegex = RegExp(
     r'[\u064B-\u0652\u0670\u0640]',
   );
+  static final RegExp _nonDigitsRegex = RegExp(r'\D');
 
   /// Normalizes Arabic text for flexible matching:
   /// - Strips diacritics / tashkeel and tatweel
@@ -52,7 +53,7 @@ class ArabicSearchUtils {
     }
 
     // Keep only digits
-    result = result.replaceAll(RegExp(r'\D'), '');
+    result = result.replaceAll(_nonDigitsRegex, '');
 
     // If starts with +20 or 0020, convert to local 11 digits (01...)
     if (result.startsWith('20') && result.length == 12) {

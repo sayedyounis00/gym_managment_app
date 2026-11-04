@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -182,6 +183,7 @@ class _PackagesPageState extends State<PackagesPage> {
                           itemBuilder: (context, index) {
                             final pkg = packages[index];
                             return PackageCard(
+                              key: ValueKey(pkg.id),
                               package: pkg,
                               onEdit: () => _openEditPackage(pkg.id),
                               onDelete: () => _confirmDeletePackage(pkg),
@@ -196,6 +198,7 @@ class _PackagesPageState extends State<PackagesPage> {
                   );
                 } else {
                   content = ListView.separated(
+                    scrollCacheExtent: const ScrollCacheExtent.pixels(300),
                     padding: const EdgeInsets.only(
                       left: AppSpacing.lg,
                       right: AppSpacing.lg,
@@ -213,6 +216,7 @@ class _PackagesPageState extends State<PackagesPage> {
                       }
                       final pkg = packages[index];
                       return PackageCard(
+                        key: ValueKey(pkg.id),
                         package: pkg,
                         onEdit: () => _openEditPackage(pkg.id),
                         onDelete: () => _confirmDeletePackage(pkg),

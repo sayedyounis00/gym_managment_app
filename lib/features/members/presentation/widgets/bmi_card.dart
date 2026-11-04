@@ -39,11 +39,15 @@ class BmiCard extends StatelessWidget {
                 color: AppColors.textSecondary,
               ),
               const SizedBox(width: AppSpacing.xs),
-              Text(
-                'مؤشر كتلة الجسم (BMI)',
-                style: AppTextStyles.titleMedium,
+              Expanded(
+                child: Text(
+                  'مؤشر كتلة الجسم (BMI)',
+                  style: AppTextStyles.titleMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              const Spacer(),
+              const SizedBox(width: AppSpacing.xs),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(

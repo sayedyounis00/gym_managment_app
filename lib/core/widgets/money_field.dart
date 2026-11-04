@@ -79,6 +79,7 @@ class _MoneyFieldState extends State<MoneyField> {
         TextFormField(
           controller: _controller,
           enabled: widget.enabled,
+          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           inputFormatters: [
             FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),

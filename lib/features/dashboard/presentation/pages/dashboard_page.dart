@@ -23,6 +23,10 @@ import 'package:gym_managment_app/features/finance/presentation/pages/add_expens
 import '../../../../core/di/injection_container.dart';
 import '../../../notifications/presentation/cubit/notifications_cubit.dart';
 import '../../../notifications/presentation/cubit/notifications_state.dart';
+import 'package:gym_managment_app/features/security/presentation/cubit/security_cubit.dart';
+import 'package:gym_managment_app/features/security/presentation/cubit/security_state.dart';
+import 'package:gym_managment_app/features/security/presentation/widgets/floating_pin_dialog.dart';
+import 'package:gym_managment_app/features/security/presentation/widgets/secure_blur_wrapper.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -34,9 +38,17 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _expiringKey = GlobalKey();
+  late final NotificationsCubit _notificationsCubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _notificationsCubit = sl<NotificationsCubit>()..init();
+  }
 
   @override
   void dispose() {
+    _notificationsCubit.close();
     _scrollController.dispose();
     super.dispose();
   }
@@ -57,6 +69,14 @@ class _DashboardPageState extends State<DashboardPage> {
     if (hour < 12) return 'صباح الخير';
     if (hour < 17) return 'مساء الخير';
     return 'أهلاً بك';
+  }
+
+  Future<void> _promptUnlock(BuildContext context) async {
+    await FloatingPinDialog.show(
+      context,
+      title: 'فك قفل لوحة التحكم',
+      subtitle: 'أدخل رمز المرور لعرض الأرقام والبيانات الحساسة',
+    );
   }
 
   @override
@@ -81,40 +101,59 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
         actions: [
+          BlocBuilder<SecurityCubit, SecurityState>(
+            builder: (context, secState) {
+              if (!secState.isSecurityEnabled) return const SizedBox.shrink();
+              return IconButton(
+                icon: Icon(
+                  secState.isLocked
+                      ? Icons.lock_rounded
+                      : Icons.lock_open_rounded,
+                  color: secState.isLocked ? AppColors.warning : AppColors.primary,
+                ),
+                tooltip: secState.isLocked ? 'فك قفل الأرقام' : 'قفل الأرقام',
+                onPressed: () {
+                  if (secState.isLocked) {
+                    _promptUnlock(context);
+                  } else {
+                    context.read<SecurityCubit>().lock();
+                  }
+                },
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Symbols.settings_rounded),
             tooltip: 'الإعدادات والنسخ الاحتياطي',
             onPressed: () => context.push(AppRoutes.settings),
           ),
-          BlocProvider(
-            create: (_) => sl<NotificationsCubit>()..init(),
-            child: BlocBuilder<NotificationsCubit, NotificationsState>(
-              builder: (context, notifState) {
-                final hasNotifications = notifState is NotificationsLoaded &&
-                    notifState.hasNotifications;
+          BlocBuilder<NotificationsCubit, NotificationsState>(
+            bloc: _notificationsCubit,
+            builder: (context, notifState) {
+              final hasNotifications = notifState is NotificationsLoaded &&
+                  notifState.hasNotifications;
 
-                return IconButton(
-                  icon: Badge(
-                    isLabelVisible: hasNotifications,
-                    smallSize: 8,
-                    child: const Icon(Symbols.notifications_rounded),
-                  ),
-                  tooltip: 'الإشعارات والتنبيهات',
-                  onPressed: () {
-                    if (hasNotifications) {
-                      context.push(AppRoutes.notifications);
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('لا توجد إشعارات جديدة حالياً'),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
-                );
-              },
-            ),
+              return IconButton(
+                icon: Badge(
+                  isLabelVisible: hasNotifications,
+                  smallSize: 8,
+                  child: const Icon(Symbols.notifications_rounded),
+                ),
+                tooltip: 'الإشعارات والتنبيهات',
+                onPressed: () {
+                  if (hasNotifications) {
+                    context.push(AppRoutes.notifications);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('لا توجد إشعارات جديدة حالياً'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
+                },
+              );
+            },
           ),
           const SizedBox(width: AppSpacing.sm),
         ],
@@ -173,20 +212,32 @@ class _DashboardPageState extends State<DashboardPage> {
                         width < ResponsiveBreakpoints.medium;
                     final isSmallPhone = width < 360;
 
+                    final secState = context.watch<SecurityCubit>().state;
+                    final isCardsLocked = secState.isSecurityEnabled && secState.isLocked;
+
                     final statCrossAxisCount = (isDesktop || isTablet) ? 4 : 2;
                     final statAspectRatio = isDesktop
                         ? 1.45
                         : (isTablet ? 1.4 : (isSmallPhone ? 1.15 : 1.3));
 
                     final statCards = [
-                      StatCard(
-                        title: 'المشتركين النشطين',
-                        value: '${summary.activeMembersCount}',
-                        icon: Symbols.groups_rounded,
-                        accentColor: AppColors.success,
-                        subtitle: 'اشتراك سارٍ',
-                        onTap: () =>
-                            context.go(AppRoutes.membersWithStatus('active')),
+                      SecureBlurWrapper(
+                        isBlurred: isCardsLocked,
+                        onUnlockRequested: () => _promptUnlock(context),
+                        child: StatCard(
+                          title: 'المشتركين النشطين',
+                          value: '${summary.activeMembersCount}',
+                          icon: Symbols.groups_rounded,
+                          accentColor: AppColors.success,
+                          subtitle: 'اشتراك سارٍ',
+                          onTap: () {
+                            if (isCardsLocked) {
+                              _promptUnlock(context);
+                            } else {
+                              context.go(AppRoutes.membersWithStatus('active'));
+                            }
+                          },
+                        ),
                       ),
                       StatCard(
                         title: 'ينتهي قريباً',
@@ -196,33 +247,63 @@ class _DashboardPageState extends State<DashboardPage> {
                         subtitle: 'خلال 7 أيام',
                         onTap: _scrollToExpiring,
                       ),
-                      StatCard(
-                        title: 'مشتركين جدد',
-                        value: '${summary.newSubscriptionsThisMonth}',
-                        icon: Symbols.person_add_rounded,
-                        accentColor: AppColors.info,
-                        subtitle: 'هذا الشهر',
-                        onTap: () => context.go(AppRoutes.members),
+                      SecureBlurWrapper(
+                        isBlurred: isCardsLocked,
+                        onUnlockRequested: () => _promptUnlock(context),
+                        child: StatCard(
+                          title: 'مشتركين جدد',
+                          value: '${summary.newSubscriptionsThisMonth}',
+                          icon: Symbols.person_add_rounded,
+                          accentColor: AppColors.info,
+                          subtitle: 'هذا الشهر',
+                          onTap: () {
+                            if (isCardsLocked) {
+                              _promptUnlock(context);
+                            } else {
+                              context.go(AppRoutes.members);
+                            }
+                          },
+                        ),
                       ),
-                      StatCard(
-                        title: 'صافي الأرباح',
-                        value: CurrencyFormatter.formatCompact(summary.netProfit),
-                        icon: summary.netProfit >= 0
-                            ? Symbols.trending_up_rounded
-                            : Symbols.trending_down_rounded,
-                        accentColor: summary.netProfit >= 0
-                            ? AppColors.primary
-                            : AppColors.error,
-                        subtitle: 'الإيرادات - المصروفات',
-                        onTap: () => context.go(AppRoutes.finance),
+                      SecureBlurWrapper(
+                        isBlurred: isCardsLocked,
+                        onUnlockRequested: () => _promptUnlock(context),
+                        child: StatCard(
+                          title: 'صافي الأرباح',
+                          value: CurrencyFormatter.formatCompact(summary.netProfit),
+                          icon: summary.netProfit >= 0
+                              ? Symbols.trending_up_rounded
+                              : Symbols.trending_down_rounded,
+                          accentColor: summary.netProfit >= 0
+                              ? AppColors.primary
+                              : AppColors.error,
+                          subtitle: 'الإيرادات - المصروفات',
+                          onTap: () {
+                            if (isCardsLocked) {
+                              _promptUnlock(context);
+                            } else {
+                              context.go(AppRoutes.finance);
+                            }
+                          },
+                        ),
                       ),
                     ];
 
-                    final financeWidget = FinanceSummaryCard(
-                      revenue: summary.monthRevenue,
-                      expenses: summary.monthExpenses,
-                      todayRevenue: summary.todayRevenue,
-                      onTap: () => context.go(AppRoutes.finance),
+                    final financeWidget = SecureBlurWrapper(
+                      isBlurred: isCardsLocked,
+                      onUnlockRequested: () => _promptUnlock(context),
+                      child: FinanceSummaryCard(
+                        revenue: summary.monthRevenue,
+                        expenses: summary.monthExpenses,
+                        todayRevenue: summary.todayRevenue,
+                        onTap: () {
+                          if (isCardsLocked) {
+                            _promptUnlock(context);
+                          } else {
+                            context.go(AppRoutes.finance);
+                          }
+                        },
+                      ),
                     );
 
                     final expiringWidget = Container(
@@ -485,6 +566,21 @@ class _DashboardPageState extends State<DashboardPage> {
               color: Colors.transparent,
               child: InkWell(
                 onTap: () async {
+                  final secState = context.read<SecurityCubit>().state;
+                  if (secState.isSecurityEnabled && secState.isLocked) {
+                    if (item.label == 'تسجيل دفعة' ||
+                        item.label == 'مصروف جديد') {
+                      final unlocked = await FloatingPinDialog.show(
+                        context,
+                        title: 'حماية العمليات المالية',
+                        subtitle: 'أدخل رمز المرور لمتابعة العملية المالية',
+                      );
+                      if (unlocked != true) return;
+                    }
+                  }
+
+                  if (!context.mounted) return;
+
                   if (item.label == 'تسجيل دفعة') {
                     final success = await AddPaymentSheet.show(context);
                     if (success == true && context.mounted) {

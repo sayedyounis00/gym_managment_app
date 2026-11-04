@@ -14,14 +14,22 @@ abstract class ImageStorageService {
 }
 
 class ImageStorageServiceImpl implements ImageStorageService {
+  static String? _cachedDocsDirPath;
+
+  static Future<String> getDocsDirPath() async {
+    return _cachedDocsDirPath ??= (await getApplicationDocumentsDirectory()).path;
+  }
+
+  static String? get cachedDocsDirPath => _cachedDocsDirPath;
+
   @override
   Future<String> saveMemberPhoto({
     required File sourceFile,
     required int memberId,
     String? oldRelativePath,
   }) async {
-    final docsDir = await getApplicationDocumentsDirectory();
-    final photosDir = Directory('${docsDir.path}/member_photos');
+    final docsPath = await getDocsDirPath();
+    final photosDir = Directory('$docsPath/member_photos');
     if (!await photosDir.exists()) {
       await photosDir.create(recursive: true);
     }
@@ -44,8 +52,8 @@ class ImageStorageServiceImpl implements ImageStorageService {
   @override
   Future<void> deletePhoto(String relativePath) async {
     try {
-      final docsDir = await getApplicationDocumentsDirectory();
-      final fullPath = '${docsDir.path}/$relativePath';
+      final docsPath = await getDocsDirPath();
+      final fullPath = '$docsPath/$relativePath';
       final file = File(fullPath);
       if (await file.exists()) {
         await file.delete();
@@ -59,8 +67,8 @@ class ImageStorageServiceImpl implements ImageStorageService {
   Future<File?> getPhotoFile(String? relativePath) async {
     if (relativePath == null || relativePath.isEmpty) return null;
     try {
-      final docsDir = await getApplicationDocumentsDirectory();
-      final fullPath = '${docsDir.path}/$relativePath';
+      final docsPath = await getDocsDirPath();
+      final fullPath = '$docsPath/$relativePath';
       final file = File(fullPath);
       if (await file.exists()) {
         return file;

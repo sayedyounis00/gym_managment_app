@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gym_managment_app/features/dashboard/domain/entities/expiring_subscription.dart';
@@ -122,6 +123,30 @@ void main() {
       expect(find.text('الإيرادات'), findsWidgets);
       expect(find.text('المصروفات'), findsWidgets);
       expect(find.text('صافي الأرباح (الشهر الحالي)'), findsOneWidget);
+    });
+
+    testWidgets('FinanceSummaryCard has expenses at x:0 and revenue at x:1 for RTL alignment', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: FinanceSummaryCard(
+                revenue: 300.0,
+                expenses: 100.0,
+                todayRevenue: 50.0,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      final barChartFinder = find.byType(BarChart);
+      expect(barChartFinder, findsOneWidget);
+      final barChart = tester.widget<BarChart>(barChartFinder);
+      expect(barChart.data.barGroups[0].x, 0);
+      expect(barChart.data.barGroups[0].barRods[0].toY, 100.0);
+      expect(barChart.data.barGroups[1].x, 1);
+      expect(barChart.data.barGroups[1].barRods[0].toY, 300.0);
     });
 
     testWidgets('StatCard displays title, value, and subtitle', (tester) async {

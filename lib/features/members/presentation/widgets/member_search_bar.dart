@@ -43,8 +43,11 @@ class _MemberSearchBarState extends State<MemberSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+    final minHeight = (48.0 * textScale).clamp(48.0, 64.0);
+
     return Container(
-      height: 48,
+      constraints: BoxConstraints(minHeight: minHeight),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.full),
@@ -52,12 +55,16 @@ class _MemberSearchBarState extends State<MemberSearchBar> {
       ),
       child: TextField(
         controller: _controller,
+        textInputAction: TextInputAction.search,
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+        onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
         onChanged: (val) {
           widget.onChanged(val);
           setState(() {});
         },
         style: AppTextStyles.bodyMedium,
         decoration: InputDecoration(
+          isDense: true,
           hintText: 'ابحث بالاسم أو رقم الهاتف...',
           hintStyle: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textDisabled,

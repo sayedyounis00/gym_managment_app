@@ -10,6 +10,7 @@ import 'package:gym_managment_app/core/router/routes.dart';
 import 'package:gym_managment_app/features/members/presentation/pages/members_page.dart';
 import 'package:gym_managment_app/features/memberships/presentation/pages/packages_page.dart';
 import 'package:gym_managment_app/features/finance/presentation/pages/finance_page.dart';
+import 'package:gym_managment_app/features/security/presentation/cubit/security_cubit.dart';
 
 void main() {
   late AppDatabase testDb;
@@ -17,6 +18,9 @@ void main() {
   setUp(() async {
     testDb = AppDatabase(NativeDatabase.memory());
     await initDependencies(database: testDb);
+    if (sl.isRegistered<SecurityCubit>()) {
+      sl<SecurityCubit>().unlock();
+    }
     appRouter.go(AppRoutes.dashboard);
   });
 

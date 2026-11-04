@@ -20,70 +20,75 @@ class NotesTab extends StatelessWidget {
     required this.onDeleteNote,
   });
 
-  void _showAddEditDialog(BuildContext context, [MemberNote? note]) {
+  Future<void> _showAddEditDialog(BuildContext context, [MemberNote? note]) async {
     final controller = TextEditingController(text: note?.note ?? '');
-    showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-            side: const BorderSide(color: AppColors.border, width: 1),
-          ),
-          title: Text(
-            note == null ? 'إضافة ملاحظة جديدة' : 'تعديل الملاحظة',
-            style: AppTextStyles.titleMedium,
-          ),
-          content: TextField(
-            controller: controller,
-            maxLines: 4,
-            autofocus: true,
-            style: AppTextStyles.bodyMedium,
-            decoration: InputDecoration(
-              hintText: 'اكتب الملاحظة هنا...',
-              hintStyle: AppTextStyles.bodyMedium.copyWith(
-                color: AppColors.textDisabled,
-              ),
-              filled: true,
-              fillColor: AppColors.surfaceVariant,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                borderSide: const BorderSide(color: AppColors.border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.md),
-                borderSide: const BorderSide(color: AppColors.primary, width: 2),
+    try {
+      await showDialog(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            backgroundColor: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              side: const BorderSide(color: AppColors.border, width: 1),
+            ),
+            title: Text(
+              note == null ? 'إضافة ملاحظة جديدة' : 'تعديل الملاحظة',
+              style: AppTextStyles.titleMedium,
+            ),
+            content: TextField(
+              controller: controller,
+              maxLines: 4,
+              autofocus: true,
+              onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+              style: AppTextStyles.bodyMedium,
+              decoration: InputDecoration(
+                hintText: 'اكتب الملاحظة هنا...',
+                hintStyle: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textDisabled,
+                ),
+                filled: true,
+                fillColor: AppColors.surfaceVariant,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                ),
               ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('إلغاء'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final text = controller.text.trim();
-                if (text.isNotEmpty) {
-                  Navigator.of(ctx).pop();
-                  if (note == null) {
-                    onAddNote(text);
-                  } else {
-                    onUpdateNote(note.id, text);
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('إلغاء'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final text = controller.text.trim();
+                  if (text.isNotEmpty) {
+                    Navigator.of(ctx).pop();
+                    if (note == null) {
+                      onAddNote(text);
+                    } else {
+                      onUpdateNote(note.id, text);
+                    }
                   }
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.onPrimary,
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.onPrimary,
+                ),
+                child: Text(note == null ? 'إضافة' : 'حفظ'),
               ),
-              child: Text(note == null ? 'إضافة' : 'حفظ'),
-            ),
-          ],
-        );
-      },
-    );
+            ],
+          );
+        },
+      );
+    } finally {
+      controller.dispose();
+    }
   }
 
   @override

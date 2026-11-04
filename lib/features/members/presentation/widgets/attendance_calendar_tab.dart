@@ -36,7 +36,7 @@ class _AttendanceCalendarTabState extends State<AttendanceCalendarTab> {
   }
 
   bool _isAttended(DateTime day, Set<DateTime> attendedDates) {
-    return attendedDates.any((d) => isSameDay(d, day));
+    return attendedDates.contains(AppDateUtils.startOfDay(day));
   }
 
   Future<void> _onDaySelected(DateTime selectedDay, Set<DateTime> attendedDates) async {

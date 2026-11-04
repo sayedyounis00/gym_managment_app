@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:gym_managment_app/core/services/image_storage_service.dart';
 import 'package:gym_managment_app/core/theme/app_colors.dart';
 import 'package:gym_managment_app/core/theme/app_text_styles.dart';
 import 'package:gym_managment_app/core/widgets/image_preview_dialog.dart';
@@ -52,8 +52,8 @@ class _MemberAvatarState extends State<MemberAvatar> {
 
     if (widget.photoPath != null && widget.photoPath!.isNotEmpty) {
       try {
-        final docsDir = await getApplicationDocumentsDirectory();
-        final file = File('${docsDir.path}/${widget.photoPath!}');
+        final docsPath = await ImageStorageServiceImpl.getDocsDirPath();
+        final file = File('$docsPath/${widget.photoPath!}');
         if (await file.exists()) {
           if (mounted) setState(() => _resolvedFile = file);
           return;
@@ -76,16 +76,23 @@ class _MemberAvatarState extends State<MemberAvatar> {
 
   @override
   Widget build(BuildContext context) {
+    final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 2.0;
+    final cachePixel = (widget.size * dpr).round().clamp(64, 320);
+
     Widget avatarWidget;
     if (_resolvedFile != null) {
-      avatarWidget = ClipRRect(
-        borderRadius: BorderRadius.circular(widget.size / 2),
-        child: Image.file(
-          _resolvedFile!,
-          width: widget.size,
-          height: widget.size,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => _buildFallback(),
+      avatarWidget = RepaintBoundary(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(widget.size / 2),
+          child: Image.file(
+            _resolvedFile!,
+            width: widget.size,
+            height: widget.size,
+            cacheWidth: cachePixel,
+            cacheHeight: cachePixel,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _buildFallback(),
+          ),
         ),
       );
     } else {

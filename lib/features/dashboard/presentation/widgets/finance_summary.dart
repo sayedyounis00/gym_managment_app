@@ -180,80 +180,82 @@ class FinanceSummaryCard extends StatelessWidget {
                   // Bar chart
                   SizedBox(
                     height: 110,
-                    child: BarChart(
-                      BarChartData(
-                        alignment: BarChartAlignment.spaceAround,
-                        maxY: maxY,
-                        barTouchData: BarTouchData(
-                          enabled: true,
-                          touchTooltipData: BarTouchTooltipData(
-                            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                              final label = group.x == 0 ? 'الإيرادات' : 'المصروفات';
-                              return BarTooltipItem(
-                                '$label\n${CurrencyFormatter.format(rod.toY)}',
-                                const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              );
-                            },
-                          ),
-                        ),
-                        titlesData: FlTitlesData(
-                          show: true,
-                          leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (value, meta) {
-                                final style = AppTextStyles.caption.copyWith(
-                                  color: AppColors.textSecondary,
+                    child: RepaintBoundary(
+                      child: BarChart(
+                        BarChartData(
+                          alignment: BarChartAlignment.spaceAround,
+                          maxY: maxY,
+                          barTouchData: BarTouchData(
+                            enabled: true,
+                            touchTooltipData: BarTouchTooltipData(
+                              getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                final label = group.x == 0 ? 'المصروفات' : 'الإيرادات';
+                                return BarTooltipItem(
+                                  '$label\n${CurrencyFormatter.format(rod.toY)}',
+                                  const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                 );
-                                if (value.toInt() == 0) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 6),
-                                    child: Text('الإيرادات', style: style),
-                                  );
-                                } else if (value.toInt() == 1) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 6),
-                                    child: Text('المصروفات', style: style),
-                                  );
-                                }
-                                return const SizedBox.shrink();
                               },
                             ),
                           ),
+                          titlesData: FlTitlesData(
+                            show: true,
+                            leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            bottomTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                getTitlesWidget: (value, meta) {
+                                  final style = AppTextStyles.caption.copyWith(
+                                    color: AppColors.textSecondary,
+                                  );
+                                  if (value.toInt() == 0) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(top: 6),
+                                      child: Text('المصروفات', style: style),
+                                    );
+                                  } else if (value.toInt() == 1) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(top: 6),
+                                      child: Text('الإيرادات', style: style),
+                                    );
+                                  }
+                                  return const SizedBox.shrink();
+                                },
+                              ),
+                            ),
+                          ),
+                          gridData: const FlGridData(show: false),
+                          borderData: FlBorderData(show: false),
+                          barGroups: [
+                            BarChartGroupData(
+                              x: 0,
+                              barRods: [
+                                BarChartRodData(
+                                  toY: expenses,
+                                  color: AppColors.chartExpenses,
+                                  width: isNarrow ? 24 : 28,
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(AppRadius.sm),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            BarChartGroupData(
+                              x: 1,
+                              barRods: [
+                                BarChartRodData(
+                                  toY: revenue,
+                                  color: AppColors.chartRevenue,
+                                  width: isNarrow ? 24 : 28,
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(AppRadius.sm),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        gridData: const FlGridData(show: false),
-                        borderData: FlBorderData(show: false),
-                        barGroups: [
-                          BarChartGroupData(
-                            x: 0,
-                            barRods: [
-                              BarChartRodData(
-                                toY: revenue,
-                                color: AppColors.chartRevenue,
-                                width: isNarrow ? 24 : 28,
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(AppRadius.sm),
-                                ),
-                              ),
-                            ],
-                          ),
-                          BarChartGroupData(
-                            x: 1,
-                            barRods: [
-                              BarChartRodData(
-                                toY: expenses,
-                                color: AppColors.chartExpenses,
-                                width: isNarrow ? 24 : 28,
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(AppRadius.sm),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
                       ),
                     ),
                   ),

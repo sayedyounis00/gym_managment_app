@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text_styles.dart';
@@ -21,8 +22,11 @@ class AppTextField extends StatelessWidget {
   final Widget? suffixIcon;
   final int maxLines;
   final int? minLines;
+  final int? maxLength;
+  final List<TextInputFormatter>? inputFormatters;
   final String? Function(String?)? validator;
   final FocusNode? focusNode;
+  final TapRegionCallback? onTapOutside;
 
   const AppTextField({
     super.key,
@@ -43,8 +47,11 @@ class AppTextField extends StatelessWidget {
     this.suffixIcon,
     this.maxLines = 1,
     this.minLines,
+    this.maxLength,
+    this.inputFormatters,
     this.validator,
     this.focusNode,
+    this.onTapOutside,
   });
 
   @override
@@ -68,6 +75,7 @@ class AppTextField extends StatelessWidget {
           onChanged: onChanged,
           onEditingComplete: onEditingComplete,
           onFieldSubmitted: onSubmitted,
+          onTapOutside: onTapOutside ?? (_) => FocusManager.instance.primaryFocus?.unfocus(),
           keyboardType: keyboardType,
           textInputAction: textInputAction,
           obscureText: obscureText,
@@ -75,6 +83,8 @@ class AppTextField extends StatelessWidget {
           readOnly: readOnly,
           maxLines: maxLines,
           minLines: minLines,
+          maxLength: maxLength,
+          inputFormatters: inputFormatters,
           validator: validator,
           focusNode: focusNode,
           style: AppTextStyles.bodyLarge.copyWith(

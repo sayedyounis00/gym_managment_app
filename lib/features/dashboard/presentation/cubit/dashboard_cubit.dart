@@ -10,7 +10,7 @@ class DashboardCubit extends Cubit<DashboardState> {
   DashboardCubit({required this.getDashboardSummary}) : super(const DashboardInitial());
 
   void init({DateTime? now}) {
-    loadSummary(now: now);
+    emit(const DashboardLoading());
     _subscribeToUpdates(now: now);
   }
 

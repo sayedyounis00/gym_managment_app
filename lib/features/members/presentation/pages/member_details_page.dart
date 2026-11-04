@@ -53,11 +53,13 @@ class MemberDetailsPage extends StatefulWidget {
 class _MemberDetailsPageState extends State<MemberDetailsPage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  int _currentTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_onTabChanged);
     context.read<MemberDetailsCubit>().load(widget.memberId);
     context.read<MemberNotesCubit>().init(widget.memberId);
     try {
@@ -65,8 +67,17 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
     } catch (_) {}
   }
 
+  void _onTabChanged() {
+    if (_tabController.index != _currentTabIndex) {
+      setState(() {
+        _currentTabIndex = _tabController.index;
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -413,6 +424,7 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                   await context.read<MemberDetailsCubit>().refresh();
                 },
                 child: SingleChildScrollView(
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.all(AppSpacing.md),
                   child: ResponsiveCenteredContainer(
                     maxWidth: 760,
@@ -465,7 +477,10 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                                           ],
                                         ),
                                         const SizedBox(height: 4),
-                                        Row(
+                                        Wrap(
+                                          crossAxisAlignment: WrapCrossAlignment.center,
+                                          spacing: AppSpacing.sm,
+                                          runSpacing: 4,
                                           children: [
                                             Text(
                                               member.phone,
@@ -475,7 +490,6 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                                                   ),
                                             ),
                                             if (member.gender != null) ...[
-                                              const SizedBox(width: AppSpacing.sm),
                                               Container(
                                                 padding: const EdgeInsets.symmetric(
                                                   horizontal: 8,
@@ -767,30 +781,23 @@ class _MemberDetailsPageState extends State<MemberDetailsPage>
                         const SizedBox(height: AppSpacing.md),
 
                         // Tab contents
-                        AnimatedBuilder(
-                          animation: _tabController,
-                          builder: (context, _) {
-                            final index = _tabController.index;
-                            if (index == 0) {
-                              return _buildSubscriptionsTab(
-                                state.data.subscriptions,
-                              );
-                            } else if (index == 1) {
-                              return _buildPaymentsTab(
-                                state.data.payments,
-                                state.data.subscriptions,
-                                state.data.member.id,
-                              );
-                            } else if (index == 2) {
-                              return _buildNotesTab();
-                            } else {
-                              return _buildAttendanceTab(
-                                state.data.member,
-                                state.data.currentSubscription,
-                              );
-                            }
-                          },
-                        ),
+                        if (_currentTabIndex == 0)
+                          _buildSubscriptionsTab(
+                            state.data.subscriptions,
+                          )
+                        else if (_currentTabIndex == 1)
+                          _buildPaymentsTab(
+                            state.data.payments,
+                            state.data.subscriptions,
+                            state.data.member.id,
+                          )
+                        else if (_currentTabIndex == 2)
+                          _buildNotesTab()
+                        else
+                          _buildAttendanceTab(
+                            state.data.member,
+                            state.data.currentSubscription,
+                          ),
                         const SizedBox(height: AppSpacing.xl),
                       ],
                     ),

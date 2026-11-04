@@ -198,7 +198,7 @@ class RenewBottomSheet extends StatelessWidget {
           top: false,
           child: Padding(
             padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
+              bottom: MediaQuery.viewInsetsOf(context).bottom,
             ),
             child: Align(
               alignment: Alignment.bottomCenter,
@@ -210,6 +210,7 @@ class RenewBottomSheet extends StatelessWidget {
                 ),
                 child: SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.lg,
                     0,

@@ -15,6 +15,7 @@ class StatusChip extends StatelessWidget {
   final IconData icon;
   final Color color;
   final Color backgroundColor;
+  final bool compact;
 
   const StatusChip({
     super.key,
@@ -22,57 +23,64 @@ class StatusChip extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.backgroundColor,
+    this.compact = false,
   });
 
-  factory StatusChip.memberStatus(MemberStatusType status) {
+  factory StatusChip.memberStatus(MemberStatusType status, {bool compact = false}) {
     switch (status) {
       case MemberStatusType.active:
-        return const StatusChip(
+        return StatusChip(
           label: 'نشط',
           icon: Icons.check_circle_rounded,
           color: AppColors.success,
           backgroundColor: AppColors.successTint,
+          compact: compact,
         );
       case MemberStatusType.expiringSoon:
-        return const StatusChip(
+        return StatusChip(
           label: 'ينتهي قريباً',
           icon: Icons.schedule_rounded,
           color: AppColors.warning,
           backgroundColor: AppColors.warningTint,
+          compact: compact,
         );
       case MemberStatusType.expired:
-        return const StatusChip(
+        return StatusChip(
           label: 'منتهي',
           icon: Icons.cancel_rounded,
           color: AppColors.error,
           backgroundColor: AppColors.errorTint,
+          compact: compact,
         );
       case MemberStatusType.paused:
-        return const StatusChip(
+        return StatusChip(
           label: 'موقوف',
           icon: Icons.pause_circle_rounded,
           color: AppColors.paused,
           backgroundColor: AppColors.pausedTint,
+          compact: compact,
         );
     }
   }
 
-  factory StatusChip.paymentMethod(String method) {
+  factory StatusChip.paymentMethod(String method, {bool compact = false}) {
     switch (method) {
       case 'wallet':
-        return const StatusChip(
+        return StatusChip(
           label: 'محفظة إلكترونية',
           icon: Icons.account_balance_wallet_rounded,
           color: AppColors.info,
           backgroundColor: AppColors.infoTint,
+          compact: compact,
         );
       case 'cash':
       default:
-        return const StatusChip(
+        return StatusChip(
           label: 'نقدي',
           icon: Icons.payments_rounded,
           color: AppColors.primaryDark,
           backgroundColor: AppColors.primaryLight,
+          compact: compact,
         );
     }
   }
@@ -80,8 +88,11 @@ class StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 28,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      constraints: BoxConstraints(minHeight: compact ? 22 : 26),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 6 : 9,
+        vertical: compact ? 2 : 3,
+      ),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.full),
@@ -92,15 +103,19 @@ class StatusChip extends StatelessWidget {
         children: [
           Icon(
             icon,
-            size: 16,
+            size: compact ? 13 : 15,
             color: color,
           ),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            label,
-            style: AppTextStyles.labelMedium.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
+          SizedBox(width: compact ? 3 : AppSpacing.xs),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: (compact ? AppTextStyles.labelSmall : AppTextStyles.labelMedium).copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

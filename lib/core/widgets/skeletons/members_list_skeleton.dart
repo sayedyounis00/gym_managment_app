@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
+import '../../utils/responsive_utils.dart';
 import 'app_skeletonizer.dart';
 
 /// Full-page skeleton placeholder for [MembersPage].
@@ -31,7 +32,10 @@ class MembersListSkeleton extends StatelessWidget {
     if (!showHeader) {
       return AppSkeletonizer(
         enabled: true,
-        child: listWidget,
+        child: ResponsiveCenteredContainer(
+          maxWidth: ResponsiveBreakpoints.maxContentWidth,
+          child: listWidget,
+        ),
       );
     }
 
@@ -46,8 +50,10 @@ class MembersListSkeleton extends StatelessWidget {
               horizontal: AppSpacing.md,
               vertical: AppSpacing.sm,
             ),
-            child: Column(
-              children: [
+            child: ResponsiveCenteredContainer(
+              maxWidth: ResponsiveBreakpoints.maxContentWidth,
+              child: Column(
+                children: [
                 // Search bar bone
                 Container(
                   height: 48,
@@ -87,11 +93,17 @@ class MembersListSkeleton extends StatelessWidget {
                 ),
               ],
             ),
+            ),
           ),
           const Divider(height: 1, color: AppColors.border),
 
           // Member items list skeleton
-          Expanded(child: listWidget),
+          Expanded(
+            child: ResponsiveCenteredContainer(
+              maxWidth: ResponsiveBreakpoints.maxContentWidth,
+              child: listWidget,
+            ),
+          ),
         ],
       ),
     );

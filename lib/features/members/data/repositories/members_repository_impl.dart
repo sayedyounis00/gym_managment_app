@@ -49,7 +49,7 @@ class MembersRepositoryImpl implements MembersRepository {
           photoPath: item.member.photoPath,
           gender: gender,
           isSuspended: item.member.isSuspended,
-          packageName: item.package?.name,
+          packageName: item.subscription?.packageNameSnapshot ?? item.package?.name,
           subscriptionEndDate: item.subscription?.endDate,
           daysLeft: item.daysLeft,
           status: item.status,
@@ -205,10 +205,11 @@ class MembersRepositoryImpl implements MembersRepository {
         final pkg = r.readTableOrNull(membersDao.packages);
 
         final relatedPayments = allPayments.where((p) => p.subscriptionId == sub.id);
-        final totalPaid = relatedPayments.fold<double>(
+        final totalPaidFromPayments = relatedPayments.fold<double>(
           0.0,
           (sum, p) => sum + p.amount,
         );
+        final totalPaid = totalPaidFromPayments > 0 ? totalPaidFromPayments : sub.amountPaid;
 
         final isPayAsYouGo = sub.isPayAsYouGo || (pkg?.isPayAsYouGo ?? false);
         final dailyRate = sub.priceSnapshot ?? pkg?.price ?? 0.0;
@@ -221,7 +222,7 @@ class MembersRepositoryImpl implements MembersRepository {
           attendedCount = (await q.map((row) => row.read(countExpr)).getSingle()) ?? 0;
         }
 
-        final price = isPayAsYouGo ? (attendedCount * dailyRate) : (pkg?.price ?? sub.priceSnapshot ?? 0.0);
+        final price = isPayAsYouGo ? (attendedCount * dailyRate) : (sub.priceSnapshot ?? pkg?.price ?? 0.0);
         final status = (sub.status == 'expired')
             ? MemberStatusType.expired
             : resolveMemberStatus(
@@ -241,14 +242,14 @@ class MembersRepositoryImpl implements MembersRepository {
         list.add(SubscriptionHistoryItem(
           id: sub.id,
           memberId: sub.memberId,
-          packageName: pkg?.name ?? sub.packageNameSnapshot ?? 'باقة مخصصة',
+          packageName: sub.packageNameSnapshot ?? pkg?.name ?? 'باقة مخصصة',
           startDate: sub.startDate,
           endDate: sub.endDate,
           price: price,
           paidAmount: totalPaid,
           status: status,
           isRenewal: sub.isRenewal,
-          trackAttendance: pkg?.trackAttendance ?? sub.trackAttendance,
+          trackAttendance: sub.trackAttendance || (pkg?.trackAttendance ?? false),
           paymentMethod: paymentMethod,
           isDaily: isDaily,
           isPayAsYouGo: isPayAsYouGo,

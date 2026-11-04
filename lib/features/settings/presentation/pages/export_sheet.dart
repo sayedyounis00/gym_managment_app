@@ -85,7 +85,7 @@ class ExportSheet extends StatelessWidget {
             borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
           ),
           padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
+            bottom: MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xl,
             top: AppSpacing.sm,
             left: AppSpacing.lg,
             right: AppSpacing.lg,

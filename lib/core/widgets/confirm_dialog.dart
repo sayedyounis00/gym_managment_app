@@ -57,7 +57,7 @@ class ConfirmDialog extends StatelessWidget {
       ),
       insetPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 340),
+        constraints: const BoxConstraints(maxWidth: 400),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
@@ -77,28 +77,32 @@ class ConfirmDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              OverflowBar(
+                alignment: MainAxisAlignment.end,
+                spacing: AppSpacing.sm,
+                overflowSpacing: AppSpacing.sm,
+                overflowAlignment: OverflowBarAlignment.end,
                 children: [
                   AppButton(
                     label: cancelLabel,
                     variant: AppButtonVariant.text,
                     height: 44,
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                     onPressed: () {
                       if (onCancel != null) {
                         onCancel!();
                       } else {
-                        Navigator.of(context).pop();
+                        Navigator.of(context).pop(false);
                       }
                     },
                   ),
-                  const SizedBox(width: AppSpacing.sm),
                   AppButton(
                     label: confirmLabel,
                     variant: isDestructive
                         ? AppButtonVariant.destructive
                         : AppButtonVariant.primary,
                     height: 44,
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                     onPressed: onConfirm,
                   ),
                 ],

@@ -25,7 +25,14 @@ void main() {
             size: Size(width, height),
             textScaler: const TextScaler.linear(1.0),
           ),
-          child: Scaffold(body: Center(child: child)),
+          child: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: width,
+                child: child,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -330,6 +337,98 @@ void main() {
 
       expect(find.text('باقة شهرية ذهبية'), findsOneWidget);
       expect(find.text('نقدي'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('MemberCard renders without overflow on narrow 320dp screen with long name and expiringSoon status', (tester) async {
+      final summary = MemberSummary(
+        id: 99,
+        name: 'كابتن عبد الرحمن مصطفى محمود الشريف',
+        phone: '01012345678',
+        packageName: 'باقة اللياقة البدنية الذهبية السنوية الشاملة',
+        status: MemberStatusType.expiringSoon,
+        daysLeft: 2,
+        subscriptionEndDate: DateTime(2026, 10, 30),
+      );
+
+      await tester.pumpWidget(
+        wrapWidget(
+          MemberCard(member: summary, onTap: () {}),
+          width: 320,
+        ),
+      );
+
+      expect(find.text('كابتن عبد الرحمن مصطفى محمود الشريف'), findsOneWidget);
+      expect(find.text('ينتهي قريباً'), findsOneWidget);
+      expect(find.text('متبقي 2 يوم'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('MemberCard renders with text scale 1.4x without vertical overflow', (tester) async {
+      final now = DateTime.now();
+      final summary = MemberSummary(
+        id: 100,
+        name: 'محمد علي',
+        phone: '01234567890',
+        packageName: 'باقة شهرية',
+        status: MemberStatusType.active,
+        daysLeft: 15,
+        subscriptionEndDate: now.add(const Duration(days: 15)),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Directionality(
+            textDirection: TextDirection.rtl,
+            child: MediaQuery(
+              data: const MediaQueryData(
+                size: Size(360, 640),
+                textScaler: TextScaler.linear(1.4),
+              ),
+              child: Scaffold(
+                body: SizedBox(
+                  width: 360,
+                  child: MemberCard(member: summary, onTap: () {}),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('محمد علي'), findsOneWidget);
+      expect(find.text('نشط'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('StatusChip renders without overflow under tight constraints and 1.5x text scale', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Directionality(
+            textDirection: TextDirection.rtl,
+            child: MediaQuery(
+              data: const MediaQueryData(
+                size: Size(320, 640),
+                textScaler: TextScaler.linear(1.5),
+              ),
+              child: const Scaffold(
+                body: SizedBox(
+                  width: 80,
+                  child: StatusChip(
+                    label: 'ينتهي قريباً جداً',
+                    icon: Icons.schedule_rounded,
+                    color: Colors.amber,
+                    backgroundColor: Colors.amberAccent,
+                    compact: true,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(StatusChip), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

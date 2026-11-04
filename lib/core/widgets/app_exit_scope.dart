@@ -32,6 +32,7 @@ class AppExitScope extends StatelessWidget {
     return PopScope(
       canPop: onWillPop == null ? canPop : false,
       onPopInvokedWithResult: (didPop, result) async {
+        FocusManager.instance.primaryFocus?.unfocus();
         if (didPop) return;
 
         if (onWillPop != null) {

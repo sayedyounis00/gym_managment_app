@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gym_managment_app/core/theme/app_colors.dart';
@@ -120,35 +121,38 @@ class _MembersPageState extends State<MembersPage> {
                 top: AppSpacing.sm,
                 bottom: AppSpacing.sm,
               ),
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                    child: MemberSearchBar(
-                      onChanged: (query) {
-                        context.read<MembersListCubit>().search(query);
-                      },
-                      onClear: () {
-                        context.read<MembersListCubit>().search('');
+              child: ResponsiveCenteredContainer(
+                maxWidth: ResponsiveBreakpoints.maxContentWidth,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      child: MemberSearchBar(
+                        onChanged: (query) {
+                          context.read<MembersListCubit>().search(query);
+                        },
+                        onClear: () {
+                          context.read<MembersListCubit>().search('');
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    BlocBuilder<MembersListCubit, MembersListState>(
+                      buildWhen: (prev, curr) =>
+                          curr is MembersListLoaded || curr is MembersListLoading,
+                      builder: (context, state) {
+                        final currentFilter =
+                            state is MembersListLoaded ? state.filter : null;
+                        return MemberFilterBar(
+                          selectedFilter: currentFilter,
+                          onFilterSelected: (filter) {
+                            context.read<MembersListCubit>().setFilter(filter);
+                          },
+                        );
                       },
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  BlocBuilder<MembersListCubit, MembersListState>(
-                    buildWhen: (prev, curr) =>
-                        curr is MembersListLoaded || curr is MembersListLoading,
-                    builder: (context, state) {
-                      final currentFilter =
-                          state is MembersListLoaded ? state.filter : null;
-                      return MemberFilterBar(
-                        selectedFilter: currentFilter,
-                        onFilterSelected: (filter) {
-                          context.read<MembersListCubit>().setFilter(filter);
-                        },
-                      );
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             const Divider(height: 1, color: AppColors.border),
@@ -163,14 +167,17 @@ class _MembersPageState extends State<MembersPage> {
 
                   if (state is MembersListError) {
                     return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        child: Text(
-                          state.message,
-                          style: AppTextStyles.bodyLarge.copyWith(
-                            color: AppColors.error,
+                      child: ResponsiveCenteredContainer(
+                        maxWidth: ResponsiveBreakpoints.maxContentWidth,
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: Text(
+                            state.message,
+                            style: AppTextStyles.bodyLarge.copyWith(
+                              color: AppColors.error,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
                     );
@@ -178,24 +185,43 @@ class _MembersPageState extends State<MembersPage> {
 
                   if (state is MembersListLoaded) {
                     if (state.members.isEmpty) {
-                      if (state.query.isNotEmpty || state.filter != null) {
-                        return EmptyState(
-                          icon: Icons.search_off_rounded,
-                          title: 'لا توجد نتائج مطابقة',
-                          message: 'لم يتم العثور على أي مشترك مطابق لمعايير البحث الحالية.',
-                          actionLabel: 'مسح التصفية',
-                          onAction: () {
-                            context.read<MembersListCubit>().search('');
-                            context.read<MembersListCubit>().setFilter(null);
-                          },
-                        );
-                      }
-                      return EmptyState(
-                        icon: Icons.group_add_rounded,
-                        title: 'لا يوجد مشتركين بعد',
-                        message: 'ابدأ بإضافة أول مشترك في الجيم لمتابعة الاشتراكات والمدفوعات.',
-                        actionLabel: 'إضافة أول مشترك',
-                        onAction: () => context.push('/members/new'),
+                      final isFiltered = state.query.isNotEmpty || state.filter != null;
+                      return RefreshIndicator(
+                        color: AppColors.primary,
+                        onRefresh: () async =>
+                            context.read<MembersListCubit>().refresh(),
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Container(
+                            alignment: Alignment.center,
+                            constraints: BoxConstraints(
+                              minHeight: MediaQuery.sizeOf(context).height * 0.6,
+                            ),
+                            child: ResponsiveCenteredContainer(
+                              maxWidth: ResponsiveBreakpoints.maxContentWidth,
+                              child: isFiltered
+                                  ? EmptyState(
+                                      icon: Icons.search_off_rounded,
+                                      title: 'لا توجد نتائج مطابقة',
+                                      message:
+                                          'لم يتم العثور على أي مشترك مطابق لمعايير البحث الحالية.',
+                                      actionLabel: 'مسح التصفية',
+                                      onAction: () {
+                                        context.read<MembersListCubit>().search('');
+                                        context.read<MembersListCubit>().setFilter(null);
+                                      },
+                                    )
+                                  : EmptyState(
+                                      icon: Icons.group_add_rounded,
+                                      title: 'لا يوجد مشتركين بعد',
+                                      message:
+                                          'ابدأ بإضافة أول مشترك في الجيم لمتابعة الاشتراكات والمدفوعات.',
+                                      actionLabel: 'إضافة أول مشترك',
+                                      onAction: () => context.push('/members/new'),
+                                    ),
+                            ),
+                          ),
+                        ),
                       );
                     }
 
@@ -204,107 +230,107 @@ class _MembersPageState extends State<MembersPage> {
                       onRefresh: () async {
                         context.read<MembersListCubit>().refresh();
                       },
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final isLargeScreen = constraints.maxWidth >= ResponsiveBreakpoints.compact;
+                      child: ResponsiveCenteredContainer(
+                        maxWidth: ResponsiveBreakpoints.maxContentWidth,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isLargeScreen =
+                                constraints.maxWidth >= ResponsiveBreakpoints.compact;
+                            final textScale =
+                                MediaQuery.textScalerOf(context).scale(1.0);
+                            final cardExtent =
+                                (96.0 * textScale).clamp(96.0, 148.0);
 
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Sticky member count header
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.md,
-                                  vertical: AppSpacing.xs,
-                                ),
-                                child: Text(
-                                  '${state.totalCount} مشترك',
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: AppColors.textSecondary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: isLargeScreen
-                                    ? CustomScrollView(
-                                        controller: _scrollController,
-                                        slivers: [
-                                          SliverPadding(
-                                            padding: const EdgeInsets.all(AppSpacing.md),
-                                            sliver: SliverGrid(
-                                              gridDelegate:
-                                                  const SliverGridDelegateWithMaxCrossAxisExtent(
-                                                maxCrossAxisExtent: 460,
-                                                mainAxisExtent: 88,
-                                                crossAxisSpacing: AppSpacing.md,
-                                                mainAxisSpacing: AppSpacing.md,
-                                              ),
-                                              delegate: SliverChildBuilderDelegate(
-                                                (context, index) {
-                                                  final member = state.members[index];
-                                                  return Container(
-                                                    key: ValueKey(member.id),
-                                                    decoration: BoxDecoration(
-                                                      borderRadius: BorderRadius.circular(
-                                                        AppRadius.md,
-                                                      ),
-                                                      border: Border.all(
-                                                        color: AppColors.border,
-                                                      ),
-                                                    ),
-                                                    clipBehavior: Clip.antiAlias,
-                                                    child: MemberCard(
-                                                      member: member,
-                                                      onTap: () => context.push('/members/${member.id}'),
-                                                    ),
-                                                  );
-                                                },
-                                                childCount: state.members.length,
-                                              ),
-                                            ),
+                            return isLargeScreen
+                                ? CustomScrollView(
+                                    controller: _scrollController,
+                                    keyboardDismissBehavior:
+                                        ScrollViewKeyboardDismissBehavior.onDrag,
+                                    slivers: [
+                                      SliverPadding(
+                                        padding:
+                                            const EdgeInsets.all(AppSpacing.md),
+                                        sliver: SliverGrid(
+                                          gridDelegate:
+                                              SliverGridDelegateWithMaxCrossAxisExtent(
+                                            maxCrossAxisExtent: 460,
+                                            mainAxisExtent: cardExtent,
+                                            crossAxisSpacing: AppSpacing.md,
+                                            mainAxisSpacing: AppSpacing.md,
                                           ),
-                                          if (state.isLoadingMore)
-                                            const SliverToBoxAdapter(
-                                              child: PaginatedBottomLoader(isLoading: true),
-                                            ),
-                                          const SliverToBoxAdapter(
-                                            child: SizedBox(height: 88),
+                                          delegate: SliverChildBuilderDelegate(
+                                            (context, index) {
+                                              final member = state.members[index];
+                                              return Container(
+                                                key: ValueKey(member.id),
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                    AppRadius.md,
+                                                  ),
+                                                  border: Border.all(
+                                                    color: AppColors.border,
+                                                  ),
+                                                ),
+                                                clipBehavior: Clip.antiAlias,
+                                                child: MemberCard(
+                                                  member: member,
+                                                  onTap: () => context
+                                                      .push('/members/${member.id}'),
+                                                ),
+                                              );
+                                            },
+                                            childCount: state.members.length,
                                           ),
-                                        ],
-                                      )
-                                    : ListView.separated(
-                                        controller: _scrollController,
-                                        padding: const EdgeInsets.only(
-                                          bottom: 88, // Space for FAB
                                         ),
-                                        itemCount: state.members.length + (state.isLoadingMore ? 1 : 0),
-                                        separatorBuilder: (context, index) {
-                                          if (index >= state.members.length) {
-                                            return const SizedBox.shrink();
-                                          }
-                                          return const Divider(
-                                            height: 1,
-                                            indent: 68,
-                                            color: AppColors.border,
-                                          );
-                                        },
-                                        itemBuilder: (context, index) {
-                                          if (index == state.members.length) {
-                                            return const PaginatedBottomLoader(isLoading: true);
-                                          }
-                                          final member = state.members[index];
-                                          return MemberCard(
-                                            key: ValueKey(member.id),
-                                            member: member,
-                                            onTap: () => context.push('/members/${member.id}'),
-                                          );
-                                        },
                                       ),
-                              ),
-                            ],
-                          );
-                        },
+                                      if (state.isLoadingMore)
+                                        const SliverToBoxAdapter(
+                                          child: PaginatedBottomLoader(
+                                              isLoading: true),
+                                        ),
+                                      const SliverToBoxAdapter(
+                                        child: SizedBox(height: 88),
+                                      ),
+                                    ],
+                                  )
+                                : ListView.separated(
+                                    controller: _scrollController,
+                                    keyboardDismissBehavior:
+                                        ScrollViewKeyboardDismissBehavior.onDrag,
+                                    scrollCacheExtent:
+                                        const ScrollCacheExtent.pixels(300),
+                                    padding: const EdgeInsets.only(
+                                      bottom: 88, // Space for FAB
+                                    ),
+                                    itemCount: state.members.length +
+                                        (state.isLoadingMore ? 1 : 0),
+                                    separatorBuilder: (context, index) {
+                                      if (index >= state.members.length) {
+                                        return const SizedBox.shrink();
+                                      }
+                                      return const Divider(
+                                        height: 1,
+                                        indent: 68,
+                                        color: AppColors.border,
+                                      );
+                                    },
+                                    itemBuilder: (context, index) {
+                                      if (index == state.members.length) {
+                                        return const PaginatedBottomLoader(
+                                            isLoading: true);
+                                      }
+                                      final member = state.members[index];
+                                      return MemberCard(
+                                        key: ValueKey(member.id),
+                                        member: member,
+                                        onTap: () => context
+                                            .push('/members/${member.id}'),
+                                      );
+                                    },
+                                  );
+                          },
+                        ),
                       ),
                     );
                   }

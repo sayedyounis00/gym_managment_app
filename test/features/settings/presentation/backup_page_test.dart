@@ -83,7 +83,7 @@ void main() {
       final sampleBackup = BackupInfo(
         filePath: '/data/backups/gym_backup_20261018.gymbak',
         fileName: 'gym_backup_20261018.gymbak',
-        createdAt: DateTime(2026, 10, 18, 14, 30),
+        createdAt: DateTime.now().subtract(const Duration(days: 1)),
         memberCount: 45,
         appVersion: '1.0.0+1',
         schemaVersion: 6,

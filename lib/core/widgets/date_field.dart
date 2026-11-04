@@ -27,6 +27,8 @@ class DateField extends StatelessWidget {
   Future<void> _pickDate(BuildContext context) async {
     if (readOnly || onChanged == null) return;
 
+    FocusManager.instance.primaryFocus?.unfocus();
+
     final picked = await showDatePicker(
       context: context,
       initialDate: value,

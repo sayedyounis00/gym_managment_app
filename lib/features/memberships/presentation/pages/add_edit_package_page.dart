@@ -139,6 +139,7 @@ class _AddEditPackagePageState extends State<AddEditPackagePage> {
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
+                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                       padding: const EdgeInsets.all(AppSpacing.lg),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,14 +347,20 @@ class _AddEditPackagePageState extends State<AddEditPackagePage> {
                               label: state.isEditMode ? 'حفظ التعديلات' : 'حفظ الباقة',
                               icon: Icons.check_rounded,
                               isLoading: state.isSaving,
-                              onPressed: () => context.read<PackageFormCubit>().save(),
+                              onPressed: () {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                context.read<PackageFormCubit>().save();
+                              },
                             ),
                           ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: AppButton.outlined(
                               label: 'إلغاء',
-                              onPressed: () => context.pop(),
+                              onPressed: () {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                context.pop();
+                              },
                             ),
                           ),
                         ],
