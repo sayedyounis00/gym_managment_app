@@ -7,6 +7,7 @@ import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/utils/arabic_search_utils.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../domain/entities/member_balance.dart';
+import '../../../members/presentation/widgets/member_avatar.dart';
 
 class BalanceTile extends StatelessWidget {
   final MemberBalance balance;
@@ -125,22 +126,12 @@ class BalanceTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // 1. Avatar
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.errorTint,
-              backgroundImage: balance.memberAvatarUrl != null
-                  ? NetworkImage(balance.memberAvatarUrl!)
-                  : null,
-              child: balance.memberAvatarUrl == null
-                  ? Text(
-                      balance.memberName.isNotEmpty ? balance.memberName[0] : '؟',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.error,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    )
-                  : null,
+            // 1. Avatar (tap to expand full-screen preview)
+            MemberAvatar(
+              photoPath: balance.memberAvatarUrl,
+              name: balance.memberName,
+              size: 40,
+              enablePreview: true,
             ),
             const SizedBox(width: AppSpacing.sm + 2),
 
