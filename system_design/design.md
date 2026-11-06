@@ -22,15 +22,15 @@
 
 ### 2.1 Brand
 
-| Token | Hex | Usage |
-|---|---|---|
-| `primary` | `#F26B1D` | Primary buttons, FAB, active nav item, key accents (energetic orange) |
-| `primaryDark` | `#C9520D` | Pressed state, app bar accents |
-| `primaryLight` | `#FFE6D6` | Tinted backgrounds, selected chips, icon containers |
-| `onPrimary` | `#FFFFFF` | Text/icons on primary |
-| `secondary` | `#1F2A44` | Headings accents, secondary buttons, dark-on-light emphasis (deep navy) |
-| `secondaryLight` | `#E8EBF2` | Secondary tinted backgrounds |
-| `onSecondary` | `#FFFFFF` | Text/icons on secondary |
+| Token            | Hex       | Usage                                                                   |
+| ---------------- | --------- | ----------------------------------------------------------------------- |
+| `primary`        | `#F26B1D` | Primary buttons, FAB, active nav item, key accents (energetic orange)   |
+| `primaryDark`    | `#C9520D` | Pressed state, app bar accents                                          |
+| `primaryLight`   | `#FFE6D6` | Tinted backgrounds, selected chips, icon containers                     |
+| `onPrimary`      | `#FFFFFF` | Text/icons on primary                                                   |
+| `secondary`      | `#1F2A44` | Headings accents, secondary buttons, dark-on-light emphasis (deep navy) |
+| `secondaryLight` | `#E8EBF2` | Secondary tinted backgrounds                                            |
+| `onSecondary`    | `#FFFFFF` | Text/icons on secondary                                                 |
 
 ### 2.2 Neutrals (light surfaces)
 
