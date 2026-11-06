@@ -64,6 +64,8 @@ class ExportMemberRowData {
         return 'منتهي';
       case MemberStatusType.paused:
         return 'موقوف';
+      case MemberStatusType.hasDues:
+        return 'عليه مستحقات';
     }
   }
 
@@ -392,6 +394,8 @@ class ExportSourceImpl implements ExportSource {
         return 'منتهي';
       case MemberStatusType.paused:
         return 'موقوف';
+      case MemberStatusType.hasDues:
+        return 'عليهم مستحقات';
     }
   }
 }

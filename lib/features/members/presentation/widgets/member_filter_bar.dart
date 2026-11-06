@@ -42,6 +42,14 @@ class MemberFilterBar extends StatelessWidget {
             ),
             const SizedBox(width: AppSpacing.xs),
             _buildChip(
+              label: 'عليهم مستحقات',
+              isSelected: selectedFilter == MemberStatusType.hasDues,
+              onTap: () => onFilterSelected(MemberStatusType.hasDues),
+              chipHeight: chipHeight,
+              accentColor: AppColors.error,
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            _buildChip(
               label: 'ينتهي قريباً',
               isSelected: selectedFilter == MemberStatusType.expiringSoon,
               onTap: () => onFilterSelected(MemberStatusType.expiringSoon),
@@ -72,7 +80,12 @@ class MemberFilterBar extends StatelessWidget {
     required bool isSelected,
     required VoidCallback onTap,
     required double chipHeight,
+    Color? accentColor,
   }) {
+    final activeColor = accentColor ?? AppColors.primary;
+    final activeBg = accentColor?.withValues(alpha: 0.12) ?? AppColors.primaryLight;
+    final activeTextColor = accentColor ?? AppColors.primaryDark;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -84,10 +97,10 @@ class MemberFilterBar extends StatelessWidget {
           height: chipHeight,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primaryLight : AppColors.surface,
+            color: isSelected ? activeBg : AppColors.surface,
             borderRadius: BorderRadius.circular(AppRadius.full),
             border: Border.all(
-              color: isSelected ? AppColors.primary : AppColors.border,
+              color: isSelected ? activeColor : AppColors.border,
               width: isSelected ? 1.5 : 1.0,
             ),
           ),
@@ -96,17 +109,17 @@ class MemberFilterBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (isSelected) ...[
-                const Icon(
+                Icon(
                   Icons.check_rounded,
                   size: 16,
-                  color: AppColors.primaryDark,
+                  color: activeTextColor,
                 ),
                 const SizedBox(width: 4),
               ],
               Text(
                 label,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: isSelected ? AppColors.primaryDark : AppColors.textSecondary,
+                  color: isSelected ? activeTextColor : AppColors.textSecondary,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),

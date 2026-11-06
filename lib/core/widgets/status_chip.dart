@@ -8,6 +8,7 @@ enum MemberStatusType {
   expiringSoon,
   expired,
   paused,
+  hasDues,
 }
 
 class StatusChip extends StatelessWidget {
@@ -58,6 +59,14 @@ class StatusChip extends StatelessWidget {
           icon: Icons.pause_circle_rounded,
           color: AppColors.paused,
           backgroundColor: AppColors.pausedTint,
+          compact: compact,
+        );
+      case MemberStatusType.hasDues:
+        return StatusChip(
+          label: 'عليه مستحقات',
+          icon: Icons.money_off_rounded,
+          color: AppColors.error,
+          backgroundColor: AppColors.errorTint,
           compact: compact,
         );
     }

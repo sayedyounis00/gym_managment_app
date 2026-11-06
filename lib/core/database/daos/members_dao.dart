@@ -68,12 +68,28 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
       ]).get();
 
       final Map<int, ({Subscription sub, Package? package})> latestSubs = {};
+      // All subs per member (needed for hasDues calculation)
+      final Map<int, List<({Subscription sub, Package? package})>> allSubsByMember = {};
       for (final row in allSubRows) {
         final sub = row.readTable(subscriptions);
+        final pkg = row.readTableOrNull(packages);
         latestSubs.putIfAbsent(
           sub.memberId,
-          () => (sub: sub, package: row.readTableOrNull(packages)),
+          () => (sub: sub, package: pkg),
         );
+        allSubsByMember.putIfAbsent(sub.memberId, () => []).add((sub: sub, package: pkg));
+      }
+
+      // For hasDues filter: load all non-voided payments grouped by memberId
+      Map<int, List<Payment>>? paymentsByMember;
+      if (statusFilter == MemberStatusType.hasDues) {
+        final allPayments = await (select(payments)
+              ..where((p) => p.voidedAt.isNull()))
+            .get();
+        paymentsByMember = {};
+        for (final p in allPayments) {
+          paymentsByMember.putIfAbsent(p.memberId, () => []).add(p);
+        }
       }
 
       for (final m in allMembers) {
@@ -95,19 +111,54 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
         final latestSub = subData?.sub;
         final latestPackage = subData?.package;
 
-        // Resolve status
-        final status = (latestSub?.status == 'expired')
-            ? MemberStatusType.expired
-            : resolveMemberStatus(
-                isSuspended: m.isSuspended,
-                subscriptionEndDate: latestSub?.endDate,
-                daysBeforeExpiry: daysBeforeExpiry,
-                now: now,
-              );
+        // For hasDues filter: member must have at least one subscription and remaining > 0
+        if (statusFilter == MemberStatusType.hasDues) {
+          final memberSubs = allSubsByMember[m.id];
+          if (memberSubs == null || memberSubs.isEmpty) continue;
 
-        // Apply status filter if set
-        if (statusFilter != null && status != statusFilter) {
-          continue;
+          double totalDue = 0.0;
+          for (final entry in memberSubs) {
+            final sub = entry.sub;
+            final pkg = entry.package;
+            final isPayAsYouGo = sub.isPayAsYouGo || (pkg?.isPayAsYouGo ?? false);
+            if (isPayAsYouGo) {
+              // Skip pay-as-you-go for simplicity (or treat as 0 due)
+              continue;
+            }
+            totalDue += (sub.priceSnapshot ?? pkg?.price ?? 0.0);
+          }
+
+          final memberPayments = paymentsByMember?[m.id] ?? [];
+          double totalPaid = 0.0;
+          for (final p in memberPayments) {
+            totalPaid += p.amount;
+          }
+          // Also account for amountPaid on subscriptions with no payment records
+          for (final entry in memberSubs) {
+            final sub = entry.sub;
+            final hasPayment = memberPayments.any((p) => p.subscriptionId == sub.id);
+            if (!hasPayment && sub.amountPaid > 0) {
+              totalPaid += sub.amountPaid;
+            }
+          }
+
+          final remaining = totalDue - totalPaid;
+          if (remaining <= 0.01) continue;
+        } else {
+          // Resolve status for non-hasDues filters
+          final status = (latestSub?.status == 'expired')
+              ? MemberStatusType.expired
+              : resolveMemberStatus(
+                  isSuspended: m.isSuspended,
+                  subscriptionEndDate: latestSub?.endDate,
+                  daysBeforeExpiry: daysBeforeExpiry,
+                  now: now,
+                );
+
+          // Apply status filter if set
+          if (statusFilter != null && status != statusFilter) {
+            continue;
+          }
         }
 
         int? daysLeft;
@@ -121,7 +172,14 @@ class MembersDao extends DatabaseAccessor<AppDatabase> with _$MembersDaoMixin {
             member: m,
             subscription: latestSub,
             package: latestPackage,
-            status: status,
+            status: (latestSub?.status == 'expired')
+                ? MemberStatusType.expired
+                : resolveMemberStatus(
+                    isSuspended: m.isSuspended,
+                    subscriptionEndDate: latestSub?.endDate,
+                    daysBeforeExpiry: daysBeforeExpiry,
+                    now: now,
+                  ),
             daysLeft: daysLeft,
           ),
         );
